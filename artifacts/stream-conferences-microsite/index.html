@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>ICMLHS 2027 · Stream Conferences</title>
+    <meta name="description" content="ICMLHS 2027 — connecting minds, advancing science in Boston, Massachusetts." />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="ICMLHS 2027 · Stream Conferences" />
+    <meta property="og:description" content="An international conference for medical, life, and health sciences." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ICMLHS 2027 · Stream Conferences" />
+    <meta name="twitter:description" content="An international conference for medical, life, and health sciences." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script>
+      (function () {
+        var stored = localStorage.getItem('stream-theme');
+        var dark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.toggle('dark', dark);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

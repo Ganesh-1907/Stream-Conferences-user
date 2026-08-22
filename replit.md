@@ -1,6 +1,6 @@
-# [Project name]
+# Stream Conferences Microsite
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A responsive conference microsite for ICMLHS 2026 that helps delegates explore the event, submit abstracts, view the program, and register.
 
 ## Run & Operate
 
@@ -22,23 +22,30 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/stream-conferences-microsite/src/App.tsx` — site routes, conference content, and interactive UI behavior
+- `artifacts/stream-conferences-microsite/src/index.css` — shared visual tokens, responsive styling, and motion
+- `attached_assets/Content_1787425086745.docx` — supplied conference copy
+- `attached_assets/Pasted--MASTER-PROMPT-Stream-Conferences-Individual-Conference_1787425076288.txt` — supplied build specification
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The initial site is frontend-only, with structured in-file mock data and clearly marked placeholders so a CMS or API can be connected later.
+- Wouter handles route-level navigation while the conference shell remains shared across pages.
+- Theme preference is persisted locally and falls back to the operating system preference without a flash on initial load.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Presents the conference identity, dates, venue, tracks, welcome message, and event milestones.
+- Provides dedicated pages for abstract submission, itinerary/program, speakers, brochure, venue, sponsors, registration, guidelines, terms, FAQ, and contact.
+- Includes live countdown, FAQ search and accordion, itinerary day tabs, expandable speaker bios, responsive navigation, and form success states.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+The user wants supplied conference prompt and content shown in a polished, easy-to-scan website experience.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Event dates, venue, pricing, contact address, downloadable files, and sponsor/media logos are intentionally illustrative placeholders and should be replaced before launch.
 
 ## Pointers
 

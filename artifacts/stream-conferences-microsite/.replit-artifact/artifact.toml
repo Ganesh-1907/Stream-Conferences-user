@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Stream Conferences Microsite"
+description = "A polished, responsive conference website for ICMLHS 2026 with clear paths to explore the event, submit abstracts, view the program, and register."
+version = "1.0.0"
+id = "artifacts/stream-conferences-microsite"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18620
+
+[services.development]
+run = "pnpm --filter @workspace/stream-conferences-microsite run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/stream-conferences-microsite", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/stream-conferences-microsite/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18620"
+BASE_PATH = "/"

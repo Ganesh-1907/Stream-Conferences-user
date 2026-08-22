@@ -1,0 +1,277 @@
+# MASTER PROMPT — Stream Conferences Individual Conference Microsite (subject.domain.com)
+
+Paste this whole prompt into Replit, Lovable, v0, Bolt, etc. It describes the full design system and every page/section to build for a **single conference's dedicated microsite** (e.g., `icmls2026.domain.com`). This uses the SAME design system/tokens/components as the corporate site (built from the companion "Master Prompt 1") so the two feel like one product family — reuse the same theme file/tokens if building in the same workspace.
+
+---
+
+## 1. PROJECT SUMMARY
+
+Build a focused, conversion-oriented microsite for **one specific Stream Conferences event**. Its entire job is to get a visitor to: understand the conference at a glance → submit an abstract → register → find logistics (venue, program, itinerary). It's information-dense but must stay scannable, credible, and easy to navigate — this is the page academics, clinicians, and industry delegates use to decide whether to submit work and attend.
+
+Use a placeholder conference name/branding, e.g., **"International Conference on Medical, Life & Health Sciences (ICMLHS 2026)"** — clearly mark it as replaceable content wherever it appears.
+
+Build as a responsive, accessible, production-quality site with the **same light/dark theme toggle** as the corporate site.
+
+---
+
+## 2. DESIGN SYSTEM (must match the corporate site exactly — copy tokens over)
+
+### 2.1 Color tokens
+
+**Light theme**
+- `--bg-primary`: #FFFFFF
+- `--bg-secondary`: #F5F7FA
+- `--bg-elevated`: #FFFFFF
+- `--text-primary`: #10141F
+- `--text-secondary`: #4B5468
+- `--text-muted`: #8890A3
+- `--border`: #E4E8F0
+- `--brand-primary`: #1B3A6B
+- `--brand-primary-hover`: #142B50
+- `--accent`: #12A8A2
+- `--accent-hover`: #0E8A85
+- `--success`: #2E9E5B
+- `--warning`: #D68A1F
+- `--danger`: #D34A4A
+
+**Dark theme**
+- `--bg-primary`: #0B0F19
+- `--bg-secondary`: #10162A
+- `--bg-elevated`: #151C30
+- `--text-primary`: #F2F4F9
+- `--text-secondary`: #B4BBD0
+- `--text-muted`: #7C8496
+- `--border`: #262E45
+- `--brand-primary`: #4A76C4
+- `--brand-primary-hover`: #6C90D2
+- `--accent`: #2FE0D6
+- `--accent-hover`: #58E8E0
+- `--success`: #4CC97F
+- `--warning`: #F0AC4A
+- `--danger`: #F0716B
+
+Same toggle behavior as the corporate site: sun/moon icon, instant token swap, no flash on load, respects system preference by default.
+
+### 2.2 Typography
+- Headings: "Poppins" / "Sora", semi-bold/bold
+- Body: "Inter"
+- Same scale as corporate site (H1 48/56, H2 36/44, H3 26/32, Body 16/26)
+
+### 2.3 Spacing & shape
+- Same 8px grid, 16px card radius, 10px button radius, 96px/56px section padding — identical to corporate site so both feel like the same product.
+
+### 2.4 Component library (reuse identical component styling from the corporate site; add these microsite-specific components)
+1. Navbar, footer, buttons, cards, badges, forms, accordion — same as corporate site.
+2. **Countdown Timer** — large days/hours/minutes/seconds block counting down to the conference start date, styled as 4 elevated number tiles with labels underneath.
+3. **Event Calendar widget** — a compact date-grid or agenda-style calendar highlighting the conference date range and any linked sub-events (workshops, deadlines).
+4. **Track pill list** — horizontally scrollable row of subject-track badges.
+5. **Sticky sub-navigation bar** — appears on scroll beneath the main navbar with quick-jump links (Program / Speakers / Venue / Register), highlighting current section.
+6. **Speaker/OCM card** — photo placeholder, name, title, institution, short bio toggle.
+7. **Downloadable-brochure card** — icon + "Download Brochure (PDF)" button.
+8. **Sponsor/Exhibitor tier grid** — grouped by tier (Platinum/Gold/Silver) with logo placeholders.
+9. **Pricing/registration table** — category rows (Student / Academic / Industry / Virtual) × early-bird vs regular pricing columns, with a "Register" button per row.
+10. **Scrolling theme banner** — a slim horizontally auto-scrolling ticker strip stating the conference theme/tagline, per the wireframe's "Theme (Scrolling)" element.
+
+---
+
+## 3. SITE MAP / NAVIGATION
+
+Top navigation (per the approved wireframe):
+`Home | Submit Abstract | Itinerary | Register | Contact`
+
+Secondary/utility items surfaced via a "More"/mega-menu or a secondary row (also per wireframe): `OCM & Speaker | Program | Brochure | Venue | Exhibitor & Sponsor | T&C | FAQ | Guidelines`
+
+Recommend structuring it as: a **primary navbar** with the 5 core items, plus a **"Conference Info" dropdown** in the navbar containing OCM & Speaker, Program, Brochure, Venue, Exhibitor & Sponsor, Guidelines, T&C, FAQ — this keeps the wireframe's full item set without cluttering the header.
+
+---
+
+## 4. PAGE-BY-PAGE BUILD SPEC
+
+### 4.1 HOME PAGE
+
+Build in this exact vertical order, matching the wireframe:
+
+1. **Navbar** (sticky) — conference logo/name on left (distinct sub-brand mark that visually says "part of Stream Conferences," e.g., a small "A Stream Conferences Event" tag under/beside the logo), nav items, theme toggle, primary CTA button "Register Now."
+
+2. **Conference Banner** — full-width hero banner image/graphic representing the event, with an overlaid content panel: conference title, one-line theme/tagline, and two CTAs ("Submit Abstract" primary, "Register" secondary).
+
+3. **Conference Title + Date & Venue strip** — a prominent info bar directly under/within the hero: Conference full name, dates (e.g., "March 12–14, 2027"), venue/city/country, with icons (calendar icon, pin icon).
+
+4. **Countdown Timer** — "Conference Starts In" heading + the 4-tile Days/Hours/Minutes/Seconds component, centered, visually prominent.
+
+5. **Welcome Note** — a short welcome message block (organizing committee chair photo placeholder + 2–3 paragraph welcome letter inviting delegates, referencing the conference theme and Stream Conferences' mission of bridging academia, industry, and clinical practice).
+
+6. **Tracks section** — heading "Conference Tracks," pill/card list of subject tracks pulled from the content doc's categories:
+   - Medical & Clinical Sciences
+   - Pharmaceutical & Life Sciences
+   - Engineering & Technology
+   - Academic & Research
+   - Science & Medical Technologies
+   Each as a card with a short 1-line description and an icon.
+
+7. **Event Calendar widget** — showing key dates at a glance (submission deadlines, registration deadline, event dates — pull from Abstract Guidelines "Important Dates" in Section 5 below).
+
+8. **Media Partner section** — heading "Media Partners," logo grid/strip of partner placeholders (static grid or slow auto-scroll, distinct from the scrolling theme banner).
+
+9. **Scrolling Theme banner** — slim ticker strip with the conference tagline/theme text scrolling continuously (e.g., "★ Advancing Science Together ★ Connecting Minds, Advancing Science ★ ..."), placed as a visual divider between sections.
+
+10. **Blog Tag / related-insights strip** — small horizontal section: "From the Stream Conferences Blog" with 2–3 linked article snippets/tags pointing back to the corporate site's blog.
+
+11. **Social Media Tag section** — row of social icons (LinkedIn, X/Twitter, Instagram, YouTube) with a short "Follow the conversation #ICMLHS2026" line.
+
+12. **Contact Details band** — quick-contact strip (organizing secretariat email + phone) with a "Contact Us" button linking to the Contact page.
+
+13. **Footer** — same structural pattern as corporate site footer, but scoped to this event (quick links to Program, Register, Venue, Brochure; "An event by Stream Conferences" with link back to the corporate domain).
+
+---
+
+### 4.2 SUBMIT ABSTRACT PAGE
+
+Use this content, structured into clearly scannable sections (headings, numbered lists, and an accordion where helpful):
+
+**Page hero:** "Abstract Submission Guidelines"
+**Intro:** Stream Conferences invites researchers, clinicians, academicians, and industry leaders to submit original abstracts for oral, poster, and virtual presentations at our upcoming global events. All submissions undergo a rigorous double-blind peer review by our Scientific Advisory Board to ensure high academic and professional standards.
+
+**1. Important Dates** (render as a timeline or date-card row — feed the same dates into the homepage Calendar widget):
+- Early-Bird Abstract Submission Deadline: [Date]
+- Final Abstract Submission Deadline: [Date]
+- Notification of Acceptance: Within 5–7 business days after submission
+- Presenter Registration Deadline: [Date]
+
+**2. Submission Categories & Tracks** — reuse the Tracks pill component:
+Medical & Clinical Sciences · Pharmaceutical & Life Sciences · Engineering & Technology · Academic & Research · Science & Medical Technologies
+
+**3. Presentation Formats** (4 cards):
+- Keynote / Plenary Talk — reserved for distinguished speakers and senior authorities (25–30 minutes).
+- Oral Presentation — standard research presentation (15–20 minutes, including Q&A).
+- Poster Presentation — visual display during dedicated poster sessions with live interactive Q&A.
+- Virtual / Online Presentation — recorded or live-streamed presentation for remote delegates.
+
+**4. Abstract Formatting Requirements** (structured checklist/spec block):
+- Title: Maximum 25 words. Concise, descriptive, Title Case.
+- Author Details: Full names, institutional affiliations, city, country, and email of presenting author and co-authors; mark corresponding/presenting author with an asterisk (*).
+- Word Limit: 250–350 words (excluding title, authors, affiliations).
+- Keywords: 3–6 relevant keywords, semicolon-separated.
+- Core Structure: Background/Objectives · Methods/Methodology · Results/Findings · Conclusion/Significance (briefly describe each, as in the source content).
+
+**5. Submission Terms & Conditions** (accordion or bullet list):
+- Originality — must be unpublished original research.
+- Ethics Approval — human/animal studies must confirm compliance and institutional approval.
+- Registration Requirement — at least one author must register to present and be published.
+- Commercial Bias — promotional/commercial abstracts without scientific merit will be rejected.
+
+**6. How to Submit** (numbered step component, 4 steps):
+1. Prepare your abstract using the standard Stream Conferences Abstract Template (.docx format) — include a "Download Template" button.
+2. Access the online submission portal via the "Submit Abstract" button on this page.
+3. Fill out the required author information and select your primary presentation track and format.
+4. Upload your abstract document and receive an automated confirmation email with your unique Submission ID.
+
+**Primary CTA:** A prominent "Start Your Submission" button opening a multi-step submission form (Author Info → Track/Format Selection → File Upload → Review & Submit) or, if the tool doesn't support file upload flows, a clear form to `abstracts@streamconferences.com` with mocked submission handling.
+
+Footer note: For inquiries or technical support regarding abstract submissions, contact abstracts@streamconferences.com.
+
+---
+
+### 4.3 ITINERARY / PROGRAM PAGE
+
+- Multi-day tabbed schedule (Day 1 / Day 2 / Day 3 tabs) showing a time-blocked agenda: Registration & Welcome, Keynote Addresses, Interactive Technical Sessions, Poster Sessions, Specialized Symposiums & Workshops, Networking breaks, Closing Ceremony — pulled conceptually from the "Conference Experience" categories in the corporate content.
+- Each agenda item: time, title, speaker name placeholder, room/track tag.
+- Include a "Download Full Program (PDF)" button (Brochure-style download card).
+
+### 4.4 OCM & SPEAKER PAGE
+
+- **Organizing Committee Members (OCM)** grid: photo, name, title/institution, short bio — using the Speaker/OCM Card component.
+- **Keynote & Invited Speakers** grid: same card style, grouped separately, with a "View Full Bio" expandable toggle.
+
+### 4.5 PROGRAM PAGE
+(If separated from Itinerary): a structured, printable-style schedule overview plus links to individual session/track pages if needed. Otherwise merge with 4.3 — builder's choice, but the nav item must resolve to a working page.
+
+### 4.6 BROCHURE PAGE
+- Simple, focused page: conference cover/brochure image preview, key highlights bullet list (why attend), and a large "Download Brochure (PDF)" button (Downloadable-brochure card component).
+
+### 4.7 VENUE PAGE
+- Venue name, address, embedded map placeholder, venue photo gallery (reuse gallery/carousel styling), "Getting There" section (airport, transit tips), and a nearby-hotels card grid (name, distance, "Book" placeholder link).
+
+### 4.8 EXHIBITOR & SPONSOR PAGE
+- Sponsorship tiers (Platinum/Gold/Silver/Exhibitor) using the Sponsor/Exhibitor tier grid component, each tier listing benefits.
+- "Become a Sponsor" CTA form (Company Name, Contact Name, Email, Phone, Tier of Interest dropdown, Message) routed conceptually to partners@streamconferences.com.
+- Current sponsor logo showcase (placeholder logos grouped by tier).
+
+### 4.9 REGISTER PAGE
+- Registration/pricing table (Pricing/registration table component): rows for Student, Academic, Industry Delegate, Virtual Attendee; columns for Early-Bird and Regular pricing; each row has a "Register" button.
+- Below the table: what's included checklist (conference kit, proceedings access, meals, certificate, etc. — mark as placeholder/illustrative).
+- Registration form (multi-step or single form): Full Name, Email, Phone, Institution/Organization, Country, Registration Category (dropdown matching pricing table), Presenting Abstract? (yes/no + Submission ID field if yes), Payment section placeholder.
+
+### 4.10 T&C PAGE
+- Standard legal-style page: headed sections (Registration & Payment Terms, Cancellation & Refund Policy, Abstract & Publication Rights, Code of Conduct, Liability, Force Majeure) — write reasonable generic placeholder legal copy for a conference of this type, clearly marked as sample text to be reviewed by legal counsel.
+
+### 4.11 FAQ PAGE
+
+Render as a categorized Accordion using this exact content:
+
+**Eligibility & General**
+- Who is eligible to submit an abstract? — Abstract submissions are open to researchers, clinical physicians, academicians, industry professionals, postdoctoral fellows, and students from around the world. We welcome submissions across all career stages and multidisciplinary sectors aligned with our conference tracks.
+- Can I submit more than one abstract? — Yes. You may submit multiple abstracts. However, each accepted abstract must have a unique registered author to present the work at the conference to avoid scheduling conflicts.
+- Is there an abstract submission fee? — No. Submitting an abstract for review by our Scientific Advisory Board is completely free. Registration fees apply only after your abstract has been accepted for presentation.
+
+**Format & Submission Process**
+- What is the word limit and structure for the abstract? — Abstracts must be between 250 and 350 words (excluding title, author list, and affiliations). They should follow a structured format including Background/Objectives, Methods, Results, and Conclusion/Significance.
+- Can I submit an abstract that has already been published? — No. We require original research that has not been published or accepted for publication in a peer-reviewed journal prior to the date of the conference.
+- Can I edit my abstract after submitting it? — You can request modifications to your submitted abstract prior to the final submission deadline by contacting our team with your Submission ID. Revisions requested after the deadline will be subject to editorial review.
+
+**Review & Acceptance**
+- How are abstracts evaluated? — All submissions undergo a double-blind peer review by experts on our Scientific Advisory Board. Evaluation criteria include scientific rigor, originality, relevance to the track, clarity of methodology, and potential impact.
+- When and how will I be notified of the decision? — Notifications of acceptance or rejection are sent via email within 5 to 7 business days following your submission. Please ensure your contact details are accurate and check your spam/junk folder if you have not received an update.
+- Will accepted abstracts be published? — Yes. All accepted and presented abstracts will be published in the official Conference Proceedings digital book, complete with an assigned DOI/ISBN where applicable.
+
+**Presentation & Registration**
+- Do I need to register for the conference right away to submit? — No. You do not need to register before submitting your abstract. You only need to register after receiving your formal acceptance notification.
+- What happens if I cannot attend the conference in person? — We offer a dedicated Virtual Presentation option. Remote presenters can participate live online or submit a pre-recorded session, allowing their work to be included in the proceedings and presented to the global audience.
+- What if I need a visa to attend in person? — Once your abstract is accepted and your conference registration is completed, our organizing committee will issue an Official Acceptance & Visa Invitation Letter to support your visa application.
+
+End with: "Need Further Assistance? If you have additional questions regarding abstract guidelines or encounter technical issues during submission, please reach out to our scientific coordination team at abstracts@streamconferences.com." — with a "Contact Us" button.
+
+### 4.12 GUIDELINES PAGE
+- General delegate guidelines: presentation day checklist, poster size/format specs (state reasonable standard specs, e.g., A0/A1 portrait, marked as placeholder), code of conduct summary, AV/equipment provided, dress code note. Keep tone practical and scannable (short bullet lists, not paragraphs).
+
+### 4.13 CONTACT PAGE
+
+Use this exact content (same as corporate site's contact info, since it's one organization):
+
+**Heading:** Get in Touch with Stream Conferences
+**Intro:** Whether you are looking to present groundbreaking research, inquire about conference registration, explore healthcare publishing opportunities, or discuss corporate sponsorship, our dedicated team is here to assist you. Reach out to the appropriate department below, and a representative will respond within 24 to 48 business hours.
+
+**Departmental contact cards:**
+1. General & Delegate Inquiries — info@streamconferences.com
+2. Abstract Submissions & Speaker Desk — abstracts@streamconferences.com
+3. Publishing & Research Indexing — publishing@streamconferences.com
+4. Sponsorships & Strategic Partnerships — partners@streamconferences.com
+
+**Global Headquarters:**
+Stream Conferences
+[Insert Business Address / Building Name]
+[Insert City, State/Province, Country, Postal Code]
+Phone: +1 [Insert Phone Number]
+Business Hours: Monday – Friday: 9:00 AM – 6:00 PM (EST)
+
+**"Send Us a Message" form:**
+Full Name, Email Address, Phone Number, Inquiry Type (dropdown: General / Abstract Submission / Publishing / Sponsorship), Conference Name (if applicable) — pre-fill with this conference's name, Message (textarea). Submit → success confirmation state.
+
+---
+
+## 5. RESPONSIVE & INTERACTION NOTES
+- Sticky sub-navigation (Program/Speakers/Venue/Register quick-jump) should appear once the visitor scrolls past the hero, with scroll-spy highlighting.
+- Countdown timer must update live (client-side interval) and gracefully show "Conference is Live" / "Conference Concluded" states when the date passes.
+- Scrolling theme banner and media-partner strip both pause on hover/touch and respect `prefers-reduced-motion`.
+- All forms need clear validation, loading, and success/error states.
+- Mobile: collapse the "Conference Info" dropdown into an expandable section within the hamburger drawer; keep Register CTA persistently visible (e.g., sticky bottom bar on mobile with "Register Now").
+
+## 6. TECH NOTES FOR THE BUILDER TOOL
+- Prefer React + Tailwind (or platform default), using the identical theme/token file as the corporate-site build so the two projects can literally share a config.
+- Mock all dynamic data (schedule, speakers, sponsors, pricing) as structured JSON so a real backend/CMS can be swapped in later.
+- Every page must be reachable both from the primary navbar and the "Conference Info" dropdown as specified in Section 3.
+- Add a small persistent footer/header badge "An event by Stream Conferences" linking back to the corporate domain, reinforcing the parent-brand relationship between the two sites.
+
+---
+
+**Build the complete site now, page by page, in the order listed in Section 4, applying the design system in Section 2 with a working light/dark toggle that matches the corporate site.**
