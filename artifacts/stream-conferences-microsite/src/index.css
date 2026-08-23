@@ -124,6 +124,14 @@
 .container-wide { width: min(1180px, calc(100% - 40px)); margin-inline: auto; }
 .section-pad { padding-block: clamp(72px, 10vw, 142px); }
 .line-grid { background-image: linear-gradient(to right, hsl(var(--border) / .35) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border) / .35) 1px, transparent 1px); background-size: 40px 40px; }
+.gallery-tile { background-color: hsl(var(--primary)); background-image: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / .78) 55%, hsl(var(--secondary) / .6) 100%); }
+.gallery-exchange { background-image: linear-gradient(135deg, hsl(216 52% 22%) 0%, hsl(187 78% 31%) 100%); }
+.gallery-poster { background-image: linear-gradient(145deg, hsl(216 52% 22%) 0%, hsl(29 72% 35%) 100%); }
+.gallery-network { background-image: linear-gradient(135deg, hsl(216 52% 22%) 0%, hsl(216 39% 31%) 100%); }
+.gallery-scholars { background-image: linear-gradient(135deg, hsl(187 78% 26%) 0%, hsl(216 52% 22%) 100%); }
+.gallery-publishing { background-image: linear-gradient(135deg, hsl(29 72% 35%) 0%, hsl(216 52% 22%) 100%); }
+.gallery-tile::after { content: ''; position: absolute; inset: 0; opacity: .32; background-image: linear-gradient(120deg, transparent 0 35%, hsl(var(--accent) / .28) 35.3% 35.7%, transparent 36%), linear-gradient(to right, hsl(var(--primary-foreground) / .08) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--primary-foreground) / .08) 1px, transparent 1px); background-size: auto, 42px 42px, 42px 42px; pointer-events: none; }
+.gallery-tile > * { z-index: 1; }
 .hero-grid { background-image: linear-gradient(to right, hsl(42 35% 96% / .08) 1px, transparent 1px), linear-gradient(to bottom, hsl(42 35% 96% / .08) 1px, transparent 1px); background-size: 64px 64px; }
 .dark .hero-grid { background-image: linear-gradient(to right, hsl(42 30% 93% / .07) 1px, transparent 1px), linear-gradient(to bottom, hsl(42 30% 93% / .07) 1px, transparent 1px); }
 .text-balance { text-wrap: balance; }
