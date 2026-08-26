@@ -121,7 +121,7 @@
 .site-grain::after { content: ''; position: fixed; inset: 0; pointer-events: none; opacity: .035; z-index: 50; background-image: repeating-linear-gradient(0deg, transparent 0, transparent 3px, hsl(var(--foreground) / .06) 4px), repeating-linear-gradient(90deg, transparent 0, transparent 5px, hsl(var(--foreground) / .035) 6px); }
 .display { font-family: 'Space Grotesk', sans-serif; }
 .mono { font-family: var(--app-font-mono); }
-.container-wide { width: min(1180px, calc(100% - 40px)); margin-inline: auto; }
+.container-wide { width: min(1600px, calc(100% - 48px)); margin-inline: auto; }
 .section-pad { padding-block: clamp(72px, 10vw, 142px); }
 .line-grid { background-image: linear-gradient(to right, hsl(var(--border) / .35) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border) / .35) 1px, transparent 1px); background-size: 40px 40px; }
 .gallery-tile { background-color: hsl(var(--primary)); background-image: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / .78) 55%, hsl(var(--secondary) / .6) 100%); }
@@ -149,8 +149,13 @@
 .form-field:focus { border-color: hsl(var(--secondary)); box-shadow: 0 0 0 3px hsl(var(--secondary) / .14); outline: none; }
 .ornament { position: relative; }
 .ornament::before { content: ''; position: absolute; width: 68px; height: 3px; background: hsl(var(--accent)); top: -16px; left: 0; }
+.page-intro { background: hsl(var(--background)); color: hsl(var(--foreground)); border-bottom: 1px solid hsl(var(--border)); position: relative; overflow: hidden; }
+.page-intro::before { content: ''; position: absolute; inset: 0; opacity: 0.05; background-image: radial-gradient(circle at 50% 50%, hsl(var(--accent)) 1px, transparent 1px); background-size: 24px 24px; pointer-events: none; }
+.page-title { font: 700 clamp(32px, 5.5vw, 56px)/1.08 'Space Grotesk', sans-serif; letter-spacing: -.04em; max-width: 950px; margin: 0; color: hsl(var(--foreground)); }
+.page-copy { max-width: 850px; font-size: clamp(15px, 2.5vw, 18px); line-height: 1.7; color: hsl(var(--muted-foreground)); margin: 24px 0 0; padding-left: 24px; border-left: 3px solid hsl(var(--accent)); font-style: italic; }
+.bg-grid { background-image: linear-gradient(currentColor / .02 1px, transparent 1px), linear-gradient(90deg, currentColor / .02 1px, transparent 1px); background-size: 32px 32px; }
 @media (max-width: 767px) {
-  .container-wide { width: min(100% - 32px, 1180px); }
+  .container-wide { width: min(100% - 32px, 1600px); }
   .section-pad { padding-block: 72px; }
 }
 @media (prefers-reduced-motion: reduce) {
