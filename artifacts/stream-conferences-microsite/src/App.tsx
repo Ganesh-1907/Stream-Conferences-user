@@ -37,13 +37,40 @@ import {
   ExternalLink,
   ChevronLeft,
 } from 'lucide-react';
-import { Link, Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
+import { Link, Route, Switch, Router as WouterRouter, useLocation, useParams } from 'wouter';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 
 const queryClient = new QueryClient();
+
+const SERVER_ORIGIN = 'http://localhost:7867';
+const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
+
+const getStartAndEndDates = (eventDateStr?: string, dayRangeStr?: string) => {
+  if (!eventDateStr) return { start: null, end: null };
+  const start = new Date(eventDateStr);
+  if (isNaN(start.getTime())) return { start: null, end: null };
+  
+  let end = new Date(start);
+  if (dayRangeStr) {
+    const parts = dayRangeStr.split(/[-–—]/).map(p => p.trim());
+    if (parts.length > 1) {
+      const endDay = parseInt(parts[1], 10);
+      if (!isNaN(endDay)) {
+        if (endDay >= start.getDate()) {
+          end.setDate(endDay);
+        } else {
+          end.setMonth(start.getMonth() + 1);
+          end.setDate(endDay);
+        }
+      }
+    }
+  }
+  return { start, end };
+};
+
 const conferenceName = 'International Conference on Medical, Life & Health Sciences';
 const conferenceCode = 'ICMLHS 2027';
 const eventDate = 'March 12–14, 2027';
@@ -87,11 +114,6 @@ const faqs = [
   ['Do I need to register before submitting?', 'No. Submit first. You only need to register after receiving your formal acceptance notification.'],
   ['What if I cannot attend in person?', 'We offer a Virtual Presentation option. Remote presenters may participate live online or submit a pre-recorded session.'],
   ['What if I need a visa?', 'Once your abstract is accepted and registration is complete, the organizing committee will issue an Official Acceptance & Visa Invitation Letter.'],
-];
-const pastConferences = [
-  { year: '2025', title: 'Global Summit on Clinical Translation', city: 'Singapore · Hybrid', focus: 'Clinical practice, translational medicine, and healthcare systems' },
-  { year: '2024', title: 'International Forum on Life Science Innovation', city: 'Berlin · Germany', focus: 'Biotech, pharma, research publishing, and emerging scholars' },
-  { year: '2023', title: 'World Congress of Engineering & Medical Technology', city: 'Dubai · UAE', focus: 'Engineering, medical devices, digital health, and applied science' },
 ];
 const galleryItems = [
   ['Keynote stage', 'Ideas with a clear line of sight to impact.', 'stage'],
@@ -141,29 +163,36 @@ const speakerImages: Record<string, string> = {
   'Sarah Jenkins': 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80',
 };
 
-const blogImages = [
-  'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=600&q=80'
-];
-
-const insights = [
-  { label: 'FIELD NOTE · 08 MIN', title: 'What happens when disciplines stop working in parallel?', copy: 'A working brief on shared language, better questions, and the collaborations waiting in the middle.' },
-  { label: 'PROCEEDINGS', title: 'The evidence is in the exchange.', copy: 'Selected findings from our latest rooms.' },
-  { label: 'JOURNAL', title: 'Signals worth following.', copy: 'A new editorial surface is taking shape.' },
-];
-
 type Status = 'upcoming' | 'past';
-type EventItem = { id: string; day: string; month: string; type: 'Conference' | 'Webinar'; title: string; location: string; date: Status; speaker?: string };
+type EventItem = {
+  id: string;
+  eventId?: string;
+  day: string;
+  month: string;
+  type: 'Conference' | 'Webinar';
+  title: string;
+  location: string;
+  date: Status;
+  eventDate?: string;
+  slug?: string;
+  speaker?: string;
+  description?: string;
+  startTime?: string;
+  endTime?: string;
+  logoUrl?: string;
+  bannerUrl?: string;
+  brochureUrl?: string;
+  fees?: { label: string; amount: number }[];
+  organizerContact?: { name: string; email: string; phone: string };
+};
 
 const events: EventItem[] = [
-  { id: 'med-27', day: '12–14', month: 'MAR 27', type: 'Conference', title: 'International Conference on Medical, Life & Health Sciences', location: 'Boston, Massachusetts · Hybrid', date: 'upcoming' },
-  { id: 'ai-27', day: '08–09', month: 'MAY 27', type: 'Conference', title: 'Applied Intelligence & Emerging Technologies Forum', location: 'Singapore · In person', date: 'upcoming' },
-  { id: 'web-26', day: '22', month: 'OCT 26', type: 'Webinar', title: 'Precision systems: turning data into better decisions', location: 'Online · 14:00 UTC', date: 'upcoming', speaker: 'Dr. Amina Rao' },
-  { id: 'climate-26', day: '04', month: 'DEC 26', type: 'Webinar', title: 'Engineering resilient cities under pressure', location: 'Online · 16:00 UTC', date: 'upcoming', speaker: 'Prof. Daniel Okafor' },
-  { id: 'past-25', day: '18–20', month: 'NOV 25', type: 'Conference', title: 'Global Forum on Research Translation', location: 'Copenhagen · Hybrid', date: 'past' },
-  { id: 'past-web', day: '07', month: 'JUN 25', type: 'Webinar', title: 'The evidence gap: building trust in public health', location: 'Online · 13:00 UTC', date: 'past', speaker: 'Dr. Leila Morgan' },
+  { id: 'med-27', day: '12–14', month: 'MAR 27', type: 'Conference', title: 'International Conference on Medical, Life & Health Sciences', location: 'Boston, Massachusetts · Hybrid', date: 'upcoming', eventDate: '2027-03-12', slug: 'icmlhs-2027' },
+  { id: 'ai-27', day: '08–09', month: 'MAY 27', type: 'Conference', title: 'Applied Intelligence & Emerging Technologies Forum', location: 'Singapore · In person', date: 'upcoming', eventDate: '2027-05-08', slug: 'applied-intelligence-2027' },
+  { id: 'web-26', day: '22', month: 'OCT 26', type: 'Webinar', title: 'Precision systems: turning data into better decisions', location: 'Online · 14:00 UTC', date: 'upcoming', eventDate: '2026-10-22', slug: 'precision-systems', speaker: 'Dr. Amina Rao' },
+  { id: 'climate-26', day: '04', month: 'DEC 26', type: 'Webinar', title: 'Engineering resilient cities under pressure', location: 'Online · 16:00 UTC', date: 'upcoming', eventDate: '2026-12-04', slug: 'resilient-cities', speaker: 'Prof. Daniel Okafor' },
+  { id: 'past-25', day: '18–20', month: 'NOV 25', type: 'Conference', title: 'Global Forum on Research Translation', location: 'Copenhagen · Hybrid', date: 'past', eventDate: '2025-11-18', slug: 'global-forum-2025' },
+  { id: 'past-web', day: '07', month: 'JUN 25', type: 'Webinar', title: 'The evidence gap: building trust in public health', location: 'Online · 13:00 UTC', date: 'past', eventDate: '2025-06-07', slug: 'evidence-gap', speaker: 'Dr. Leila Morgan' },
 ];
 
 function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?: Status; onlyType?: 'Conference' | 'Webinar' }) {
@@ -238,10 +267,14 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
         {visible.length ? (
           visible.map((e) => (
             <article className="card-lift flex gap-5 items-center p-5 border border-[hsl(var(--border))] bg-[hsl(var(--card))] rounded-2xl" key={e.id}>
-              <div className="flex flex-col items-center justify-center shrink-0 w-16 h-16 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded-xl text-center">
-                <b className="text-xl font-bold tracking-tight display leading-none">{e.day}</b>
-                <span className="text-[9px] font-bold tracking-widest uppercase mt-1 label leading-none">{e.month}</span>
-              </div>
+              {e.logoUrl ? (
+                <img src={mediaUrl(e.logoUrl)} alt={`${e.title} logo`} className="shrink-0 w-16 h-16 rounded-xl border border-[hsl(var(--border))] bg-white object-contain p-1" />
+              ) : (
+                <div className="flex flex-col items-center justify-center shrink-0 w-16 h-16 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded-xl text-center">
+                  <b className="text-xl font-bold tracking-tight display leading-none">{e.day}</b>
+                  <span className="text-[9px] font-bold tracking-widest uppercase mt-1 label leading-none">{e.month}</span>
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <span className="inline-block text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-[hsl(var(--secondary)/.12)] text-[hsl(var(--secondary))] label mb-2 leading-none">
                   {e.type}
@@ -259,10 +292,34 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
                     </>
                   )}
                 </div>
+                {e.eventDate && (() => {
+                  const { start, end } = getStartAndEndDates(e.eventDate, e.day);
+                  const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                  const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                  return (
+                    <>
+                      <div className="flex items-center gap-1.5 mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                        <CalendarDays size={12} className="shrink-0" />
+                        <span>{startFormatted}{endFormatted ? ` – ${endFormatted}` : ''}</span>
+                      </div>
+                      {(e.startTime || e.endTime) && (
+                        <div className="flex items-center gap-1.5 mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                          <Clock3 size={12} className="shrink-0" />
+                          <span>{e.startTime || '—'} – {e.endTime || '—'}</span>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
-              <Link href="/contact" className="ml-auto grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors" aria-label={`View ${e.title}`}>
-                <ArrowDownRight size={16} />
-              </Link>
+              <div className="ml-auto flex items-center gap-2">
+                <Link href={`/${e.type === 'Conference' ? 'conference' : 'webinar'}/${encodeURIComponent(e.eventId || e.slug || e.id)}`} className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--border))] px-3.5 py-2 text-xs font-bold hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors" aria-label={`View details for ${e.title}`}>
+                  Details
+                </Link>
+                <Link target="_blank" rel="noopener noreferrer" href={`/register?event=${encodeURIComponent(e.eventId || e.slug || e.id)}`} className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3.5 py-2 text-xs font-bold hover:opacity-90 transition-opacity" aria-label={`Register for ${e.title}`}>
+                  Register <ArrowRight size={13} />
+                </Link>
+              </div>
             </article>
           ))
         ) : (
@@ -329,9 +386,9 @@ function APIProvider({ children }: { children: ReactNode }) {
     const fetchData = async () => {
       try {
         const [confRes, webRes, blogRes] = await Promise.all([
-          fetch('http://localhost:3000/api/conferences'),
-          fetch('http://localhost:3000/api/webinars'),
-          fetch('http://localhost:3000/api/blogs')
+          fetch('http://localhost:7867/api/conferences'),
+          fetch('http://localhost:7867/api/webinars'),
+          fetch('http://localhost:7867/api/blogs')
         ]);
         
         if (!confRes.ok || !webRes.ok || !blogRes.ok) {
@@ -365,25 +422,45 @@ function APIProvider({ children }: { children: ReactNode }) {
   const eventsList = useMemo(() => {
     const normalizedConfs: EventItem[] = conferences.map((c: any) => ({
       id: c._id || c.id,
+      eventId: c.eventId,
       day: c.day,
       month: c.month,
       type: 'Conference',
       title: c.title,
       location: c.location,
-      date: c.date,
-      description: c.description
+      date: c.eventDate ? (new Date(c.eventDate).getTime() >= Date.now() ? 'upcoming' : 'past') : c.date,
+      eventDate: c.eventDate,
+      slug: c.slug,
+      description: c.description,
+      startTime: c.startTime,
+      endTime: c.endTime,
+      logoUrl: c.logoUrl,
+      bannerUrl: c.bannerUrl,
+      brochureUrl: c.brochureUrl,
+      fees: c.fees,
+      organizerContact: c.organizerContact
     }));
 
     const normalizedWebs: EventItem[] = webinars.map((w: any) => ({
       id: w._id || w.id,
+      eventId: w.eventId,
       day: w.day,
       month: w.month,
       type: 'Webinar',
       title: w.title,
       location: w.location,
-      date: w.date,
+      date: w.eventDate ? (new Date(w.eventDate).getTime() >= Date.now() ? 'upcoming' : 'past') : w.date,
+      eventDate: w.eventDate,
+      slug: w.slug,
       speaker: w.speaker,
-      description: w.description
+      description: w.description,
+      startTime: w.startTime,
+      endTime: w.endTime,
+      logoUrl: w.logoUrl,
+      bannerUrl: w.bannerUrl,
+      brochureUrl: w.brochureUrl,
+      fees: w.fees,
+      organizerContact: w.organizerContact
     }));
 
     const merged = [...normalizedConfs, ...normalizedWebs];
@@ -394,14 +471,12 @@ function APIProvider({ children }: { children: ReactNode }) {
   }, [conferences, webinars]);
 
   const insightsList = useMemo(() => {
-    if (blogs.length === 0) {
-      return insights;
-    }
     return blogs.map((b: any) => ({
       label: b.label || 'FIELD NOTE',
       title: b.title,
       copy: b.copy,
-      content: b.content
+      content: b.content,
+      bannerUrl: mediaUrl(b.bannerUrl || '')
     }));
   }, [blogs]);
 
@@ -438,7 +513,6 @@ function SiteHeader() {
       items: [
         ['/conferences', 'Conferences Calendar', 'Browse upcoming and past scientific conferences'],
         ['/webinars', 'Webinars Calendar', 'Join our digital panels and online clinical seminars'],
-        ['/past-conferences', 'Past Editions', 'Summaries and proceedings of past convocations'],
         ['/gallery', 'Event Gallery', 'Photos and highlights of scientific convocations']
       ]
     },
@@ -514,32 +588,40 @@ function SiteHeader() {
                   </button>
                   {isOpen && (
                     <div
-                      className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 grid gap-1.5 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 shadow-2xl shadow-[hsl(var(--primary)/.13)] transition-all duration-200 ${
-                        group.id === 'conference-info' ? 'w-[520px] grid-cols-2' :
-                        group.id === 'media-support' ? 'w-[520px] grid-cols-2' :
-                        'w-[280px] grid-cols-1'
+                      className={`absolute top-full left-1/2 -translate-x-1/2 pt-2 transition-all duration-200 z-50 ${
+                        group.id === 'conference-info' ? 'w-[520px]' :
+                        group.id === 'media-support' ? 'w-[520px]' :
+                        'w-[280px]'
                       }`}
                       data-testid={`dropdown-nav-group-${group.id}`}
                     >
-                      {group.items.map(([href, label, desc]) => (
-                        <Link
-                          key={href}
-                          href={href}
-                          onClick={() => setOpenDropdown(null)}
-                          className={`group/item flex flex-col gap-1 rounded-xl p-2.5 transition-colors hover:bg-[hsl(var(--muted)/.65)] ${location === href ? 'bg-[hsl(var(--muted)/.45)] text-[hsl(var(--secondary))]' : ''}`}
-                          data-testid={`link-nav-item-${label.toLowerCase().replaceAll(' ', '-')}`}
-                        >
-                          <div className="flex items-center justify-between text-[13px] font-bold text-[hsl(var(--foreground))] transition-colors group-hover/item:text-[hsl(var(--secondary))]">
-                            <span className={location === href ? 'text-[hsl(var(--secondary))]' : ''}>{label}</span>
-                            <ChevronRight size={13} className="opacity-0 -translate-x-1 transition-all group-hover/item:opacity-100 group-hover/item:translate-x-0" />
-                          </div>
-                          {desc && (
-                            <span className="text-[11px] leading-snug text-[hsl(var(--muted-foreground))]">
-                              {desc}
-                            </span>
-                          )}
-                        </Link>
-                      ))}
+                      <div
+                        className={`grid gap-1.5 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 shadow-2xl shadow-[hsl(var(--primary)/.13)] ${
+                          group.id === 'conference-info' ? 'grid-cols-2' :
+                          group.id === 'media-support' ? 'grid-cols-2' :
+                          'grid-cols-1'
+                        }`}
+                      >
+                        {group.items.map(([href, label, desc]) => (
+                          <Link
+                            key={href}
+                            href={href}
+                            onClick={() => setOpenDropdown(null)}
+                            className={`group/item flex flex-col gap-1 rounded-xl p-2.5 transition-colors hover:bg-[hsl(var(--muted)/.65)] ${location === href ? 'bg-[hsl(var(--muted)/.45)] text-[hsl(var(--secondary))]' : ''}`}
+                            data-testid={`link-nav-item-${label.toLowerCase().replaceAll(' ', '-')}`}
+                          >
+                            <div className="flex items-center justify-between text-[13px] font-bold text-[hsl(var(--foreground))] transition-colors group-hover/item:text-[hsl(var(--secondary))]">
+                              <span className={location === href ? 'text-[hsl(var(--secondary))]' : ''}>{label}</span>
+                              <ChevronRight size={13} className="opacity-0 -translate-x-1 transition-all group-hover/item:opacity-100 group-hover/item:translate-x-0" />
+                            </div>
+                            {desc && (
+                              <span className="text-[11px] leading-snug text-[hsl(var(--muted-foreground))]">
+                                {desc}
+                              </span>
+                            )}
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -586,7 +668,7 @@ function Footer() {
   return <footer className="border-t border-[hsl(var(--border))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]">
     <div className="container-wide grid gap-12 py-16 md:grid-cols-[1.5fr_1fr_1fr]">
       <div><div className="flex items-center gap-3"><img src="/logo.jpg" className="h-10 w-10 rounded-[11px] object-cover" alt="SC" /><span className="display text-lg font-bold">Stream Conferences</span></div><p className="mt-5 max-w-sm text-sm leading-7 text-[hsl(var(--primary-foreground)/.68)]">Connecting minds, advancing science. A high-credibility global platform for research, clinical practice, and industry.</p><a href="https://streamconferences.com" className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[hsl(var(--accent))]" data-testid="link-parent-brand">An event by Stream Conferences <ArrowUpRight size={15} /></a></div>
-      <div><p className="label text-[hsl(var(--accent))]">Explore</p><div className="mt-5 grid gap-3 text-sm text-[hsl(var(--primary-foreground)/.72)]"><Link href="/about" data-testid="link-footer-about">About Stream Conferences</Link><Link href="/program" data-testid="link-footer-program">Program</Link><Link href="/speakers" data-testid="link-footer-speakers">OCM & Speakers</Link><Link href="/gallery" data-testid="link-footer-gallery">Gallery</Link><Link href="/blog" data-testid="link-footer-blog">Blog</Link><Link href="/past-conferences" data-testid="link-footer-past-conferences">Past conferences</Link><Link href="/venue" data-testid="link-footer-venue">Venue</Link><Link href="/brochure" data-testid="link-footer-brochure">Brochure</Link></div></div>
+      <div><p className="label text-[hsl(var(--accent))]">Explore</p><div className="mt-5 grid gap-3 text-sm text-[hsl(var(--primary-foreground)/.72)]"><Link href="/about" data-testid="link-footer-about">About Stream Conferences</Link><Link href="/program" data-testid="link-footer-program">Program</Link><Link href="/speakers" data-testid="link-footer-speakers">OCM & Speakers</Link><Link href="/gallery" data-testid="link-footer-gallery">Gallery</Link><Link href="/blog" data-testid="link-footer-blog">Blog</Link><Link href="/venue" data-testid="link-footer-venue">Venue</Link><Link href="/brochure" data-testid="link-footer-brochure">Brochure</Link></div></div>
       <div><p className="label text-[hsl(var(--accent))]">Delegate desk</p><div className="mt-5 grid gap-3 text-sm text-[hsl(var(--primary-foreground)/.72)]"><a href="mailto:info@streamconferences.com" data-testid="link-footer-email">info@streamconferences.com</a><a href="mailto:abstracts@streamconferences.com" data-testid="link-footer-abstracts">abstracts@streamconferences.com</a><Link href="/contact" data-testid="link-footer-contact">Contact the secretariat</Link></div></div>
     </div>
     <div className="container-wide flex flex-col justify-between gap-3 border-t border-[hsl(var(--primary-foreground)/.15)] py-5 text-[11px] text-[hsl(var(--primary-foreground)/.55)] sm:flex-row"><span>© 2027 Stream Conferences. All rights reserved.</span><span>ICMLHS 2027 · Boston, USA</span></div>
@@ -625,7 +707,7 @@ function SectionTitle({ eyebrow, title, body, light = false }: { eyebrow: string
 function PageHero({ eyebrow, title, body }: { eyebrow: string; title: string; body: string; bgImage?: string }) {
   return (
     <section className="page-intro bg-grid">
-      <div className="container-wide section-pad reveal">
+      <div className="container-wide pt-12 pb-10 md:pt-16 md:pb-12 lg:pt-20 lg:pb-16 reveal">
         <div>
           <div className="label text-[hsl(var(--accent))]">{eyebrow}</div>
           <h1 className="page-title mt-5">{title}</h1>
@@ -728,9 +810,30 @@ function GallerySlider() {
 }
 
 function Home() {
-  const { insightsList } = useContext(APIContext);
+  const { conferences, webinars, insightsList } = useContext(APIContext);
   const [email, setEmail] = useState('');
   const [joined, setJoined] = useState(false);
+
+  const displayConferences = useMemo(() => {
+    const upcoming = conferences.filter((c: any) => {
+      if (c.eventDate) {
+        return new Date(c.eventDate).getTime() >= Date.now();
+      }
+      return c.date === 'upcoming';
+    });
+    return upcoming.length > 0 ? upcoming.slice(0, 3) : conferences.slice(0, 3);
+  }, [conferences]);
+
+  const displayWebinars = useMemo(() => {
+    const upcoming = webinars.filter((w: any) => {
+      if (w.eventDate) {
+        return new Date(w.eventDate).getTime() >= Date.now();
+      }
+      return w.date === 'upcoming';
+    });
+    return upcoming.length > 0 ? upcoming.slice(0, 3) : webinars.slice(0, 3);
+  }, [webinars]);
+
   return <Layout>
     <main>
       <section className="relative overflow-hidden bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]">
@@ -766,16 +869,203 @@ function Home() {
         </div>
       </section>
       <Countdown />
-      <section className="section-pad bg-[hsl(var(--card))]" id="welcome"><div className="container-wide grid gap-12 md:grid-cols-[.7fr_1.3fr] md:items-center"><div className="reveal"><div className="relative aspect-[4/5] max-w-[320px] overflow-hidden rounded-[22px] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-lg"><img src={speakerImages['Prof. Charles Sterling']} alt="Committee Chair" className="absolute inset-0 h-full w-full object-cover z-0" /><div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--primary)/.95)] via-[hsl(var(--primary)/.5)] to-transparent z-10" /><div className="relative z-20 flex h-full flex-col justify-between p-6"><span className="label text-[hsl(var(--accent))]">A welcome from the chair</span><div><p className="display text-2xl font-bold">Prof. Charles Sterling</p><p className="mt-1 text-sm text-[hsl(var(--primary-foreground)/.8)]">Chairperson · Boston Research Institute</p></div><span className="label text-[9px] text-[hsl(var(--primary-foreground)/.6)]">Scientific Committee · 2027</span></div></div></div><div className="reveal reveal-delay-1"><p className="label text-[hsl(var(--secondary))]">Welcome note</p><h2 className="display mt-5 max-w-2xl text-4xl font-bold leading-[1.03] tracking-[-.05em] md:text-6xl">A summit built for the handoff between <span className="text-[hsl(var(--secondary))]">insight</span> and impact.</h2><p className="mt-7 max-w-2xl text-base leading-8 text-[hsl(var(--muted-foreground))]">Welcome to {conferenceCode}, a focused meeting place for researchers, clinicians, academicians, and industry delegates who believe the best work does not end at publication.</p><p className="mt-5 max-w-2xl text-base leading-8 text-[hsl(var(--muted-foreground))]">Across three days, we will examine the methods, technologies, and partnerships moving medical and life sciences forward. Come with a question. Leave with a sharper one—and the people to pursue it with.</p><div className="mt-8 flex flex-wrap items-center gap-4 text-sm font-bold text-[hsl(var(--secondary))]"><span className="flex items-center gap-3"><Globe2 size={18} /> One global stage · many ways to contribute</span><Link href="/about" className="flex items-center gap-2 text-[hsl(var(--accent))]" data-testid="link-home-about">About Stream Conferences <ArrowUpRight size={15} /></Link></div></div></div></section>
+      
+      {/* Upcoming Conferences Section */}
+      <section className="section-pad bg-[hsl(var(--card))]" id="upcoming-events-conferences">
+        <div className="container-wide">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end mb-10">
+            <SectionTitle 
+              eyebrow="Upcoming conferences" 
+              title="Conclaves of global scale." 
+              body="Announcing the premier global gatherings for science, engineering, and academia." 
+            />
+            <Link href="/conferences" className="btn-main btn-quiet shrink-0" data-testid="link-home-view-conferences">
+              All Conferences <ArrowUpRight size={16} />
+            </Link>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {displayConferences.map((item, index) => {
+              const registerHref = `/register?event=${encodeURIComponent(item.eventId || item.slug || item._id)}`;
+              const detailsHref = `/conference/${encodeURIComponent(item.eventId || item.slug || item._id)}`;
+              return (
+                <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 h-full" data-testid={`card-home-conference-${index}`}>
+                  <div>
+                    <div className="flex items-start justify-between">
+                      {item.logoUrl ? (
+                        <img 
+                          src={mediaUrl(item.logoUrl)} 
+                          alt={`${item.title} logo`} 
+                          className="w-14 h-14 rounded-xl border border-[hsl(var(--border))] bg-white object-contain p-1.5 shrink-0" 
+                        />
+                      ) : (
+                        <div className="w-14 h-14 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex flex-col items-center justify-center text-center shrink-0">
+                          <Building2 size={24} />
+                        </div>
+                      )}
+                      <span className="inline-block text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-[hsl(var(--secondary)/.12)] text-[hsl(var(--secondary))] label">
+                        CONFERENCE
+                      </span>
+                    </div>
+                    <h3 className="display mt-5 text-lg font-bold leading-snug text-[hsl(var(--foreground))] line-clamp-2">
+                      {item.title}
+                    </h3>
+                    <div className="mt-5 space-y-2">
+                      <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
+                        <MapPin size={13} className="shrink-0 text-[hsl(var(--accent))]" />
+                        <span className="truncate">{item.location}</span>
+                      </div>
+                      {item.eventDate && (() => {
+                        const { start, end } = getStartAndEndDates(item.eventDate, item.day);
+                        const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                        const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                        return (
+                          <>
+                            <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
+                              <CalendarDays size={13} className="shrink-0 text-[hsl(var(--secondary))]" />
+                              <span>{startFormatted}{endFormatted ? ` – ${endFormatted}` : ''}</span>
+                            </div>
+                            {(item.startTime || item.endTime) && (
+                              <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
+                                <Clock3 size={13} className="shrink-0 text-[hsl(var(--secondary))]" />
+                                <span>{item.startTime || '—'} – {item.endTime || '—'}</span>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-6 pt-5 border-t border-[hsl(var(--border))]">
+                    <Link 
+                      href={detailsHref} 
+                      className="flex-1 text-center py-3 px-3 rounded-full text-sm font-bold border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors"
+                      data-testid={`btn-home-conf-details-${index}`}
+                    >
+                      Details
+                    </Link>
+                    <Link 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      href={registerHref} 
+                      className="flex-1 text-center py-3 px-3 rounded-full text-sm font-bold bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 transition-opacity"
+                      data-testid={`btn-home-conf-register-${index}`}
+                    >
+                      Register Now
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       <Ticker />
       <section className="section-pad line-grid" id="program"><div className="container-wide"><SectionTitle eyebrow="Five lenses, one conversation" title="Conference tracks" body="Follow the question that matters to your work. Each track is designed to create useful friction between evidence and application." /><TrackGrid /></div></section>
-      <section className="section-pad bg-[hsl(var(--muted)/.35)]"><div className="container-wide grid gap-12 md:grid-cols-[1fr_1.15fr] md:items-start"><div><SectionTitle eyebrow="Mark the milestones" title="The calendar, at a glance." body="A timeline of key benchmarks for authors, delegates, and presenting partners." /><Link href="/submit-abstract" className="btn-main btn-quiet mt-8" data-testid="link-home-dates">See submission guidelines <ArrowRight size={16} /></Link></div><div className="grid gap-3">{[['November 15, 2026', 'Early-bird abstract deadline', 'Submission'], ['January 10, 2027', 'Final abstract deadline', 'Submission'], ['Within 5–7 business days', 'Notification of acceptance', 'Review'], [eventDate, 'Conference days', 'In person · Boston']].map(([date, title, tag], index) => <div key={title} className="flex items-center gap-5 border-b border-[hsl(var(--border))] py-5" data-testid={`calendar-item-${index}`}><span className="label w-28 shrink-0 text-[10px] text-[hsl(var(--secondary))]">{tag}</span><div className="flex-1"><p className="font-semibold">{title}</p><p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{date}</p></div><CalendarDays size={18} className="text-[hsl(var(--accent))]" /></div>)}</div></div></section>
+      
+      {/* Upcoming Webinars Section */}
+      <section className="section-pad bg-[hsl(var(--muted)/.35)]" id="upcoming-events-webinars">
+        <div className="container-wide">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end mb-10">
+            <SectionTitle 
+              eyebrow="Upcoming webinars" 
+              title="Live webinars & online briefings." 
+              body="Connect and exchange ideas with experts and peers on research and clinical practice." 
+            />
+            <Link href="/webinars" className="btn-main btn-quiet shrink-0" data-testid="link-home-view-webinars">
+              All Webinars <ArrowUpRight size={16} />
+            </Link>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {displayWebinars.map((item, index) => {
+              const registerHref = `/register?event=${encodeURIComponent(item.eventId || item.slug || item._id)}`;
+              const detailsHref = `/webinar/${encodeURIComponent(item.eventId || item.slug || item._id)}`;
+              return (
+                <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 h-full" data-testid={`card-home-webinar-${index}`}>
+                  <div>
+                    <div className="flex items-start justify-between">
+                      {item.logoUrl ? (
+                        <img 
+                          src={mediaUrl(item.logoUrl)} 
+                          alt={`${item.title} logo`} 
+                          className="w-14 h-14 rounded-xl border border-[hsl(var(--border))] bg-white object-contain p-1.5 shrink-0" 
+                        />
+                      ) : (
+                        <div className="w-14 h-14 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex flex-col items-center justify-center text-center shrink-0">
+                          <Users size={24} />
+                        </div>
+                      )}
+                      <span className="inline-block text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-[hsl(var(--accent)/.12)] text-[hsl(var(--accent))] label">
+                        WEBINAR
+                      </span>
+                    </div>
+                    <h3 className="display mt-5 text-lg font-bold leading-snug text-[hsl(var(--foreground))] line-clamp-2">
+                      {item.title}
+                    </h3>
+                    <div className="mt-5 space-y-2">
+                      {item.speaker && (
+                        <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
+                          <Users size={13} className="shrink-0 text-[hsl(var(--accent))]" />
+                          <span className="truncate">{item.speaker}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
+                        <MapPin size={13} className="shrink-0 text-[hsl(var(--muted-foreground))]" />
+                        <span className="truncate">{item.location || 'Online'}</span>
+                      </div>
+                      {item.eventDate && (() => {
+                        const { start, end } = getStartAndEndDates(item.eventDate, item.day);
+                        const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                        const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                        return (
+                          <>
+                            <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
+                              <CalendarDays size={13} className="shrink-0 text-[hsl(var(--secondary))]" />
+                              <span>{startFormatted}{endFormatted ? ` – ${endFormatted}` : ''}</span>
+                            </div>
+                            {(item.startTime || item.endTime) && (
+                              <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
+                                <Clock3 size={13} className="shrink-0 text-[hsl(var(--secondary))]" />
+                                <span>{item.startTime || '—'} – {item.endTime || '—'}</span>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-6 pt-5 border-t border-[hsl(var(--border))]">
+                    <Link 
+                      href={detailsHref} 
+                      className="flex-1 text-center py-2 px-3 rounded-full text-xs font-bold border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors"
+                      data-testid={`btn-home-webinar-details-${index}`}
+                    >
+                      Details
+                    </Link>
+                    <Link 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      href={registerHref} 
+                      className="flex-1 text-center py-2 px-3 rounded-full text-xs font-bold bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 transition-opacity"
+                      data-testid={`btn-home-webinar-register-${index}`}
+                    >
+                      Register Now
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       <section className="section-pad" id="speakers"><div className="container-wide"><div className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><SectionTitle eyebrow="People to follow" title="The room is part of the research." body="A deliberately mixed faculty of clinical authorities, technical pioneers, and emerging scholars." /><Link href="/speakers" className="btn-main btn-quiet shrink-0" data-testid="link-home-speakers">Meet the speakers <ArrowUpRight size={16} /></Link></div><div className="mt-12 grid gap-4 md:grid-cols-3"><SpeakerCard image={speakerImages['Dr. Amina Rahman']} name="Dr. Amina Rahman" role="Associate Professor of Clinical Systems" index={1} /><SpeakerCard image={speakerImages['Prof. James T. Cole']} name="Prof. James T. Cole" role="Director of Molecular Futures Laboratory" index={2} /><SpeakerCard image={speakerImages['Dr. Mei Kwan']} name="Dr. Mei Kwan" role="Principal Scientist in Health Technologies" index={3} /></div></div></section>
-      <section className="section-pad border-t border-[hsl(var(--border))] bg-[hsl(var(--muted)/.3)]"><div className="container-wide"><div className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><SectionTitle eyebrow="A look back" title="The conversation has a history." body="Review outcomes and thematic focus areas from our previous global research exchange convocations." /><Link href="/past-conferences" className="btn-main btn-quiet shrink-0" data-testid="link-home-past-conferences">View past conferences <ArrowUpRight size={16} /></Link></div><div className="mt-10 grid gap-4 md:grid-cols-3">{pastConferences.map((item) => <div key={item.year} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6"><span className="label text-[hsl(var(--accent))]">{item.year} · Summit Proceedings</span><h3 className="display mt-8 text-xl font-bold leading-tight">{item.title}</h3><p className="mt-3 text-sm font-semibold text-[hsl(var(--secondary))]">{item.city}</p><p className="mt-4 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{item.focus}</p></div>)}</div></div></section>
       <TestimonialCarousel />
       <GallerySlider />
       <section className="border-y border-[hsl(var(--border))] bg-[hsl(var(--primary))] py-16 text-[hsl(var(--primary-foreground))]"><div className="container-wide flex flex-col items-start justify-between gap-10 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--accent))]">Media partners</p><p className="display mt-4 text-2xl font-bold">Amplifying work that deserves to travel.</p></div><div className="grid grid-cols-2 gap-x-10 gap-y-5 text-sm font-bold text-[hsl(var(--primary-foreground)/.55)] sm:grid-cols-4"><span>JOURNAL OF TRANSLATIONAL MEDICINE</span><span>SCIENCEWIRE</span><span>HEALTH / REVIEW</span><span>TECHNICA</span></div></div></section>
-      <section className="section-pad"><div className="container-wide grid gap-10 md:grid-cols-[.7fr_1.3fr]"><div><SectionTitle eyebrow="From the Stream Conferences blog" title="Notes for the in-between." /><Link href="/blog" className="btn-main btn-quiet mt-8" data-testid="link-home-insights">Read the blog <ArrowRight size={16} /></Link></div><div className="grid gap-4 sm:grid-cols-3">{insightsList.slice(0, 3).map((insight, index) => <div key={insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full"><div className="p-5 flex-1"><div className="aspect-video w-full rounded-lg overflow-hidden mb-4"><img src={blogImages[index % blogImages.length]} alt={insight.title} className="h-full w-full object-cover" /></div><span className="label text-[hsl(var(--accent))] text-[9px]">{insight.label}</span><h3 className="display mt-3 text-lg font-bold leading-tight">{insight.title}</h3><p className="mt-2 text-xs leading-5 text-[hsl(var(--muted-foreground))]">{insight.copy}</p></div><div className="px-5 pb-5 pt-0"><Link href="/blog" className="inline-flex items-center gap-1 text-xs font-bold text-[hsl(var(--secondary))]" data-testid={`link-home-blog-${index}`}>Read field note <ArrowRight size={13} /></Link></div></div>)}</div></div></section>
+      {insightsList.length > 0 && (
+        <section className="section-pad"><div className="container-wide grid gap-10 md:grid-cols-[.7fr_1.3fr]"><div><SectionTitle eyebrow="From the Stream Conferences blog" title="Notes for the in-between." /><Link href="/blog" className="btn-main btn-quiet mt-8" data-testid="link-home-insights">Read the blog <ArrowRight size={16} /></Link></div><div className="grid gap-4 sm:grid-cols-3">{insightsList.slice(0, 3).map((insight, index) => <div key={insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full"><div className="p-5 flex-1"><div className="aspect-video w-full rounded-lg overflow-hidden mb-4"><img src={insight.bannerUrl} alt={insight.title} className="h-full w-full object-cover" /></div><span className="label text-[hsl(var(--accent))] text-[9px]">{insight.label}</span><h3 className="display mt-3 text-lg font-bold leading-tight">{insight.title}</h3><p className="mt-2 text-xs leading-5 text-[hsl(var(--muted-foreground))]">{insight.copy}</p></div><div className="px-5 pb-5 pt-0"><Link href="/blog" className="inline-flex items-center gap-1 text-xs font-bold text-[hsl(var(--secondary))]" data-testid={`link-home-blog-${index}`}>Read field note <ArrowRight size={13} /></Link></div></div>)}</div></div></section>
+      )}
       <section className="border-t border-[hsl(var(--border))] bg-[hsl(var(--muted)/.38)] py-10"><div className="container-wide flex flex-col justify-between gap-5 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--secondary))]">Stay close to the conversation</p><p className="mt-2 text-sm font-semibold">Follow <span className="text-[hsl(var(--secondary))]">#ICMLHS2027</span> across the summit.</p></div><div className="flex gap-2"><a href="https://www.linkedin.com" className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))]" aria-label="LinkedIn" data-testid="link-social-linkedin"><Linkedin size={17} /></a><a href="https://x.com" className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))]" aria-label="X" data-testid="link-social-x"><X size={17} /></a><a href="https://www.youtube.com" className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))]" aria-label="YouTube" data-testid="link-social-youtube"><Youtube size={17} /></a></div></div></section>
       <section className="bg-[hsl(var(--accent))] py-10 text-[hsl(var(--accent-foreground))]"><div className="container-wide flex flex-col justify-between gap-6 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--accent-foreground)/.65)]">Delegate secretariat</p><p className="display mt-2 text-2xl font-bold">Have a question before you arrive?</p><div className="mt-3 flex flex-wrap gap-4 text-sm"><a href="mailto:info@streamconferences.com" className="flex items-center gap-2 font-semibold" data-testid="link-home-email"><Mail size={16} /> info@streamconferences.com</a><span className="flex items-center gap-2"><Phone size={16} /> +1 (617) 555-0199</span></div></div><Link href="/contact" className="btn-main border border-[hsl(var(--accent-foreground)/.35)]" data-testid="link-home-contact">Contact us <ArrowUpRight size={16} /></Link></div></section>
     </main>
@@ -825,13 +1115,11 @@ function GalleryPage() {
   return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=1200&q=80" eyebrow="The conference in motion" title="A room built for exchange." body="A visual archive of the people, moments, and working sessions that make Stream Conferences more than a program." /><main className="section-pad"><div className="container-wide"><div className="mb-12 flex items-end justify-between gap-6"><SectionTitle eyebrow="Event gallery" title="See the work between the sessions." body="A curated selection of event moments, technical sessions, poster forums, and academic exchanges." /><Camera className="hidden text-[hsl(var(--accent))] md:block" size={38} /></div><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{galleryItems.map(([title, body], i) => <button key={title} onClick={() => setSelected(i)} className="group relative min-h-[280px] overflow-hidden rounded-2xl border border-[hsl(var(--border))] text-left text-[hsl(var(--primary-foreground))] shadow-md transition-all hover:scale-[1.02] duration-300" style={{ backgroundImage: `linear-gradient(to top, rgba(24, 39, 63, 0.9) 0%, rgba(24, 39, 63, 0.3) 60%, rgba(24, 39, 63, 0.1) 100%), url(${galleryImages[i]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} data-testid={`gallery-item-${i}`}><div className="absolute inset-0 bg-[hsl(var(--primary)/.2)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" /><div className="relative flex h-full flex-col justify-end p-6"><span className="label text-[hsl(var(--accent))] text-[9px] mb-2">0{i + 1}</span><h2 className="display text-2xl font-bold leading-tight">{title}</h2><p className="mt-2 text-xs text-[hsl(var(--primary-foreground)/.85)] max-w-xs">{body}</p><span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[hsl(var(--accent))] group-hover:translate-x-1 transition-transform duration-300">View large photo <ArrowRight size={13} /></span></div></button>)}</div></div></main>{selected !== null && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onClick={() => setSelected(null)}><div className="relative max-w-4xl w-full overflow-hidden rounded-2xl bg-[hsl(var(--card))] shadow-2xl" onClick={(e) => e.stopPropagation()}><button type="button" className="absolute right-4 top-4 z-10 grid h-9 w-9 place-items-center rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors" onClick={() => setSelected(null)}><X size={18} /></button><img src={galleryImages[selected]} alt={galleryItems[selected][0]} className="w-full max-h-[70vh] object-cover" /><div className="bg-[hsl(var(--card))] p-6 border-t border-[hsl(var(--border))]"><span className="label text-[hsl(var(--accent))]">0{selected + 1} · {galleryItems[selected][0]}</span><p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">{galleryItems[selected][1]}</p></div></div></div>}</Layout>;
 }
 
-function PastConferencesPage() {
-  const { toast } = useToast();
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80" eyebrow="The archive" title="The conversation continues." body="Explore selected past Stream Conferences editions and the questions they brought into the room." /><main><section className="section-pad"><div className="container-wide"><SectionTitle eyebrow="Selected editions" title="A growing record of useful exchange." body="Each edition brings academia, industry, and clinical practice into closer conversation around the problems that matter next." /><div className="mt-12 grid gap-4">{pastConferences.map((item, i) => <article key={item.year} className="group grid gap-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:grid-cols-[120px_1fr_auto] md:items-center" data-testid={`past-conference-${i}`}><span className="display text-5xl font-bold tracking-[-.06em] text-[hsl(var(--accent))]">{item.year}</span><div><p className="label text-[hsl(var(--secondary))]">{item.city}</p><h2 className="display mt-3 text-2xl font-bold">{item.title}</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-[hsl(var(--muted-foreground))]">{item.focus}</p></div><button type="button" onClick={() => toast({ title: "Recap Requested", description: "The conference recap is loading. Please check back shortly." })} className="inline-flex items-center gap-2 text-sm font-bold text-[hsl(var(--secondary))] md:justify-self-end" data-testid={`button-past-conference-${i}`}>View recap <ArrowUpRight size={16} /></button></article>)}</div></div></section><section className="section-pad bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"><div className="container-wide grid gap-10 md:grid-cols-[1fr_auto] md:items-center"><div><SectionTitle light eyebrow="Keep the record moving" title="Be part of the next edition." body="Submit your work, join the delegate list, or bring your organization into the conversation." /></div><div className="flex flex-wrap gap-3"><Link href="/submit-abstract" className="btn-main btn-primary" data-testid="link-past-submit">Submit abstract <ArrowUpRight size={16} /></Link><Link href="/register" className="btn-main border border-[hsl(var(--primary-foreground)/.3)]" data-testid="link-past-register">Register <ArrowRight size={16} /></Link></div></div></section></main></Layout>;
-}
 
 function SubmitPage() {
   const { toast } = useToast();
+  const [location] = useLocation();
+  const eventSlug = new URLSearchParams(window.location.search).get('event') || '';
   const [submitted, setSubmitted] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -841,7 +1129,7 @@ function SubmitPage() {
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const res = await fetch('http://localhost:3000/api/abstracts/submit', {
+      const res = await fetch('http://localhost:7867/api/abstracts/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -850,7 +1138,8 @@ function SubmitPage() {
           name,
           email,
           track,
-          summary
+          summary,
+          eventSlug: eventSlug || undefined
         })
       });
       if (res.ok) {
@@ -902,25 +1191,73 @@ function SponsorsPage() {
 }
 
 function RegisterPage() {
+  const [location] = useLocation();
+  const eventSlug = new URLSearchParams(window.location.search).get('event') || '';
+  const registerUrl = `${window.location.origin}${window.location.pathname}?event=${encodeURIComponent(eventSlug)}`;
+  const [copied, setCopied] = useState(false);
   const [sent, setSent] = useState(false);
+  const [step, setStep] = useState(1);
+  const [consent, setConsent] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phoneNum, setPhoneNum] = useState('');
+  const [countryCode, setCountryCode] = useState('+91');
   const [phone, setPhone] = useState('');
   const [institution, setInstitution] = useState('');
   const [country, setCountry] = useState('');
   const [category, setCategory] = useState('');
   const [presentingAbstract, setPresentingAbstract] = useState('No');
   const [paymentOrderId, setPaymentOrderId] = useState('');
+  const [pendingOrder, setPendingOrder] = useState<any>(null);
   const [mockPayment, setMockPayment] = useState<{ paymentId: string; signature: string } | null>(null);
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState('');
+  const [eventInfo, setEventInfo] = useState<any>(null);
+  const [eventLoading, setEventLoading] = useState(Boolean(eventSlug));
+  const [openAccordion, setOpenAccordion] = useState<string | null>('datetime');
 
   const prices = [['Student', '$245', '$320'], ['Academic', '$395', '$480'], ['Industry Delegate', '$520', '$640'], ['Virtual Attendee', '$145', '$190']];
 
+  const { conferences, webinars } = useContext(APIContext);
+  
+  const fullEvent = useMemo(() => {
+    if (!eventInfo) return null;
+    const pool = eventInfo.eventType === 'webinar' ? webinars : conferences;
+    return pool.find((e: any) => e.slug === eventInfo.eventSlug || e._id === eventInfo.eventId || e.eventId?.toLowerCase() === eventInfo.eventCustomId?.toLowerCase());
+  }, [eventInfo, conferences, webinars]);
+
+  const eventPrices = useMemo(() => {
+    if (fullEvent?.fees && fullEvent.fees.length > 0) {
+      return fullEvent.fees.map((f: any) => [f.label, `₹${f.amount}`, `₹${Math.round(f.amount * 1.2)}`]);
+    }
+    return [['Student', '₹20000', '₹26000'], ['Academic', '₹32000', '₹39000'], ['Industry Delegate', '₹42000', '₹52000'], ['Virtual Attendee', '₹12000', '₹15000']];
+  }, [fullEvent]);
+
+  useEffect(() => {
+    setName(`${firstName} ${lastName}`.trim());
+  }, [firstName, lastName]);
+
+  useEffect(() => {
+    setPhone(`${countryCode} ${phoneNum}`.trim());
+  }, [countryCode, phoneNum]);
+
+  useEffect(() => {
+    let active = true;
+    if (eventSlug) {
+      fetch(`http://localhost:7867/api/registrations/link/${encodeURIComponent(eventSlug)}`)
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(data => { if (active) { setEventInfo(data); setEventLoading(false); } })
+        .catch(() => { if (active) setEventLoading(false); });
+    }
+    return () => { active = false; };
+  }, [eventSlug]);
+
   const verifyPayment = async (orderId: string, paymentId: string, signature: string) => {
     try {
-      const res = await fetch('http://localhost:3000/api/orders/verify', {
+      const res = await fetch('http://localhost:7867/api/orders/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderId, paymentId, signature })
@@ -950,6 +1287,7 @@ function RegisterPage() {
         name: 'Stream Conferences',
         description: `${category} Registration`,
         order_id: order.id,
+        modal: { ondismiss: () => setPaying(false) },
         handler: (response: any) => {
           verifyPayment(order.id, response.razorpay_payment_id, response.razorpay_signature);
         },
@@ -966,11 +1304,33 @@ function RegisterPage() {
     document.body.appendChild(script);
   };
 
+  const handlePayNow = () => {
+    setError('');
+    if (mockPayment) {
+      setPaying(true);
+      verifyPayment(paymentOrderId, mockPayment.paymentId, mockPayment.signature);
+      return;
+    }
+    if (pendingOrder) {
+      setPaying(true);
+      openRazorpayCheckout(pendingOrder);
+    }
+  };
+
+  const handleNextStep = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStep(2);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!consent) {
+      setError('You must agree to the declaration before continuing.');
+      return;
+    }
     setError('');
     try {
-      const regRes = await fetch('http://localhost:3000/api/registrations/register', {
+      const regRes = await fetch('http://localhost:7867/api/registrations/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -982,7 +1342,10 @@ function RegisterPage() {
           institution,
           country,
           category,
-          presentingAbstract
+          presentingAbstract,
+          eventId: eventInfo?.eventId,
+          eventType: eventInfo?.eventType,
+          eventSlug: eventInfo?.eventSlug || eventSlug
         })
       });
       if (!regRes.ok) {
@@ -991,10 +1354,20 @@ function RegisterPage() {
       }
       const regData = await regRes.json();
 
-      const orderRes = await fetch('http://localhost:3000/api/orders/create', {
+      const orderRes = await fetch('http://localhost:7867/api/orders/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, category, registrationId: regData._id })
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          category,
+          registrationId: regData._id,
+          eventId: eventInfo?.eventId,
+          eventType: eventInfo?.eventType || (eventInfo?.eventTitle ? 'conference' : undefined),
+          eventTitle: eventInfo?.eventTitle,
+          eventSlug: eventInfo?.eventSlug || eventSlug
+        })
       });
       if (!orderRes.ok) {
         const err = await orderRes.json();
@@ -1007,9 +1380,10 @@ function RegisterPage() {
 
       if (orderData.mock) {
         setMockPayment(orderData.mock);
+        setPendingOrder(null);
       } else {
-        setPaying(true);
-        openRazorpayCheckout(orderData.order);
+        setPendingOrder(orderData.order);
+        setMockPayment(null);
       }
     } catch (err: any) {
       console.error('Registration failed:', err);
@@ -1017,15 +1391,25 @@ function RegisterPage() {
     }
   };
 
+  const copyRegisterLink = () => {
+    navigator.clipboard?.writeText(registerUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const handleReset = () => {
+    setFirstName('');
+    setLastName('');
     setName('');
     setEmail('');
+    setPhoneNum('');
     setPhone('');
     setInstitution('');
     setCountry('');
     setCategory('');
     setPresentingAbstract('No');
     setPaymentOrderId('');
+    setPendingOrder(null);
     setMockPayment(null);
     setPaymentAmount(0);
     setPaying(false);
@@ -1033,15 +1417,576 @@ function RegisterPage() {
     setSent(false);
   };
 
-  const handleMockPay = () => {
-    if (!mockPayment) return;
-    setPaying(true);
-    verifyPayment(paymentOrderId, mockPayment.paymentId, mockPayment.signature);
-  };
-
   const paymentPending = paymentOrderId && !sent;
 
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1531058020387-3be344559be6?auto=format&fit=crop&w=1200&q=80" eyebrow="Secure your place" title="Register for the full conversation." body="Choose the participation format that fits your work. Select from physical, virtual, or academic registration options." /><main><section className="section-pad"><div className="container-wide"><SectionTitle eyebrow="Registration categories" title="A clear route in." /><div className="mt-10 overflow-x-auto rounded-2xl border border-[hsl(var(--border))]"><table className="w-full min-w-[620px] text-left text-sm"><thead className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"><tr><th className="p-5 font-semibold">Category</th><th className="p-5 font-semibold">Early-bird Rate</th><th className="p-5 font-semibold">Regular Rate</th><th className="p-5" /></tr></thead><tbody>{prices.map(([category, early, regular]) => <tr key={category} className="border-t border-[hsl(var(--border))]"><td className="p-5 font-bold">{category}</td><td className="p-5 mono text-[hsl(var(--secondary))]">{early}</td><td className="p-5 mono">{regular}</td><td className="p-5 text-right"><button type="button" onClick={() => document.getElementById('registration-form')?.scrollIntoView({ behavior: 'smooth' })} className="font-bold text-[hsl(var(--secondary))]" data-testid={`button-register-${category.toLowerCase().replaceAll(' ', '-')}`}>Choose <ArrowRight className="ml-1 inline" size={15} /></button></td></tr>)}</tbody></table></div><div className="mt-10 grid gap-4 sm:grid-cols-2 md:grid-cols-4">{['Conference kit', 'Proceedings access', 'Networking meals', 'Certificate of attendance'].map((item) => <div key={item} className="flex items-center gap-2 text-sm font-semibold"><Check size={17} className="text-[hsl(var(--secondary))]" />{item}<span className="text-xs text-[hsl(var(--muted-foreground))]"> · Included</span></div>)}</div></div></section><section className="section-pad bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]" id="registration-form"><div className="container-wide grid gap-12 lg:grid-cols-[.85fr_1.15fr]"><SectionTitle light eyebrow="Registration desk" title="Tell us how you will join." body="Select your registration type and fill in delegate information. Upon submission, you will be redirected to our secure payment gateway." />{sent ? <SuccessState title="Registration & payment complete" body="Your registration and payment have been successfully recorded. A confirmation email with receipt and event details has been sent to the email provided." reset={handleReset} testId="status-register-success" /> : paymentPending ? <div className="grid gap-4 rounded-2xl border border-[hsl(var(--primary-foreground)/.17)] bg-[hsl(var(--primary-foreground)/.06)] p-6" data-testid="panel-register-payment"><p className="label text-[hsl(var(--accent))]">Step 2 · Payment</p><h3 className="display mt-2 text-2xl font-bold">Complete your registration</h3><p className="mt-3 text-sm text-[hsl(var(--primary-foreground)/.7)]">Registration recorded for <strong>{name}</strong> as <strong>{category}</strong>. Amount due: <strong>₹{paymentAmount.toFixed(2)}</strong></p>{error && <div className="mt-3 rounded-lg border border-red-400/40 bg-red-500/15 p-3 text-sm text-red-200">{error}</div>}<button type="button" onClick={handleMockPay} disabled={paying} className="btn-main btn-primary mt-5" data-testid="button-complete-payment">{paying ? 'Processing payment...' : `Pay ₹${paymentAmount.toFixed(2)}`} <ArrowUpRight size={16} /></button><p className="text-xs text-[hsl(var(--primary-foreground)/.5)]">Payment is processed securely via Razorpay (test mode). All major credit cards accepted.</p></div> : <form onSubmit={handleSubmit} className="grid gap-4 rounded-2xl border border-[hsl(var(--primary-foreground)/.17)] bg-[hsl(var(--primary-foreground)/.06)] p-6"><div className="grid gap-4 sm:grid-cols-2"><input required className="form-field" placeholder="Full name" aria-label="Full name" data-testid="input-register-name" value={name} onChange={(e) => setName(e.target.value)} /><input required type="email" className="form-field" placeholder="Email address" aria-label="Email address" data-testid="input-register-email" value={email} onChange={(e) => setEmail(e.target.value)} /></div><div className="grid gap-4 sm:grid-cols-2"><input className="form-field" placeholder="Phone number" aria-label="Phone number" data-testid="input-register-phone" value={phone} onChange={(e) => setPhone(e.target.value)} /><input required className="form-field" placeholder="Institution / organization" aria-label="Institution" data-testid="input-register-institution" value={institution} onChange={(e) => setInstitution(e.target.value)} /></div><input required className="form-field" placeholder="Country" aria-label="Country" data-testid="input-register-country" value={country} onChange={(e) => setCountry(e.target.value)} /><select required className="form-field" value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Registration category" data-testid="select-registration-category"><option value="" disabled>Registration category</option>{prices.map(([category]) => <option key={category} value={category}>{category}</option>)}</select><select className="form-field" value={presentingAbstract} onChange={(e) => setPresentingAbstract(e.target.value)} aria-label="Presenting abstract" data-testid="select-presenting-abstract"><option value="No">Presenting abstract? No</option><option value="Yes">Presenting abstract? Yes</option></select>{error && <div className="rounded-lg border border-red-400/40 bg-red-500/15 p-3 text-sm text-red-200">{error}</div>}<button type="submit" className="btn-main btn-primary mt-2" data-testid="button-submit-registration">Continue to payment <ArrowUpRight size={16} /></button><p className="text-xs text-[hsl(var(--primary-foreground)/.5)]">Payment details are processed securely. All major credit cards accepted.</p></form>}</div></section></main></Layout>;
+  return (
+    <Layout>
+      {/* Title Header */}
+      <div className="py-12 bg-[hsl(var(--muted)/.15)] border-b border-[hsl(var(--border))]">
+        <div className="container-wide max-w-6xl text-center md:flex md:flex-col md:items-center md:gap-4">
+          <div className="flex flex-col items-center">
+            <span className="label text-[10px] uppercase tracking-wider text-[hsl(var(--secondary))]">
+              Event Registration Gateway
+            </span>
+            <h1 className="display text-3xl md:text-4xl font-extrabold tracking-tight mt-2 text-[hsl(var(--foreground))] text-center">
+              {eventInfo ? eventInfo.eventTitle : "Register for Stream Conferences"}
+            </h1>
+          </div>
+          {eventInfo && (
+            <div className="flex gap-2 justify-center shrink-0">
+              <span className="rounded-full bg-[hsl(var(--accent))] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--accent-foreground))] align-middle inline-flex items-center">
+                {eventInfo.eventType}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {eventLoading && (
+        <div className="border-b border-[hsl(var(--border))] bg-[hsl(var(--muted)/.35)] py-4 text-center text-sm text-[hsl(var(--muted-foreground))]">
+          Loading event details…
+        </div>
+      )}
+
+      {/* Main Registration Layout */}
+      {eventInfo ? (
+        <main className="bg-[hsl(var(--muted)/.15)] py-12">
+          <div className="container-wide max-w-6xl">
+            <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr] items-start">
+              {/* Left Column: Form or Success / Payment panel */}
+              <div className="space-y-6">
+                {sent ? (
+                  <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm">
+                    <SuccessState 
+                      title="Registration & payment complete" 
+                      body="Your registration and payment have been successfully recorded. A confirmation email with receipt and event details has been sent to the email provided." 
+                      reset={handleReset} 
+                      testId="status-register-success" 
+                    />
+                  </div>
+                ) : paymentPending ? (
+                  <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-6" data-testid="panel-register-payment">
+                    <div>
+                      <p className="label text-[hsl(var(--accent))]">Step 2 · Payment</p>
+                      <h3 className="display mt-2 text-2xl font-bold">Complete your registration</h3>
+                      <p className="mt-3 text-sm text-[hsl(var(--muted-foreground))]">
+                        Registration recorded for <strong>{name}</strong> as <strong>{category}</strong> for <strong>{eventInfo.eventTitle}</strong>.
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl bg-[hsl(var(--muted)/.4)] p-4 border border-[hsl(var(--border))] flex justify-between items-center">
+                      <span className="text-sm font-medium">Amount due</span>
+                      <span className="mono text-xl font-bold text-[hsl(var(--secondary))]">₹{paymentAmount.toFixed(2)}</span>
+                    </div>
+
+                    {error && (
+                      <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600">
+                        {error}
+                      </div>
+                    )}
+
+                    <button 
+                      type="button" 
+                      onClick={handlePayNow} 
+                      disabled={paying} 
+                      className="w-full btn-main btn-primary py-3" 
+                      data-testid="button-complete-payment"
+                    >
+                      {paying ? 'Processing payment...' : `Pay Now · ₹${paymentAmount.toFixed(2)}`} <ArrowUpRight size={16} />
+                    </button>
+                    
+                    <p className="text-xs text-[hsl(var(--muted-foreground))] text-center">
+                      You will be redirected to the secure Razorpay checkout to complete payment. All major cards, UPI and net banking accepted.
+                    </p>
+                  </div>
+                ) : step === 1 ? (
+                  <form onSubmit={handleNextStep} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-6">
+                    <div>
+                      <p className="label text-[hsl(var(--accent))]">Step 1 of 2</p>
+                      <div className="rounded-xl bg-[hsl(var(--accent)/.08)] px-4 py-3 text-sm text-[hsl(var(--accent))] font-medium flex items-center justify-between mt-2">
+                        <span>Delegate Personal Information</span>
+                        <span>⚡ Quick Form</span>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">First Name *</label>
+                        <input 
+                          required 
+                          className="form-field w-full" 
+                          placeholder="First name" 
+                          aria-label="First name" 
+                          data-testid="input-register-firstname" 
+                          value={firstName} 
+                          onChange={(e) => setFirstName(e.target.value)} 
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">Last Name *</label>
+                        <input 
+                          required 
+                          className="form-field w-full" 
+                          placeholder="Last name" 
+                          aria-label="Last name" 
+                          data-testid="input-register-lastname" 
+                          value={lastName} 
+                          onChange={(e) => setLastName(e.target.value)} 
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">Email Address *</label>
+                        <input 
+                          required 
+                          type="email" 
+                          className="form-field w-full" 
+                          placeholder="Email address" 
+                          aria-label="Email address" 
+                          data-testid="input-register-email" 
+                          value={email} 
+                          onChange={(e) => setEmail(e.target.value)} 
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">Phone Number *</label>
+                        <div className="flex gap-2">
+                          <select 
+                            className="form-field shrink-0" 
+                            style={{ width: '96px', minWidth: '96px' }}
+                            value={countryCode} 
+                            onChange={(e) => setCountryCode(e.target.value)}
+                            aria-label="Country Code"
+                          >
+                            <option>+91</option>
+                            <option>+1</option>
+                            <option>+44</option>
+                            <option>+33</option>
+                            <option>+65</option>
+                            <option>+61</option>
+                          </select>
+                          <input 
+                            required 
+                            type="tel" 
+                            className="form-field" 
+                            style={{ flex: 1, minWidth: 0, width: '100%' }}
+                            placeholder="Mobile number" 
+                            aria-label="Phone number" 
+                            data-testid="input-register-phone" 
+                            value={phoneNum} 
+                            onChange={(e) => setPhoneNum(e.target.value)} 
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">Institution / Organization *</label>
+                        <input 
+                          required 
+                          className="form-field w-full" 
+                          placeholder="Institution or company" 
+                          aria-label="Institution" 
+                          data-testid="input-register-institution" 
+                          value={institution} 
+                          onChange={(e) => setInstitution(e.target.value)} 
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">Country *</label>
+                        <input 
+                          required 
+                          className="form-field w-full" 
+                          placeholder="Country of residence" 
+                          aria-label="Country" 
+                          data-testid="input-register-country" 
+                          value={country} 
+                          onChange={(e) => setCountry(e.target.value)} 
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">Presenting Abstract? *</label>
+                        <select 
+                          className="form-field w-full" 
+                          value={presentingAbstract} 
+                          onChange={(e) => setPresentingAbstract(e.target.value)} 
+                          aria-label="Presenting abstract" 
+                          data-testid="select-presenting-abstract"
+                        >
+                          <option value="No">No</option>
+                          <option value="Yes">Yes</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 pt-2">
+                      <label className="flex items-start gap-2.5 text-xs text-[hsl(var(--muted-foreground))] cursor-pointer select-none">
+                        <input type="checkbox" className="mt-0.5 rounded border-[hsl(var(--border))] text-[hsl(var(--secondary))] focus:ring-[hsl(var(--secondary))]" />
+                        <span>Billing to Company / Organization</span>
+                      </label>
+                      <label className="flex items-start gap-2.5 text-xs text-[hsl(var(--muted-foreground))] cursor-pointer select-none">
+                        <input type="checkbox" className="mt-0.5 rounded border-[hsl(var(--border))] text-[hsl(var(--secondary))] focus:ring-[hsl(var(--secondary))]" defaultChecked />
+                        <span>I would like to receive updates on products, services, news and surveys.</span>
+                      </label>
+                    </div>
+
+                    {error && (
+                      <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600">
+                        {error}
+                      </div>
+                    )}
+
+                    <button 
+                      type="submit" 
+                      className="w-full btn-main btn-primary py-3 mt-4" 
+                      data-testid="button-next-step"
+                    >
+                      Continue <ArrowRight className="ml-1 inline" size={16} />
+                    </button>
+                    
+                    <p className="text-xs text-[hsl(var(--muted-foreground))] text-center">
+                      Your data is protected. By continuing, you agree to our Terms & Conditions.
+                    </p>
+                  </form>
+                ) : (
+                  <form onSubmit={handleSubmit} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-6">
+                    <div>
+                      <p className="label text-[hsl(var(--accent))]">Step 2 of 2</p>
+                      <h3 className="display mt-2 text-2xl font-bold">Confirm your Registration Details</h3>
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Type of fee *</label>
+                      <div className="grid gap-3">
+                        {eventPrices.map(([catName, _, price]: string[]) => (
+                          <label key={catName} className="flex items-center justify-between p-4 rounded-xl border border-[hsl(var(--border))] cursor-pointer hover:border-[hsl(var(--accent))] transition-colors">
+                            <div className="flex items-center gap-3">
+                              <input 
+                                type="radio" 
+                                name="feeCategory" 
+                                value={catName} 
+                                checked={category === catName} 
+                                onChange={() => setCategory(catName)} 
+                                required 
+                                className="h-4 w-4 text-[hsl(var(--accent))] focus:ring-[hsl(var(--accent))]"
+                              />
+                              <span className="text-sm font-medium">{catName}</span>
+                            </div>
+                            <span className="text-sm font-bold">{price}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 pt-4 border-t border-[hsl(var(--border))]">
+                      <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Declaration</label>
+                      <label className="flex items-start gap-3 cursor-pointer p-4 bg-[hsl(var(--muted)/.3)] rounded-xl border border-[hsl(var(--border))]">
+                        <input 
+                          type="checkbox" 
+                          checked={consent}
+                          onChange={(e) => {
+                            setConsent(e.target.checked);
+                            if (e.target.checked) setError('');
+                          }}
+                          className="mt-1 h-4 w-4 rounded border-[hsl(var(--border))] text-[hsl(var(--secondary))] focus:ring-[hsl(var(--secondary))]" 
+                        />
+                        <span className="text-xs leading-5 text-[hsl(var(--foreground))]">
+                          I have read and agree to the <a href="#" className="text-[hsl(var(--accent))] hover:underline">Health Declaration</a>, <a href="#" className="text-[hsl(var(--accent))] hover:underline">Program Participant Agreement</a> and <a href="#" className="text-[hsl(var(--accent))] hover:underline">Privacy Policy</a>.*
+                        </span>
+                      </label>
+                    </div>
+
+                    {error && (
+                      <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600">
+                        {error}
+                      </div>
+                    )}
+
+                    <div className="flex gap-4 pt-4">
+                      <button 
+                        type="button" 
+                        onClick={() => { setStep(1); setError(''); }}
+                        className="btn-main border border-[hsl(var(--border))] bg-transparent text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] w-1/3 justify-center py-3"
+                      >
+                        Back
+                      </button>
+                      <button 
+                        type="submit" 
+                        disabled={paying}
+                        className="btn-main btn-primary flex-1 justify-center py-3" 
+                        data-testid="button-submit-registration"
+                      >
+                        {paying ? 'Processing...' : 'Proceed to payment'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+
+              {/* Right Column: Sticky Event Details & Accordion */}
+              <div className="space-y-6 lg:sticky lg:top-6">
+                <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm space-y-6">
+                  {/* Header */}
+                  <div>
+                    <span className={`inline-block mb-3 rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                      eventInfo.eventType === 'webinar' 
+                        ? 'bg-orange-500/10 text-orange-600 border border-orange-500/20' 
+                        : 'bg-green-500/10 text-green-600 border border-green-500/20'
+                    }`}>
+                      {eventInfo.eventType}
+                    </span>
+                    <h2 className="display text-xl font-bold tracking-tight text-[hsl(var(--foreground))]">
+                      {eventInfo.eventTitle}
+                    </h2>
+                  </div>
+
+                  {/* Simple list info */}
+                  {fullEvent && (() => {
+                    const { start, end } = getStartAndEndDates(fullEvent.eventDate, fullEvent.day);
+                    const startFormatted = start ? start.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                    const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                    return (
+                      <div className="space-y-4 pt-2 border-t border-[hsl(var(--border))]">
+                        <div className="flex items-start gap-3 text-sm text-[hsl(var(--muted-foreground))]">
+                          <CalendarDays className="mt-0.5 text-[hsl(var(--secondary))] shrink-0" size={16} />
+                          <div>
+                            <p className="font-semibold text-[hsl(var(--foreground))] text-xs">Date</p>
+                            <p className="text-xs mt-0.5">{startFormatted} {endFormatted ? `– ${endFormatted}` : ''}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-start gap-3 text-sm text-[hsl(var(--muted-foreground))]">
+                          <MapPin className="mt-0.5 text-[hsl(var(--accent))] shrink-0" size={16} />
+                          <div>
+                            <p className="font-semibold text-[hsl(var(--foreground))] text-xs">Location</p>
+                            <p className="text-xs mt-0.5">{fullEvent.location || 'Online / Virtual'}</p>
+                          </div>
+                        </div>
+
+                        {fullEvent.speaker && (
+                          <div className="flex items-start gap-3 text-sm text-[hsl(var(--muted-foreground))]">
+                            <Users className="mt-0.5 text-[hsl(var(--secondary))] shrink-0" size={16} />
+                            <div>
+                              <p className="font-semibold text-[hsl(var(--foreground))] text-xs">Speaker / Faculty</p>
+                              <p className="text-xs mt-0.5">{fullEvent.speaker}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Accordion List */}
+                  {fullEvent && (
+                    <div className="border-t border-[hsl(var(--border))] pt-4 space-y-2">
+                      {/* Accordion Item: Date & Time */}
+                      <div className="border-b border-[hsl(var(--border))]/60 pb-3">
+                        <button
+                          type="button"
+                          onClick={() => setOpenAccordion(openAccordion === 'datetime' ? null : 'datetime')}
+                          className="w-full flex items-center justify-between font-semibold text-xs text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors"
+                        >
+                          <span className="uppercase tracking-wider">Date & Time details</span>
+                          <ChevronDown size={14} className={`transform transition-transform ${openAccordion === 'datetime' ? 'rotate-180' : ''}`} />
+                        </button>
+                        {openAccordion === 'datetime' && (() => {
+                          const { start, end } = getStartAndEndDates(fullEvent.eventDate, fullEvent.day);
+                          const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                          const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                          return (
+                            <div className="mt-2 pl-1 space-y-1.5 text-xs text-[hsl(var(--muted-foreground))]">
+                              <p><span className="font-medium text-[hsl(var(--foreground))]">Start Date:</span> {startFormatted}</p>
+                              <p><span className="font-medium text-[hsl(var(--foreground))]">End Date:</span> {endFormatted || startFormatted}</p>
+                              <p><span className="font-medium text-[hsl(var(--foreground))]">Start Time:</span> {fullEvent.startTime || '—'}</p>
+                              <p><span className="font-medium text-[hsl(var(--foreground))]">End Time:</span> {fullEvent.endTime || '—'}</p>
+                            </div>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Accordion Item: Organizer */}
+                      <div className="border-b border-[hsl(var(--border))]/60 pb-3">
+                        <button
+                          type="button"
+                          onClick={() => setOpenAccordion(openAccordion === 'organizer' ? null : 'organizer')}
+                          className="w-full flex items-center justify-between font-semibold text-xs text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors"
+                        >
+                          <span className="uppercase tracking-wider">Organizer Contact</span>
+                          <ChevronDown size={14} className={`transform transition-transform ${openAccordion === 'organizer' ? 'rotate-180' : ''}`} />
+                        </button>
+                        {openAccordion === 'organizer' && (
+                          <div className="mt-2 pl-1 space-y-1.5 text-xs text-[hsl(var(--muted-foreground))]">
+                            <p><span className="font-medium text-[hsl(var(--foreground))]">Name:</span> {fullEvent.organizerContact?.name || 'Scientific Coordination Desk'}</p>
+                            <p><span className="font-medium text-[hsl(var(--foreground))]">Email:</span> {fullEvent.organizerContact?.email || 'secretariat@streamconferences.com'}</p>
+                            <p><span className="font-medium text-[hsl(var(--foreground))]">Phone:</span> {fullEvent.organizerContact?.phone || '+1 (617) 555-0199'}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Accordion Item: Course Fees */}
+                      <div className="border-b border-[hsl(var(--border))]/60 pb-3">
+                        <button
+                          type="button"
+                          onClick={() => setOpenAccordion(openAccordion === 'fees' ? null : 'fees')}
+                          className="w-full flex items-center justify-between font-semibold text-xs text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors"
+                        >
+                          <span className="uppercase tracking-wider">Fee details & plans</span>
+                          <ChevronDown size={14} className={`transform transition-transform ${openAccordion === 'fees' ? 'rotate-180' : ''}`} />
+                        </button>
+                        {openAccordion === 'fees' && (
+                          <div className="mt-2 pl-1 space-y-2 text-xs text-[hsl(var(--muted-foreground))]">
+                            {eventPrices.map(([catLabel, earlyPrice, regularPrice]: string[]) => (
+                              <div key={catLabel} className="flex justify-between items-center border-b border-[hsl(var(--border))]/30 pb-1.5 last:border-0 last:pb-0">
+                                <div>
+                                  <span className="font-medium text-[hsl(var(--foreground))]">{catLabel}</span>
+                                  <span className="block text-[10px] text-[hsl(var(--muted-foreground))]">Early bird</span>
+                                </div>
+                                <div className="text-right">
+                                  <span className="mono font-bold text-[hsl(var(--secondary))]">{earlyPrice}</span>
+                                  <span className="block text-[10px] mono line-through opacity-60">{regularPrice}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Accordion Item: Venue / Contact */}
+                      <div className="border-b border-[hsl(var(--border))]/60 pb-3">
+                        <button
+                          type="button"
+                          onClick={() => setOpenAccordion(openAccordion === 'venue' ? null : 'venue')}
+                          className="w-full flex items-center justify-between font-semibold text-xs text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors"
+                        >
+                          <span className="uppercase tracking-wider">Venue & Timezone</span>
+                          <ChevronDown size={14} className={`transform transition-transform ${openAccordion === 'venue' ? 'rotate-180' : ''}`} />
+                        </button>
+                        {openAccordion === 'venue' && (
+                          <div className="mt-2 pl-1 space-y-1.5 text-xs text-[hsl(var(--muted-foreground))]">
+                            <p><span className="font-medium text-[hsl(var(--foreground))]">Venue:</span> {fullEvent.location || 'Online'}</p>
+                            <p><span className="font-medium text-[hsl(var(--foreground))]">Timezone:</span> local timezone as scheduled</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Copy link button */}
+                  <button 
+                    type="button" 
+                    onClick={copyRegisterLink} 
+                    className="w-full rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] py-2.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--secondary))] hover:border-[hsl(var(--secondary))] hover:bg-[hsl(var(--secondary)/.02)] transition-all"
+                  >
+                    {copied ? 'Copied ✓' : 'Copy Registration Link'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      ) : (
+        <main>
+          {/* General non-event fallback registration layout */}
+          <section className="section-pad">
+            <div className="container-wide">
+              <SectionTitle eyebrow="Registration categories" title="A clear route in." />
+              <div className="mt-10 overflow-x-auto rounded-2xl border border-[hsl(var(--border))]">
+                <table className="w-full min-w-[620px] text-left text-sm">
+                  <thead className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]">
+                    <tr>
+                      <th className="p-5 font-semibold">Category</th>
+                      <th className="p-5 font-semibold">Early-bird Rate</th>
+                      <th className="p-5 font-semibold">Regular Rate</th>
+                      <th className="p-5" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {prices.map(([category, early, regular]) => (
+                      <tr key={category} className="border-t border-[hsl(var(--border))]">
+                        <td className="p-5 font-bold">{category}</td>
+                        <td className="p-5 mono text-[hsl(var(--secondary))]">{early}</td>
+                        <td className="p-5 mono">{regular}</td>
+                        <td className="p-5 text-right">
+                          <button 
+                            type="button" 
+                            onClick={() => document.getElementById('registration-form')?.scrollIntoView({ behavior: 'smooth' })} 
+                            className="font-bold text-[hsl(var(--secondary))]" 
+                            data-testid={`button-register-${category.toLowerCase().replaceAll(' ', '-')}`}
+                          >
+                            Choose <ArrowRight className="ml-1 inline" size={15} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-10 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+                {['Conference kit', 'Proceedings access', 'Networking meals', 'Certificate of attendance'].map((item) => (
+                  <div key={item} className="flex items-center gap-2 text-sm font-semibold">
+                    <Check size={17} className="text-[hsl(var(--secondary))]" />
+                    {item}
+                    <span className="text-xs text-[hsl(var(--muted-foreground))]"> · Included</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="section-pad bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]" id="registration-form">
+            <div className="container-wide grid gap-12 lg:grid-cols-[.85fr_1.15fr]">
+              <SectionTitle light eyebrow="Registration desk" title="Tell us how you will join." body="Select your registration type and fill in delegate information. Upon submission, you will be redirected to our secure payment gateway." />
+              {sent ? (
+                <SuccessState title="Registration & payment complete" body="Your registration and payment have been successfully recorded. A confirmation email with receipt and event details has been sent to the email provided." reset={handleReset} testId="status-register-success" />
+              ) : paymentPending ? (
+                <div className="grid gap-4 rounded-2xl border border-[hsl(var(--primary-foreground)/.17)] bg-[hsl(var(--primary-foreground)/.06)] p-6" data-testid="panel-register-payment">
+                  <p className="label text-[hsl(var(--accent))]">Step 2 · Payment</p>
+                  <h3 className="display mt-2 text-2xl font-bold">Complete your registration</h3>
+                  <p className="mt-3 text-sm text-[hsl(var(--primary-foreground)/.7)]">
+                    Registration recorded for <strong>{name}</strong> as <strong>{category}</strong>. Amount due: <strong>₹{paymentAmount.toFixed(2)}</strong>
+                  </p>
+                  {error && <div className="mt-3 rounded-lg border border-red-400/40 bg-red-500/15 p-3 text-sm text-red-200">{error}</div>}
+                  <button type="button" onClick={handlePayNow} disabled={paying} className="btn-main btn-primary mt-5" data-testid="button-complete-payment">
+                    {paying ? 'Processing payment...' : `Pay Now · ₹${paymentAmount.toFixed(2)}`} <ArrowUpRight size={16} />
+                  </button>
+                  <p className="text-xs text-[hsl(var(--primary-foreground)/.5)]">You will be redirected to the secure Razorpay checkout to complete payment. All major cards, UPI and net banking accepted.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="grid gap-4 rounded-2xl border border-[hsl(var(--primary-foreground)/.17)] bg-[hsl(var(--primary-foreground)/.06)] p-6">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <input required className="form-field" placeholder="Full name" aria-label="Full name" data-testid="input-register-name" value={name} onChange={(e) => setName(e.target.value)} />
+                    <input required type="email" className="form-field" placeholder="Email address" aria-label="Email address" data-testid="input-register-email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <input className="form-field" placeholder="Phone number" aria-label="Phone number" data-testid="input-register-phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                    <input required className="form-field" placeholder="Institution / organization" aria-label="Institution" data-testid="input-register-institution" value={institution} onChange={(e) => setInstitution(e.target.value)} />
+                  </div>
+                  <input required className="form-field" placeholder="Country" aria-label="Country" data-testid="input-register-country" value={country} onChange={(e) => setCountry(e.target.value)} />
+                  <select required className="form-field" value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Registration category" data-testid="select-registration-category">
+                    <option value="" disabled>Registration category</option>
+                    {prices.map(([category]) => <option key={category} value={category}>{category}</option>)}
+                  </select>
+                  <select className="form-field" value={presentingAbstract} onChange={(e) => setPresentingAbstract(e.target.value)} aria-label="Presenting abstract" data-testid="select-presenting-abstract">
+                    <option value="No">Presenting abstract? No</option>
+                    <option value="Yes">Presenting abstract? Yes</option>
+                  </select>
+                  {error && <div className="rounded-lg border border-red-400/40 bg-red-500/15 p-3 text-sm text-red-200">{error}</div>}
+                  <button type="submit" className="btn-main btn-primary mt-2" data-testid="button-submit-registration">Continue to payment <ArrowUpRight size={16} /></button>
+                  <p className="text-xs text-[hsl(var(--primary-foreground)/.5)]">Payment details are processed securely. All major credit cards accepted.</p>
+                </form>
+              )}
+            </div>
+          </section>
+        </main>
+      )}
+    </Layout>
+  );
 }
 
 
@@ -1063,20 +2008,22 @@ function TermsPage() {
 }
 
 function ContactPage() {
+  const [location] = useLocation();
+  const eventSlug = new URLSearchParams(window.location.search).get('event') || '';
   const [sent, setSent] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [subject, setSubject] = useState('General');
+  const [subject, setSubject] = useState(eventSlug ? 'Event Enquiry' : 'General');
   const [message, setMessage] = useState('');
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const res = await fetch('http://localhost:3000/api/contacts/send', {
+      const res = await fetch('http://localhost:7867/api/contacts/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, subject, conference: conferenceName, message })
+        body: JSON.stringify({ name, email, phone, subject, conference: conferenceName, message, eventSlug: eventSlug || undefined })
       });
       if (res.ok) {
         setSent(true);
@@ -1102,6 +2049,205 @@ function ContactPage() {
   return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80" eyebrow="The secretariat" title="Get in touch with Stream Conferences." body="Whether you are presenting groundbreaking research, planning attendance, exploring publishing, or discussing sponsorship, our team is here to assist. We aim to respond within 24–48 business hours." /><main><section className="section-pad"><div className="container-wide"><div className="grid gap-4 md:grid-cols-2">{departments.map(([title, email, body], i) => <div key={email} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6" data-testid={`card-contact-${i}`}><Mail className="text-[hsl(var(--secondary))]" size={21} /><h2 className="display mt-6 text-xl font-bold">{title}</h2><p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{body}</p><a href={`mailto:${email}`} className="mt-5 inline-block text-sm font-bold text-[hsl(var(--secondary))]" data-testid={`link-contact-email-${i}`}>{email}</a></div>)}</div></div></section><section className="section-pad bg-[hsl(var(--muted)/.35)]"><div className="container-wide grid gap-12 lg:grid-cols-[.7fr_1.3fr]"><div><SectionTitle eyebrow="Global headquarters" title="A team with a reachable desk." body="Stream Conferences Secretariat · 100 Federal Street, Boston, MA 02110, USA" /><div className="mt-7 grid gap-3 text-sm"><p className="flex items-center gap-3"><Phone size={17} className="text-[hsl(var(--secondary))]" /> +1 (617) 555-0199</p><p className="flex items-center gap-3"><Clock3 size={17} className="text-[hsl(var(--secondary))]" /> Monday–Friday · 9:00 AM–6:00 PM EST</p></div></div>{sent ? <SuccessState title="Message sent" body="Thank you. Our coordination team has received your message and will respond within 24–48 business hours." reset={handleReset} testId="status-contact-success" /> : <form onSubmit={submit} className="grid gap-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6"><div className="grid gap-4 sm:grid-cols-2"><input required className="form-field" placeholder="Full name" aria-label="Full name" data-testid="input-contact-name" value={name} onChange={(e) => setName(e.target.value)} /><input required type="email" className="form-field" placeholder="Email address" aria-label="Email address" data-testid="input-contact-email" value={email} onChange={(e) => setEmail(e.target.value)} /></div><input className="form-field" placeholder="Phone number" aria-label="Phone number" data-testid="input-contact-phone" value={phone} onChange={(e) => setPhone(e.target.value)} /><select className="form-field" value={subject} onChange={(e) => setSubject(e.target.value)} aria-label="Inquiry type" data-testid="select-contact-inquiry"><option>General</option><option>Abstract Submission</option><option>Publishing</option><option>Sponsorship</option></select><input className="form-field" defaultValue={conferenceName} aria-label="Conference name" data-testid="input-contact-conference" /><textarea required className="form-field min-h-32" placeholder="How can we help?" aria-label="Message" data-testid="input-contact-message" value={message} onChange={(e) => setMessage(e.target.value)} /><button type="submit" className="btn-main btn-primary" data-testid="button-submit-contact">Send us a message <Send size={16} /></button></form>}</div></section></main></Layout>;
 }
 
+function EventDetailsPage({ type }: { type: 'conference' | 'webinar' }) {
+  const { slug = '' } = useParams<{ slug: string }>();
+  const { conferences, webinars } = useContext(APIContext);
+  const pool = type === 'conference' ? conferences : webinars;
+  const item = pool.find((e: any) => e.slug === slug || e._id === slug || e.eventId?.toLowerCase() === slug.toLowerCase());
+  const [copied, setCopied] = useState(false);
+
+  if (!item) {
+    return (
+      <Layout>
+        <main className="section-pad">
+          <div className="container-wide">
+            <SectionTitle eyebrow="Not found" title="This event could not be found." body="It may have been removed or the link is incorrect." />
+            <Link href="/" className="btn-main btn-quiet mt-6">← Back home</Link>
+          </div>
+        </main>
+      </Layout>
+    );
+  }
+
+  const banner = mediaUrl(item.bannerUrl || '');
+  const logo = mediaUrl(item.logoUrl || '');
+  const brochure = mediaUrl(item.brochureUrl || '');
+  const registerHref = `/register?event=${encodeURIComponent(item.eventId || item.slug || item._id)}`;
+  const fees: { label: string; amount: number }[] = Array.isArray(item.fees) ? item.fees : [];
+
+  return (
+    <Layout>
+      {/* Banner */}
+      <div className="relative overflow-hidden min-h-[320px] bg-black">
+        <img 
+          src={banner || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80"} 
+          alt={item.title} 
+          className="absolute inset-0 h-full w-full object-cover opacity-45" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/60" />
+        <div className="relative container-wide py-16 md:py-24">
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <span className="inline-block rounded-full bg-[hsl(var(--accent))] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--accent-foreground))]">{type}</span>
+            <span className={`inline-block rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${item.date === 'upcoming' ? 'bg-green-500/90 text-white' : 'bg-black/50 text-white'}`}>{item.date}</span>
+          </div>
+          {logo && <img src={logo} alt={`${item.title} logo`} className="mb-4 h-16 w-auto object-contain" />}
+          <h1 className="display text-3xl md:text-5xl font-bold tracking-[-.04em] text-white max-w-3xl">{item.title}</h1>
+          <div className="mt-5 flex flex-wrap gap-4 text-sm text-white/85">
+            {item.eventDate && (() => {
+              const { start, end } = getStartAndEndDates(item.eventDate, item.day);
+              const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+              const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+              return (
+                <span className="inline-flex items-center gap-1.5"><CalendarDays size={15} />{startFormatted}{endFormatted ? ` – ${endFormatted}` : ''}</span>
+              );
+            })()}
+            {item.startTime || item.endTime ? <span className="inline-flex items-center gap-1.5"><Clock3 size={15} />{item.startTime || '—'} – {item.endTime || '—'}</span> : null}
+            <span className="inline-flex items-center gap-1.5"><MapPin size={15} />{item.location}</span>
+            {item.speaker ? <span className="inline-flex items-center gap-1.5"><Users size={15} />Speaker: {item.speaker}</span> : null}
+          </div>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Link target="_blank" rel="noopener noreferrer" href={registerHref} className="btn-main btn-primary" aria-label={`Register for ${item.title}`}>Register Now <ArrowUpRight size={16} /></Link>
+            <Link href={`/contact?event=${encodeURIComponent(item.slug || item._id)}`} className="btn-main btn-primary">Enquire <ArrowUpRight size={16} /></Link>
+            {brochure && <a href={brochure} target="_blank" rel="noreferrer" className="btn-main btn-primary"><Download size={15} /> Brochure</a>}
+            <button
+              type="button"
+              onClick={() => { navigator.clipboard?.writeText(window.location.origin + registerHref); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+              className="btn-main btn-primary"
+              data-testid="button-copy-event-link"
+            >
+              {copied ? 'Copied ✓' : 'Copy registration link'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <main className="section-pad">
+        <div className="container-wide grid gap-10 lg:grid-cols-[1.6fr_1fr]">
+          <div className="space-y-12">
+            {item.description && (
+              <div>
+                <SectionTitle eyebrow="About" title="The session." />
+                <p className="mt-4 text-sm leading-7 text-[hsl(var(--muted-foreground))] whitespace-pre-wrap">{item.description}</p>
+              </div>
+            )}
+            
+            <div>
+              <SectionTitle eyebrow="Registration" title="Participation Fees." />
+              <div className="mt-6 overflow-hidden rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-[hsl(var(--muted)/.5)] text-[hsl(var(--muted-foreground))]">
+                    <tr>
+                      <th className="px-6 py-4 font-bold uppercase tracking-wider text-[11px]">Category</th>
+                      <th className="px-6 py-4 font-bold uppercase tracking-wider text-[11px] text-right">Fee Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[hsl(var(--border))]">
+                    {fees.length ? fees.map((f, i) => (
+                      <tr key={i} className="hover:bg-[hsl(var(--muted)/.2)]">
+                        <td className="px-6 py-4 font-bold">{f.label}</td>
+                        <td className="px-6 py-4 text-right font-bold text-[hsl(var(--secondary))]">₹{Number(f.amount).toLocaleString('en-IN')}</td>
+                      </tr>
+                    )) : (
+                      <tr>
+                        <td colSpan={2} className="px-6 py-4 text-center text-[hsl(var(--muted-foreground))]">Registration fees will be announced soon.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {/* Event Details Sidebar */}
+            <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
+              <h3 className="display text-lg font-bold">Event Details</h3>
+              <div className="mt-5 space-y-4 text-sm text-[hsl(var(--muted-foreground))]">
+                {item.eventDate && (() => {
+                  const { start, end } = getStartAndEndDates(item.eventDate, item.day);
+                  return (
+                    <>
+                      {start && (
+                        <div className="flex items-start gap-3">
+                          <CalendarDays size={16} className="mt-0.5 shrink-0 text-[hsl(var(--secondary))]" />
+                          <div>
+                            <p className="font-semibold text-[hsl(var(--foreground))]">Start Date</p>
+                            <p>{start.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                          </div>
+                        </div>
+                      )}
+                      {end && start && end.getTime() !== start.getTime() && (
+                        <div className="flex items-start gap-3">
+                          <CalendarDays size={16} className="mt-0.5 shrink-0 text-[hsl(var(--secondary))]" />
+                          <div>
+                            <p className="font-semibold text-[hsl(var(--foreground))]">End Date</p>
+                            <p>{end.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+                {item.startTime && (
+                  <div className="flex items-start gap-3">
+                    <Clock3 size={16} className="mt-0.5 shrink-0 text-[hsl(var(--secondary))]" />
+                    <div>
+                      <p className="font-semibold text-[hsl(var(--foreground))]">Start Time</p>
+                      <p>{item.startTime}</p>
+                    </div>
+                  </div>
+                )}
+                {item.endTime && (
+                  <div className="flex items-start gap-3">
+                    <Clock3 size={16} className="mt-0.5 shrink-0 text-[hsl(var(--secondary))]" />
+                    <div>
+                      <p className="font-semibold text-[hsl(var(--foreground))]">End Time</p>
+                      <p>{item.endTime}</p>
+                    </div>
+                  </div>
+                )}
+                {item.location && (
+                  <div className="flex items-start gap-3">
+                    <MapPin size={16} className="mt-0.5 shrink-0 text-[hsl(var(--secondary))]" />
+                    <div>
+                      <p className="font-semibold text-[hsl(var(--foreground))]">Venue</p>
+                      <p>{item.location}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <Link target="_blank" rel="noopener noreferrer" href={registerHref} className="btn-main btn-primary mt-6 w-full justify-center">Register Now <ArrowUpRight size={16} /></Link>
+            </div>
+
+            {/* Organizer contact */}
+            {(item.organizerContact?.name || item.organizerContact?.email) && (
+              <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
+                <h3 className="display text-lg font-bold">Organizer Contact</h3>
+                <div className="mt-4 space-y-2 text-sm text-[hsl(var(--muted-foreground))]">
+                  {item.organizerContact?.name && <p className="font-semibold text-[hsl(var(--foreground))]">{item.organizerContact.name}</p>}
+                  {item.organizerContact?.email && <p className="inline-flex items-center gap-2"><Mail size={14} />{item.organizerContact.email}</p>}
+                  {item.organizerContact?.phone && <p className="inline-flex items-center gap-2"><Phone size={14} />{item.organizerContact.phone}</p>}
+                </div>
+              </div>
+            )}
+
+            {/* Quick actions */}
+            <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
+              <h3 className="display text-lg font-bold">Next Steps</h3>
+              <ul className="mt-4 space-y-3 text-sm text-[hsl(var(--muted-foreground))]">
+                <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[hsl(var(--accent))]" />Submit an abstract for this {type}</li>
+                <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[hsl(var(--accent))]" />Register to secure your place</li>
+                <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[hsl(var(--accent))]" />Reach out for any questions</li>
+              </ul>
+              <Link href={`/submit-abstract?event=${encodeURIComponent(item.slug || item._id)}`} className="btn-main btn-quiet mt-5 w-full justify-center">Submit Abstract <ArrowUpRight size={16} /></Link>
+            </div>
+          </div>
+        </div>
+      </main>
+    </Layout>
+  );
+}
+
 function BlogPage() {
   const { insightsList } = useContext(APIContext);
 
@@ -1116,11 +2262,11 @@ function BlogPage() {
       <main className="section-pad">
         <div className="container-wide">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {insightsList.map((insight, index) => (
+            {insightsList.length > 0 ? insightsList.map((insight, index) => (
               <div key={insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full">
                 <div className="p-5 flex-1">
                   <div className="aspect-video w-full rounded-lg overflow-hidden mb-4">
-                    <img src={blogImages[index % blogImages.length]} alt={insight.title} className="h-full w-full object-cover" />
+                    <img src={insight.bannerUrl} alt={insight.title} className="h-full w-full object-cover" />
                   </div>
                   <span className="label text-[hsl(var(--accent))] text-[9px]">{insight.label}</span>
                   <h3 className="display mt-3 text-lg font-bold leading-tight">{insight.title}</h3>
@@ -1132,7 +2278,11 @@ function BlogPage() {
                   </span>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]">
+                <p>No blog posts have been published yet. Please check back later.</p>
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -1188,7 +2338,7 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
 }
 
 function Router() {
-  return <RoutedErrorBoundary><Switch><Route path="/" component={Home} /><Route path="/about" component={AboutPage} /><Route path="/submit-abstract" component={SubmitPage} /><Route path="/itinerary" component={ItineraryPage} /><Route path="/program" component={ProgramPage} /><Route path="/speakers" component={SpeakersPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/blog" component={BlogPage} /><Route path="/conferences" component={ConferencesPage} /><Route path="/webinars" component={WebinarsPage} /><Route path="/past-conferences" component={PastConferencesPage} /><Route path="/brochure" component={BrochurePage} /><Route path="/venue" component={VenuePage} /><Route path="/sponsors" component={SponsorsPage} /><Route path="/register" component={RegisterPage} /><Route path="/terms" component={TermsPage} /><Route path="/faq" component={FAQPage} /><Route path="/guidelines" component={GuidelinesPage} /><Route path="/contact" component={ContactPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
+  return <RoutedErrorBoundary><Switch><Route path="/" component={Home} /><Route path="/about" component={AboutPage} /><Route path="/submit-abstract" component={SubmitPage} /><Route path="/itinerary" component={ItineraryPage} /><Route path="/program" component={ProgramPage} /><Route path="/speakers" component={SpeakersPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/blog" component={BlogPage} /><Route path="/conferences" component={ConferencesPage} /><Route path="/conference/:slug" component={() => <EventDetailsPage type="conference" />} /><Route path="/webinars" component={WebinarsPage} /><Route path="/webinar/:slug" component={() => <EventDetailsPage type="webinar" />} /><Route path="/brochure" component={BrochurePage} /><Route path="/venue" component={VenuePage} /><Route path="/sponsors" component={SponsorsPage} /><Route path="/register" component={RegisterPage} /><Route path="/terms" component={TermsPage} /><Route path="/faq" component={FAQPage} /><Route path="/guidelines" component={GuidelinesPage} /><Route path="/contact" component={ContactPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
 }
 
 function App() {

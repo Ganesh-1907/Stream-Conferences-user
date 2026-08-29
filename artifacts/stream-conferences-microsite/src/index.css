@@ -122,7 +122,7 @@
 .display { font-family: 'Space Grotesk', sans-serif; }
 .mono { font-family: var(--app-font-mono); }
 .container-wide { width: min(1600px, calc(100% - 48px)); margin-inline: auto; }
-.section-pad { padding-block: clamp(72px, 10vw, 142px); }
+.section-pad { padding-block: clamp(48px, 6vw, 80px); }
 .line-grid { background-image: linear-gradient(to right, hsl(var(--border) / .35) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border) / .35) 1px, transparent 1px); background-size: 40px 40px; }
 .gallery-tile { background-color: hsl(var(--primary)); background-image: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / .78) 55%, hsl(var(--secondary) / .6) 100%); }
 .gallery-exchange { background-image: linear-gradient(135deg, hsl(216 52% 22%) 0%, hsl(187 78% 31%) 100%); }
@@ -156,7 +156,7 @@
 .bg-grid { background-image: linear-gradient(currentColor / .02 1px, transparent 1px), linear-gradient(90deg, currentColor / .02 1px, transparent 1px); background-size: 32px 32px; }
 @media (max-width: 767px) {
   .container-wide { width: min(100% - 32px, 1600px); }
-  .section-pad { padding-block: 72px; }
+  .section-pad { padding-block: 48px; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
