@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
+  BookOpen,
   CalendarDays,
   Check,
   ChevronDown,
@@ -309,6 +310,9 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
                 <Link href={`/${e.type === 'Conference' ? 'conference' : 'webinar'}/${encodeURIComponent(e.eventId || e.slug || e.id)}`} className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--border))] px-3.5 py-2 text-xs font-bold hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors" aria-label={`View details for ${e.title}`}>
                   Details
                 </Link>
+                <Link href={`/submit-abstract?event=${encodeURIComponent(e.eventId || e.slug || e.id)}`} className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--border))] px-3.5 py-2 text-xs font-bold hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors" aria-label={`Submit abstract for ${e.title}`}>
+                  Submit Abstract
+                </Link>
                 <Link target="_blank" rel="noopener noreferrer" href={`/register?event=${encodeURIComponent(e.eventId || e.slug || e.id)}`} className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3.5 py-2 text-xs font-bold hover:opacity-90 transition-opacity" aria-label={`Register for ${e.title}`}>
                   Register <ArrowRight size={13} />
                 </Link>
@@ -502,13 +506,18 @@ function APIProvider({ children }: { children: ReactNode }) {
   }, [conferences, webinars]);
 
   const insightsList = useMemo(() => {
-    return blogs.map((b: any) => ({
-      label: b.label || 'FIELD NOTE',
-      title: b.title,
-      copy: b.copy,
-      content: b.content,
-      bannerUrl: mediaUrl(b.bannerUrl || '')
-    }));
+    return [...blogs]
+      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+      .map((b: any) => ({
+        id: b._id || b.id,
+        label: b.label || 'FIELD NOTE',
+        title: b.title,
+        copy: b.copy,
+        content: b.content,
+        bannerUrl: mediaUrl(b.bannerUrl || ''),
+        announcedBy: b.announcedBy,
+        createdAt: b.createdAt
+      }));
   }, [blogs]);
 
   return (
@@ -532,7 +541,6 @@ function SiteHeader() {
       items: [
         ['/about', 'About Stream', 'Learn about our mission, vision and values'],
         ['/program', 'Program Overview', 'Scientific track details and conference lenses'],
-        ['/itinerary', 'Itinerary Schedule', 'Day-by-day speaker schedules and agenda'],
         ['/speakers', 'OCM & Speakers', 'Meet our organizing committee and faculty'],
         ['/venue', 'Venues', 'Explore the venues available for our events']
       ]
@@ -543,8 +551,7 @@ function SiteHeader() {
       items: [
         ['/conferences', 'Conferences Calendar', 'Browse upcoming and past scientific conferences'],
         ['/webinars', 'Webinars Calendar', 'Join our digital panels and online clinical seminars'],
-        ['/gallery', 'Event Gallery', 'Photos and highlights of scientific convocations'],
-        ['/mentors', 'Our Mentors', 'Meet the mentors guiding our research community']
+        ['/gallery', 'Event Gallery', 'Photos and highlights of scientific convocations']
       ]
     },
     {
@@ -623,7 +630,7 @@ function SiteHeader() {
                   {isOpen && (
                     <div
                       className={`absolute top-full left-1/2 -translate-x-1/2 pt-2 transition-all duration-200 z-50 ${
-                        group.id === 'conference-info' ? 'w-[520px]' :
+                        group.id === 'conference-info' ? 'w-[280px]' :
                         group.id === 'media-support' ? 'w-[520px]' :
                         'w-[280px]'
                       }`}
@@ -631,7 +638,7 @@ function SiteHeader() {
                     >
                       <div
                         className={`grid gap-1.5 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 shadow-2xl shadow-[hsl(var(--primary)/.13)] ${
-                          group.id === 'conference-info' ? 'grid-cols-2' :
+                          group.id === 'conference-info' ? 'grid-cols-1' :
                           group.id === 'media-support' ? 'grid-cols-2' :
                           'grid-cols-1'
                         }`}
@@ -690,7 +697,7 @@ function SiteHeader() {
         <div className="container-wide flex h-11 items-center justify-between">
           <span className="label text-[9px] text-[hsl(var(--primary-foreground)/.65)]">{conferenceCode} · Quick access</span>
           <div className="flex items-center gap-5 text-[11px] font-bold uppercase tracking-[.12em]">
-            <a href="#program" data-testid="link-subnav-program">Program</a><a href="#speakers" data-testid="link-subnav-speakers">Speakers</a><Link href="/venue" data-testid="link-subnav-venue">Venues</Link>
+            <Link href="/program" data-testid="link-subnav-program">Program</Link><a href="#speakers" data-testid="link-subnav-speakers">Speakers</a><Link href="/venue" data-testid="link-subnav-venue">Venues</Link>
           </div>
         </div>
       </div>}
@@ -735,7 +742,7 @@ function Reveal({ children, className = '' }: { children: ReactNode; className?:
 }
 
 function SectionTitle({ eyebrow, title, body, light = false }: { eyebrow: string; title: string; body?: string; light?: boolean }) {
-  return <div className={light ? 'text-[hsl(var(--primary-foreground))]' : ''}><p className={`label ${light ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--secondary))]'}`}>{eyebrow}</p><h2 className="display mt-4 max-w-2xl text-balance text-3xl font-bold leading-[1.08] tracking-[-.045em] md:text-5xl">{title}</h2>{body && <p className={`mt-5 max-w-2xl text-base leading-7 ${light ? 'text-[hsl(var(--primary-foreground)/.7)]' : 'text-[hsl(var(--muted-foreground))]'}`}>{body}</p>}</div>;
+  return <div className={light ? 'text-[hsl(var(--primary-foreground))]' : ''}><p className={`label ${light ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--secondary))]'}`}>{eyebrow}</p><h2 className="display mt-4 max-w-4xl text-3xl font-bold leading-[1.08] tracking-[-.045em] md:text-5xl">{title}</h2>{body && <p className={`mt-5 max-w-2xl text-base leading-7 ${light ? 'text-[hsl(var(--primary-foreground)/.7)]' : 'text-[hsl(var(--muted-foreground))]'}`}>{body}</p>}</div>;
 }
 
 function PageHero({ eyebrow, title, body }: { eyebrow: string; title: string; body: string; bgImage?: string }) {
@@ -812,7 +819,7 @@ function GallerySlider() {
         </div>
         <div className="reveal relative overflow-hidden rounded-[22px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 shadow-xl">
           <div 
-            className="relative aspect-[16/9] w-full overflow-hidden rounded-[16px] transition-all duration-700 ease-in-out"
+            className="relative aspect-[16/9] md:aspect-[21/9] lg:aspect-[3/1] w-full overflow-hidden rounded-[16px] transition-all duration-700 ease-in-out"
             style={{ 
               backgroundImage: `linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.3) 60%, rgba(15, 23, 42, 0.1) 100%), url(${galleryImages[active]})`,
               backgroundSize: 'cover',
@@ -877,32 +884,6 @@ function Home() {
           <div className="reveal reveal-delay-2 relative"><div className="float-mark relative ml-auto max-w-[500px] w-full overflow-hidden rounded-[22px] border border-[hsl(var(--primary-foreground)/.2)] bg-[hsl(var(--primary-foreground)/.07)] p-3 backdrop-blur-sm"><div className="relative aspect-[4/5] overflow-hidden rounded-[16px]"><img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=900&q=85" alt="Audience gathered at a conference presentation" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--primary)/.95)] via-[hsl(var(--primary)/.15)] to-transparent" /><div className="absolute inset-x-5 top-5 flex items-center justify-between"><span className="label rounded-full bg-[hsl(var(--primary)/.72)] px-3 py-1.5 text-[9px] text-[hsl(var(--accent))]">Field note / 001</span><Microscope size={19} className="text-[hsl(var(--accent))]" /></div><div className="absolute inset-x-5 bottom-5"><p className="display text-2xl font-bold leading-tight">“Research becomes real when disciplines stop working in parallel.”</p><div className="mt-5 flex items-center justify-between text-xs text-[hsl(var(--primary-foreground)/.68)]"><span>ICMLHS 2027</span><span>Boston / USA</span></div></div></div></div></div>
         </div>
       </section>
-      <section className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]"><div className="container-wide grid gap-6 py-7 md:grid-cols-[1.4fr_1fr_1fr]"><div><p className="label text-[hsl(var(--secondary))]">International Conference on</p><p className="display mt-2 text-lg font-bold">{conferenceName}</p></div><div className="flex items-center gap-3"><CalendarDays className="text-[hsl(var(--secondary))]" size={20} /><div><p className="label text-[9px] text-[hsl(var(--muted-foreground))]">Dates</p><p className="mt-1 text-sm font-semibold">{eventDate}</p></div></div><div className="flex items-center gap-3"><MapPin className="text-[hsl(var(--accent))]" size={20} /><div><p className="label text-[9px] text-[hsl(var(--muted-foreground))]">Venue</p><p className="mt-1 text-sm font-semibold">{eventVenue}</p></div></div></div></section>
-      <section className="section-pad border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-        <div className="container-wide grid gap-12 md:grid-cols-[1.3fr_0.7fr] md:items-center">
-          <div className="reveal">
-            <p className="label text-[hsl(var(--secondary))]">The Platform Philosophy</p>
-            <h2 className="display mt-5 max-w-2xl text-4xl font-bold leading-[1.03] tracking-[-.05em] md:text-6xl">Not just another event. <span className="text-[hsl(var(--secondary))]">A better way to gather.</span></h2>
-            <p className="mt-7 max-w-2xl text-base leading-8 text-[hsl(var(--muted-foreground))]">Stream is an independent conference platform for the people doing the work. We build precise, generous spaces for research to meet practice — across medicine, technology, engineering, and academia.</p>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-[hsl(var(--muted-foreground))]"><strong>We care about the signal.</strong> Fewer filler panels, more useful questions, and programmes shaped around real problems.</p>
-          </div>
-          <div className="reveal reveal-delay-1 grid gap-4 grid-cols-3 md:grid-cols-1">
-            <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.25)] p-6">
-              <strong className="display block text-4xl font-bold tracking-[-.06em] text-[hsl(var(--accent))] md:text-5xl">42</strong>
-              <span className="label mt-2 block text-[9px] text-[hsl(var(--muted-foreground))]">Countries connected</span>
-            </div>
-            <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.25)] p-6">
-              <strong className="display block text-4xl font-bold tracking-[-.06em] text-[hsl(var(--accent))] md:text-5xl">18k+</strong>
-              <span className="label mt-2 block text-[9px] text-[hsl(var(--muted-foreground))]">Annual participants</span>
-            </div>
-            <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.25)] p-6">
-              <strong className="display block text-4xl font-bold tracking-[-.06em] text-[hsl(var(--accent))] md:text-5xl">11+</strong>
-              <span className="label mt-2 block text-[9px] text-[hsl(var(--muted-foreground))]">Years convening</span>
-            </div>
-          </div>
-        </div>
-      </section>
-      <Countdown />
       
       {/* Upcoming Conferences Section */}
       <section className="section-pad bg-[hsl(var(--card))]" id="upcoming-events-conferences">
@@ -922,70 +903,72 @@ function Home() {
               const registerHref = `/register?event=${encodeURIComponent(item.eventId || item.slug || item._id)}`;
               const detailsHref = `/conference/${encodeURIComponent(item.eventId || item.slug || item._id)}`;
               return (
-                <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 h-full" data-testid={`card-home-conference-${index}`}>
-                  <div>
-                    <div className="flex items-start justify-between">
-                      {item.logoUrl ? (
-                        <img 
-                          src={mediaUrl(item.logoUrl)} 
-                          alt={`${item.title} logo`} 
-                          className="w-14 h-14 rounded-xl border border-[hsl(var(--border))] bg-white object-contain p-1.5 shrink-0" 
-                        />
-                      ) : (
-                        <div className="w-14 h-14 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex flex-col items-center justify-center text-center shrink-0">
-                          <Building2 size={24} />
-                        </div>
-                      )}
-                      <span className="inline-block text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-[hsl(var(--secondary)/.12)] text-[hsl(var(--secondary))] label">
-                        CONFERENCE
-                      </span>
-                    </div>
-                    <h3 className="display mt-5 text-lg font-bold leading-snug text-[hsl(var(--foreground))] line-clamp-2">
-                      {item.title}
-                    </h3>
-                    <div className="mt-5 space-y-2">
-                      <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
-                        <MapPin size={13} className="shrink-0 text-[hsl(var(--accent))]" />
-                        <span className="truncate">{item.location}</span>
+                <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-home-conference-${index}`}>
+                  <div className="relative aspect-[16/9] w-full bg-[hsl(var(--muted)/.25)] border-b border-[hsl(var(--border))] overflow-hidden">
+                    {item.bannerUrl || item.logoUrl ? (
+                      <img 
+                        src={mediaUrl(item.bannerUrl || item.logoUrl)} 
+                        alt={`${item.title} banner`} 
+                        className="h-full w-full object-cover" 
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center">
+                        <Building2 className="text-[hsl(var(--primary-foreground))] opacity-65" size={40} />
                       </div>
-                      {item.eventDate && (() => {
-                        const { start, end } = getStartAndEndDates(item.eventDate, item.day);
-                        const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                        const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                        return (
-                          <>
-                            <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
-                              <CalendarDays size={13} className="shrink-0 text-[hsl(var(--secondary))]" />
-                              <span>{startFormatted}{endFormatted ? ` – ${endFormatted}` : ''}</span>
-                            </div>
-                            {(item.startTime || item.endTime) && (
-                              <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
-                                <Clock3 size={13} className="shrink-0 text-[hsl(var(--secondary))]" />
-                                <span>{item.startTime || '—'} – {item.endTime || '—'}</span>
-                              </div>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </div>
+                    )}
+                    <span className="absolute right-3 top-3 inline-block text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-[hsl(var(--primary)/.85)] text-[hsl(var(--primary-foreground))] backdrop-blur-[2px] label">
+                      CONFERENCE
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2 mt-6 pt-5 border-t border-[hsl(var(--border))]">
-                    <Link 
-                      href={detailsHref} 
-                      className="flex-1 text-center py-3 px-3 rounded-full text-sm font-bold border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors"
-                      data-testid={`btn-home-conf-details-${index}`}
-                    >
-                      Details
-                    </Link>
-                    <Link 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      href={registerHref} 
-                      className="flex-1 text-center py-3 px-3 rounded-full text-sm font-bold bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 transition-opacity"
-                      data-testid={`btn-home-conf-register-${index}`}
-                    >
-                      Register Now
-                    </Link>
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h3 className="display text-lg font-bold leading-snug text-[hsl(var(--foreground))] line-clamp-2">
+                        {item.title}
+                      </h3>
+                      <div className="mt-4 space-y-2">
+                        <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
+                          <MapPin size={13} className="shrink-0 text-[hsl(var(--accent))]" />
+                          <span className="truncate">{item.location}</span>
+                        </div>
+                        {item.eventDate && (() => {
+                          const { start, end } = getStartAndEndDates(item.eventDate, item.day);
+                          const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                          const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                          return (
+                            <>
+                              <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
+                                <CalendarDays size={13} className="shrink-0 text-[hsl(var(--secondary))]" />
+                                <span>{startFormatted}{endFormatted ? ` – ${endFormatted}` : ''}</span>
+                              </div>
+                              {(item.startTime || item.endTime) && (
+                                <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
+                                  <Clock3 size={13} className="shrink-0 text-[hsl(var(--secondary))]" />
+                                  <span>{item.startTime || '—'} – {item.endTime || '—'}</span>
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-6 pt-5 border-t border-[hsl(var(--border))]">
+                      <Link 
+                        href={detailsHref} 
+                        className="flex-1 text-center py-3 px-3 rounded-full text-sm font-bold border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors"
+                        data-testid={`btn-home-conf-details-${index}`}
+                      >
+                        Details
+                      </Link>
+                      <Link 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        href={registerHref} 
+                        className="flex-1 text-center py-3 px-3 rounded-full text-sm font-bold bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 transition-opacity"
+                        data-testid={`btn-home-conf-register-${index}`}
+                      >
+                        Register Now
+                      </Link>
+                    </div>
                   </div>
                 </div>
               );
@@ -995,7 +978,6 @@ function Home() {
       </section>
 
       <Ticker />
-      <section className="section-pad line-grid" id="program"><div className="container-wide"><SectionTitle eyebrow="Five lenses, one conversation" title="Conference tracks" body="Follow the question that matters to your work. Each track is designed to create useful friction between evidence and application." /><TrackGrid /></div></section>
       
       {/* Upcoming Webinars Section */}
       <section className="section-pad bg-[hsl(var(--muted)/.35)]" id="upcoming-events-webinars">
@@ -1015,76 +997,78 @@ function Home() {
               const registerHref = `/register?event=${encodeURIComponent(item.eventId || item.slug || item._id)}`;
               const detailsHref = `/webinar/${encodeURIComponent(item.eventId || item.slug || item._id)}`;
               return (
-                <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 h-full" data-testid={`card-home-webinar-${index}`}>
-                  <div>
-                    <div className="flex items-start justify-between">
-                      {item.logoUrl ? (
-                        <img 
-                          src={mediaUrl(item.logoUrl)} 
-                          alt={`${item.title} logo`} 
-                          className="w-14 h-14 rounded-xl border border-[hsl(var(--border))] bg-white object-contain p-1.5 shrink-0" 
-                        />
-                      ) : (
-                        <div className="w-14 h-14 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex flex-col items-center justify-center text-center shrink-0">
-                          <Users size={24} />
-                        </div>
-                      )}
-                      <span className="inline-block text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-[hsl(var(--accent)/.12)] text-[hsl(var(--accent))] label">
-                        WEBINAR
-                      </span>
-                    </div>
-                    <h3 className="display mt-5 text-lg font-bold leading-snug text-[hsl(var(--foreground))] line-clamp-2">
-                      {item.title}
-                    </h3>
-                    <div className="mt-5 space-y-2">
-                      {item.speaker && (
-                        <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
-                          <Users size={13} className="shrink-0 text-[hsl(var(--accent))]" />
-                          <span className="truncate">{item.speaker}</span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
-                        <MapPin size={13} className="shrink-0 text-[hsl(var(--muted-foreground))]" />
-                        <span className="truncate">{item.location || 'Online'}</span>
+                <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-home-webinar-${index}`}>
+                  <div className="relative aspect-[16/9] w-full bg-[hsl(var(--muted)/.25)] border-b border-[hsl(var(--border))] overflow-hidden">
+                    {item.bannerUrl || item.logoUrl ? (
+                      <img 
+                        src={mediaUrl(item.bannerUrl || item.logoUrl)} 
+                        alt={`${item.title} banner`} 
+                        className="h-full w-full object-cover" 
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center">
+                        <Users className="text-[hsl(var(--primary-foreground))] opacity-65" size={40} />
                       </div>
-                      {item.eventDate && (() => {
-                        const { start, end } = getStartAndEndDates(item.eventDate, item.day);
-                        const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                        const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                        return (
-                          <>
-                            <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
-                              <CalendarDays size={13} className="shrink-0 text-[hsl(var(--secondary))]" />
-                              <span>{startFormatted}{endFormatted ? ` – ${endFormatted}` : ''}</span>
-                            </div>
-                            {(item.startTime || item.endTime) && (
-                              <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
-                                <Clock3 size={13} className="shrink-0 text-[hsl(var(--secondary))]" />
-                                <span>{item.startTime || '—'} – {item.endTime || '—'}</span>
-                              </div>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </div>
+                    )}
+                    <span className="absolute right-3 top-3 inline-block text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-[hsl(var(--accent)/.85)] text-[hsl(var(--accent-foreground))] backdrop-blur-[2px] label">
+                      WEBINAR
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2 mt-6 pt-5 border-t border-[hsl(var(--border))]">
-                    <Link 
-                      href={detailsHref} 
-                      className="flex-1 text-center py-2 px-3 rounded-full text-xs font-bold border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors"
-                      data-testid={`btn-home-webinar-details-${index}`}
-                    >
-                      Details
-                    </Link>
-                    <Link 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      href={registerHref} 
-                      className="flex-1 text-center py-2 px-3 rounded-full text-xs font-bold bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 transition-opacity"
-                      data-testid={`btn-home-webinar-register-${index}`}
-                    >
-                      Register Now
-                    </Link>
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h3 className="display text-lg font-bold leading-snug text-[hsl(var(--foreground))] line-clamp-2">
+                        {item.title}
+                      </h3>
+                      <div className="mt-4 space-y-2">
+                        {item.speaker && (
+                          <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
+                            <Users size={13} className="shrink-0 text-[hsl(var(--accent))]" />
+                            <span className="truncate">{item.speaker}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
+                          <MapPin size={13} className="shrink-0 text-[hsl(var(--muted-foreground))]" />
+                          <span className="truncate">{item.location || 'Online'}</span>
+                        </div>
+                        {item.eventDate && (() => {
+                          const { start, end } = getStartAndEndDates(item.eventDate, item.day);
+                          const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                          const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                          return (
+                            <>
+                              <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
+                                <CalendarDays size={13} className="shrink-0 text-[hsl(var(--secondary))]" />
+                                <span>{startFormatted}{endFormatted ? ` – ${endFormatted}` : ''}</span>
+                              </div>
+                              {(item.startTime || item.endTime) && (
+                                <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
+                                  <Clock3 size={13} className="shrink-0 text-[hsl(var(--secondary))]" />
+                                  <span>{item.startTime || '—'} – {item.endTime || '—'}</span>
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-6 pt-5 border-t border-[hsl(var(--border))]">
+                      <Link 
+                        href={detailsHref} 
+                        className="flex-1 text-center py-3 px-3 rounded-full text-sm font-bold border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors"
+                        data-testid={`btn-home-webinar-details-${index}`}
+                      >
+                        Details
+                      </Link>
+                      <Link 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        href={registerHref} 
+                        className="flex-1 text-center py-3 px-3 rounded-full text-sm font-bold bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 transition-opacity"
+                        data-testid={`btn-home-webinar-register-${index}`}
+                      >
+                        Register Now
+                      </Link>
+                    </div>
                   </div>
                 </div>
               );
@@ -1093,12 +1077,12 @@ function Home() {
         </div>
       </section>
 
-      <section className="section-pad" id="speakers"><div className="container-wide"><div className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><SectionTitle eyebrow="People to follow" title="The room is part of the research." body="A deliberately mixed faculty of clinical authorities, technical pioneers, and emerging scholars." /><Link href="/speakers" className="btn-main btn-quiet shrink-0" data-testid="link-home-speakers">Meet the speakers <ArrowUpRight size={16} /></Link></div><div className="mt-12 grid gap-4 md:grid-cols-3">{mentors.slice(0, 3).map((mentor, i) => <SpeakerCard key={mentor.username} person={mentor} index={i + 1} />)}</div></div></section>
+      <section className="section-pad" id="speakers"><div className="container-wide"><div className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><SectionTitle eyebrow="People to follow" title="The room is part of the research." body="A deliberately mixed faculty of clinical authorities, technical pioneers, and emerging scholars." /><Link href="/speakers" className="btn-main btn-quiet shrink-0" data-testid="link-home-speakers">Meet the speakers <ArrowUpRight size={16} /></Link></div><div className="mt-12 grid gap-4 md:grid-cols-3 lg:grid-cols-5">{mentors.slice(0, 5).map((mentor, i) => <SpeakerCard key={mentor.username} person={mentor} index={i + 1} />)}</div></div></section>
       <TestimonialCarousel />
       <GallerySlider />
       <section className="border-y border-[hsl(var(--border))] bg-[hsl(var(--primary))] py-16 text-[hsl(var(--primary-foreground))]"><div className="container-wide flex flex-col items-start justify-between gap-10 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--accent))]">Media partners</p><p className="display mt-4 text-2xl font-bold">Amplifying work that deserves to travel.</p></div><div className="grid grid-cols-2 gap-x-10 gap-y-5 text-sm font-bold text-[hsl(var(--primary-foreground)/.55)] sm:grid-cols-4"><span>JOURNAL OF TRANSLATIONAL MEDICINE</span><span>SCIENCEWIRE</span><span>HEALTH / REVIEW</span><span>TECHNICA</span></div></div></section>
       {insightsList.length > 0 && (
-        <section className="section-pad"><div className="container-wide grid gap-10 md:grid-cols-[.7fr_1.3fr]"><div><SectionTitle eyebrow="From the Stream Conferences blog" title="Notes for the in-between." /><Link href="/blog" className="btn-main btn-quiet mt-8" data-testid="link-home-insights">Read the blog <ArrowRight size={16} /></Link></div><div className="grid gap-4 sm:grid-cols-3">{insightsList.slice(0, 3).map((insight, index) => <div key={insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full"><div className="p-5 flex-1"><div className="aspect-video w-full rounded-lg overflow-hidden mb-4"><img src={insight.bannerUrl} alt={insight.title} className="h-full w-full object-cover" /></div><span className="label text-[hsl(var(--accent))] text-[9px]">{insight.label}</span><h3 className="display mt-3 text-lg font-bold leading-tight">{insight.title}</h3><p className="mt-2 text-xs leading-5 text-[hsl(var(--muted-foreground))]">{insight.copy}</p></div><div className="px-5 pb-5 pt-0"><Link href="/blog" className="inline-flex items-center gap-1 text-xs font-bold text-[hsl(var(--secondary))]" data-testid={`link-home-blog-${index}`}>Read field note <ArrowRight size={13} /></Link></div></div>)}</div></div></section>
+        <section className="section-pad"><div className="container-wide grid gap-10 md:grid-cols-[.7fr_1.3fr]"><div><SectionTitle eyebrow="From the Stream Conferences blog" title="Notes for the in-between." /><Link href="/blog" className="btn-main btn-quiet mt-8" data-testid="link-home-insights">Read the blog <ArrowRight size={16} /></Link></div><div className="grid gap-4 sm:grid-cols-3">{insightsList.slice(0, 3).map((insight, index) => <div key={insight.id || insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full"><div className="p-5 flex-1"><div className="aspect-video w-full rounded-lg overflow-hidden mb-4 bg-[hsl(var(--muted)/.25)] flex items-center justify-center relative">{insight.bannerUrl ? <img src={insight.bannerUrl} alt={insight.title} className="h-full w-full object-cover" /> : <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center"><BookOpen className="text-[hsl(var(--primary-foreground))] opacity-65" size={32} /></div>}</div><span className="label text-[hsl(var(--accent))] text-[9px]">{insight.label}</span><h3 className="display mt-3 text-lg font-bold leading-tight line-clamp-2">{insight.title}</h3><p className="mt-2 text-xs leading-5 text-[hsl(var(--muted-foreground))] line-clamp-3">{insight.copy}</p></div><div className="px-5 pb-5 pt-0"><Link href={`/blog/${encodeURIComponent(insight.id)}`} className="inline-flex items-center gap-1 text-xs font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition" data-testid={`link-home-blog-${index}`}>Read field note <ArrowRight size={13} /></Link></div></div>)}</div></div></section>
       )}
       <section className="border-t border-[hsl(var(--border))] bg-[hsl(var(--muted)/.38)] py-10"><div className="container-wide flex flex-col justify-between gap-5 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--secondary))]">Stay close to the conversation</p><p className="mt-2 text-sm font-semibold">Follow <span className="text-[hsl(var(--secondary))]">#ICMLHS2027</span> across the summit.</p></div><div className="flex gap-2"><a href="https://www.linkedin.com" className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))]" aria-label="LinkedIn" data-testid="link-social-linkedin"><Linkedin size={17} /></a><a href="https://x.com" className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))]" aria-label="X" data-testid="link-social-x"><X size={17} /></a><a href="https://www.youtube.com" className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))]" aria-label="YouTube" data-testid="link-social-youtube"><Youtube size={17} /></a></div></div></section>
       <section className="bg-[hsl(var(--accent))] py-10 text-[hsl(var(--accent-foreground))]"><div className="container-wide flex flex-col justify-between gap-6 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--accent-foreground)/.65)]">Delegate secretariat</p><p className="display mt-2 text-2xl font-bold">Have a question before you arrive?</p><div className="mt-3 flex flex-wrap gap-4 text-sm"><a href="mailto:info@streamconferences.com" className="flex items-center gap-2 font-semibold" data-testid="link-home-email"><Mail size={16} /> info@streamconferences.com</a><span className="flex items-center gap-2"><Phone size={16} /> +1 (617) 555-0199</span></div></div><Link href="/contact" className="btn-main border border-[hsl(var(--accent-foreground)/.35)]" data-testid="link-home-contact">Contact us <ArrowUpRight size={16} /></Link></div></section>
@@ -1107,32 +1091,29 @@ function Home() {
 }
 
 function SpeakerCard({ person, index }: { person: any; index: number }) {
-  const [open, setOpen] = useState(false);
   const displayName = person.fullName || person.username;
   const role = person.title || '';
+  const isOrganizer = person.role === 'admin';
+  const label = isOrganizer ? 'Committee Member' : 'Invited speaker';
   return (
-    <div className="card-lift overflow-hidden rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]" data-testid={`card-speaker-${index}`}>
-      <div className="flex justify-center pt-8 pb-2">
-        {person.avatar ? (
-          <img src={mediaUrl(person.avatar)} alt={displayName} className="h-32 w-32 rounded-full object-cover border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)]" />
-        ) : (
-          <div className="h-32 w-32 rounded-full bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))]"><Users size={44} /></div>
-        )}
+    <div className="card-lift flex flex-col justify-between overflow-hidden rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]" data-testid={`card-speaker-${index}`}>
+      <div>
+        <div className="flex justify-center pt-8 pb-2">
+          {person.avatar ? (
+            <img src={mediaUrl(person.avatar)} alt={displayName} className="h-32 w-32 rounded-full object-cover border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)]" />
+          ) : (
+            <div className="h-32 w-32 rounded-full bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))]"><Users size={44} /></div>
+          )}
+        </div>
+        <div className="p-5 pb-0 text-center">
+          <p className="label text-[hsl(var(--secondary))]">{label}</p>
+          <h3 className="display mt-3 text-xl font-bold text-[hsl(var(--foreground))]">{displayName}</h3>
+          {role && <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{role}</p>}
+        </div>
       </div>
-      <div className="p-5 text-center">
-        <p className="label text-[hsl(var(--secondary))]">Invited speaker</p>
-        <h3 className="display mt-3 text-xl font-bold">{displayName}</h3>
-        {role && <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{role}</p>}
-        <button type="button" onClick={() => setOpen((value) => !value)} className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[hsl(var(--secondary))]" aria-expanded={open} data-testid={`button-bio-${index}`}>
-          {open ? 'Hide bio' : 'View full bio'} <ChevronDown size={15} className={open ? 'rotate-180 transition-transform' : 'transition-transform'} />
-        </button>
-        {open && (
-          <p className="mt-4 border-t border-[hsl(var(--border))] pt-4 text-sm leading-6 text-[hsl(var(--muted-foreground))] text-left">
-            {person.bio || 'A pioneer in their field, specializing in translational medicine and strategic development.'}
-          </p>
-        )}
-        <Link href={`/mentors/${person.username}?from=speakers`} className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition" data-testid={`link-details-${index}`}>
-          View details <ArrowRight size={15} />
+      <div className="p-5 pt-0 text-center">
+        <Link href={`/mentors/${person.username}?from=speakers`} className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition group" data-testid={`link-details-${index}`}>
+          View details <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
         </Link>
       </div>
     </div>
@@ -1144,7 +1125,50 @@ function SpeakersPage() {
   const organizers = people.filter((p: any) => p.role === 'admin');
   const speakers = people.filter((p: any) => p.role === 'mentor');
 
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1200&q=80" eyebrow="The human network" title="People who make the questions sharper." body="Meet the world-class organizing committee and invited faculty shaping the scientific agenda for ICMLHS 2027." /><main className="section-pad"><div className="container-wide"><SectionTitle eyebrow="Organizing committee" title="The people behind the platform." body="A working committee that protects rigor while making the room generous to new ideas." /><div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{organizers.length > 0 ? organizers.map((person, i) => <SpeakerCard key={person.username} person={person} index={i + 4} />) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p>No organizing committee members yet.</p></div>}</div><div className="my-24 border-t border-[hsl(var(--border))] pt-16"><SectionTitle eyebrow="Keynote & invited speakers" title="Voices worth making time for." body="Each session is designed to reward attention with a useful next move." /><div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{speakers.length > 0 ? speakers.map((person, i) => <SpeakerCard key={person.username} person={person} index={i + 7} />) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p>No speakers have added their profiles yet.</p></div>}</div></div></div></main></Layout>;
+  return (
+    <Layout>
+      <PageHero 
+        bgImage="https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1200&q=80" 
+        eyebrow="The human network" 
+        title="People who make the questions sharper." 
+        body="Meet the world-class organizing committee and invited faculty shaping the scientific agenda for ICMLHS 2027." 
+      />
+      <main className="section-pad">
+        <div className="container-wide">
+          <SectionTitle 
+            eyebrow="Organizing committee" 
+            title="The people behind the platform." 
+            body="A working committee that protects rigor while making the room generous to new ideas." 
+          />
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {organizers.length > 0 ? (
+              organizers.map((person, i) => <SpeakerCard key={person.username} person={person} index={i + 4} />)
+            ) : (
+              <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))] border border-dashed border-[hsl(var(--border))] rounded-2xl bg-[hsl(var(--muted)/.03)]">
+                <p>No organizing committee members yet.</p>
+              </div>
+            )}
+          </div>
+          <div className="my-24 border-t border-[hsl(var(--border))] pt-16">
+            <SectionTitle 
+              eyebrow="Keynote & invited speakers" 
+              title="Voices worth making time for." 
+              body="Each session is designed to reward attention with a useful next move." 
+            />
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {speakers.length > 0 ? (
+                speakers.map((person, i) => <SpeakerCard key={person.username} person={person} index={i + 7} />)
+              ) : (
+                <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))] border border-dashed border-[hsl(var(--border))] rounded-2xl bg-[hsl(var(--muted)/.03)]">
+                  <p>No speakers have added their profiles yet.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+    </Layout>
+  );
 }
 
 function AboutPage() {
@@ -1166,14 +1190,124 @@ function SuccessState({ title, body, reset, testId }: { title: string; body: str
   return <div className="flex flex-col justify-center rounded-2xl border border-[hsl(var(--accent)/.4)] bg-[hsl(var(--accent)/.1)] p-8" data-testid={testId}><div className="grid h-12 w-12 place-items-center rounded-full bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))]"><Check size={24} /></div><h3 className="display mt-6 text-3xl font-bold">{title}</h3><p className="mt-3 max-w-md text-sm leading-7 text-[hsl(var(--primary-foreground)/.7)]">{body}</p>{reset && <button type="button" onClick={reset} className="mt-7 self-start text-sm font-bold text-[hsl(var(--accent))]" data-testid="button-reset-form">Submit another response</button>}</div>;
 }
 
-function ItineraryPage() {
-  const { toast } = useToast();
-  const [day, setDay] = useState('Day 01');
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=1200&q=80" eyebrow="Three days / many directions" title="A program with a pulse." body="The full conference itinerary features elite keynote addresses, technical sessions, roundtable discussions, and networking segments." /><main className="section-pad"><div className="container-wide"><div className="flex flex-wrap items-end justify-between gap-6"><SectionTitle eyebrow="Live program overview" title="Choose your day." /><button type="button" onClick={() => toast({ title: "Itinerary Compiled", description: "The complete three-day program PDF is compiling. Your download will start shortly." })} className="btn-main btn-quiet" data-testid="button-download-program"><Download size={16} /> Download full program</button></div><div className="mt-12 flex gap-2 overflow-x-auto border-b border-[hsl(var(--border))] pb-3">{Object.keys(schedule).map((item) => <button key={item} type="button" onClick={() => setDay(item)} className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-bold ${day === item ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : 'border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))]'}`} aria-pressed={day === item} data-testid={`button-${item.toLowerCase().replace(' ', '-')}`}>{item}<span className="ml-2 font-normal opacity-60">{item === 'Day 01' ? 'Mar 12' : item === 'Day 02' ? 'Mar 13' : 'Mar 14'}</span></button>)}</div><div className="mt-3">{schedule[day].map((item, i) => <div key={item.time + item.title} className="grid gap-3 border-b border-[hsl(var(--border))] py-7 md:grid-cols-[110px_1fr_150px] md:items-center" data-testid={`agenda-item-${day}-${i}`}><span className="mono text-sm text-[hsl(var(--secondary))]">{item.time}</span><div><h3 className="display text-xl font-bold">{item.title}</h3><p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">{item.speaker}</p></div><span className="justify-self-start rounded-full bg-[hsl(var(--muted))] px-3 py-1.5 text-[11px] font-bold text-[hsl(var(--muted-foreground))]">{item.tag}</span></div>)}</div></div></main></Layout>;
+function ThankYouPage() {
+  const params = new URLSearchParams(window.location.search);
+  const type = params.get('type') || 'registration';
+  const eventTitle = params.get('eventTitle') || '';
+
+  const content = {
+    registration: {
+      eyebrow: 'Registration confirmed',
+      title: 'Thank you for registering!',
+      body: 'Your registration and payment have been successfully recorded. A confirmation email with receipt and event details has been sent to the email provided.'
+    },
+    abstract: {
+      eyebrow: 'Abstract received',
+      title: 'Thank you for your submission!',
+      body: 'Your abstract PDF has been uploaded successfully. Our Scientific Advisory Board will review it and a confirmation will be sent to the email provided.'
+    }
+  }[type] || {
+    eyebrow: 'Confirmed',
+    title: 'Thank you!',
+    body: 'Your submission has been recorded successfully.'
+  };
+
+  const confetti = Array.from({ length: 12 });
+
+  return (
+    <Layout>
+      <main className="section-pad">
+        <div className="container-wide max-w-2xl">
+          <div className="relative overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-8 py-16 text-center shadow-sm">
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+              {confetti.map((_, i) => (
+                <span
+                  key={i}
+                  className="absolute bottom-0 h-2.5 w-2.5 rounded-full"
+                  style={{
+                    left: `${(i / 12) * 100}%`,
+                    background: i % 3 === 0 ? 'hsl(var(--accent))' : i % 3 === 1 ? 'hsl(var(--secondary))' : 'hsl(var(--primary))',
+                    animation: `float-up ${2.6 + (i % 5) * 0.4}s ease-out ${i * 0.12}s infinite`
+                  }}
+                />
+              ))}
+            </div>
+
+            <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-[hsl(var(--accent)/.12)]" style={{ animation: 'pop-in .6s cubic-bezier(.2,.8,.2,1) both' }}>
+              <svg viewBox="0 0 52 52" className="h-11 w-11" aria-hidden="true">
+                <circle cx="26" cy="26" r="24" fill="none" stroke="hsl(var(--accent) / .25)" strokeWidth="3" />
+                <path
+                  d="M15 27 L23 35 L38 19"
+                  fill="none"
+                  stroke="hsl(var(--accent))"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ strokeDasharray: 200, strokeDashoffset: 200, animation: 'check-draw .5s .35s ease-out forwards' }}
+                />
+              </svg>
+            </div>
+
+            <p className="label mt-8 text-[hsl(var(--secondary))] reveal reveal-delay-1">{content.eyebrow}</p>
+            <h1 className="display mt-4 text-3xl font-bold tracking-[-.04em] text-[hsl(var(--foreground))] md:text-4xl reveal reveal-delay-2">{content.title}</h1>
+            {eventTitle && <p className="mt-3 text-sm font-semibold text-[hsl(var(--accent))] reveal reveal-delay-2">{eventTitle}</p>}
+            <p className="mx-auto mt-5 max-w-md text-sm leading-7 text-[hsl(var(--muted-foreground))] reveal reveal-delay-3">{content.body}</p>
+
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-3 reveal reveal-delay-3">
+              <Link href="/" className="btn-main btn-primary" data-testid="link-thank-you-home">Back to home <ArrowUpRight size={16} /></Link>
+              <Link href="/contact" className="btn-main btn-quiet" data-testid="link-thank-you-contact">Contact us</Link>
+            </div>
+          </div>
+        </div>
+      </main>
+    </Layout>
+  );
 }
 
 function ProgramPage() {
-  return <Layout><PageHero eyebrow="Program architecture" title="A clear route through complex work." body="The full program is organized around translation: what we know, what we can test, and what we can build together." /><main className="section-pad"><div className="container-wide"><div className="grid gap-4 md:grid-cols-3">{[['01', 'Orient', 'Keynotes and plenaries set the questions, contexts, and stakes for the day.'], ['02', 'Interrogate', 'Technical sessions and symposia test evidence in public, with room for disagreement.'], ['03', 'Connect', 'Roundtables and networking forums create the next collaboration beyond the stage.']].map(([n, title, body]) => <div key={n} className="rounded-2xl bg-[hsl(var(--primary))] p-7 text-[hsl(var(--primary-foreground))]"><span className="label text-[hsl(var(--accent))]">{n}</span><h2 className="display mt-12 text-3xl font-bold">{title}</h2><p className="mt-4 text-sm leading-7 text-[hsl(var(--primary-foreground)/.68)]">{body}</p></div>)}</div><div className="mt-24"><SectionTitle eyebrow="At a glance" title="Sessions that respect your attention." /><div className="mt-10 grid gap-3">{['Opening Keynote · The Velocity of Translation', 'Clinical Translation Roundtables', 'Research Dissemination Forum', 'Poster Session & Live Q&A', 'Future Systems · Closing Plenary'].map((item, i) => <div key={item} className="flex items-center gap-4 border-b border-[hsl(var(--border))] py-5"><span className="mono text-xs text-[hsl(var(--accent))]">0{i + 1}</span><p className="font-bold">{item}</p><ArrowUpRight size={17} className="ml-auto text-[hsl(var(--secondary))]" /></div>)}</div><Link href="/itinerary" className="btn-main btn-primary mt-10" data-testid="link-program-itinerary">View day-by-day itinerary <ArrowRight size={16} /></Link></div></div></main></Layout>;
+  return (
+    <Layout>
+      <PageHero 
+        eyebrow="Program architecture" 
+        title="A clear route through complex work." 
+        body="The full program is organized around translation: what we know, what we can test, and what we can build together." 
+      />
+      <main className="section-pad">
+        <div className="container-wide">
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              ['01', 'Orient', 'Keynotes and plenaries set the questions, contexts, and stakes for the day.'], 
+              ['02', 'Interrogate', 'Technical sessions and symposia test evidence in public, with room for disagreement.'], 
+              ['03', 'Connect', 'Roundtables and networking forums create the next collaboration beyond the stage.']
+            ].map(([n, title, body]) => (
+              <div key={n} className="rounded-2xl bg-[hsl(var(--primary))] p-7 text-[hsl(var(--primary-foreground))] shadow-md">
+                <span className="label text-[hsl(var(--accent))]">{n}</span>
+                <h2 className="display mt-12 text-3xl font-bold">{title}</h2>
+                <p className="mt-4 text-sm leading-7 text-[hsl(var(--primary-foreground)/.68)]">{body}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-24">
+            <SectionTitle eyebrow="At a glance" title="Sessions that respect your attention." />
+            <div className="mt-10 grid gap-3 max-w-3xl">
+              {[
+                'Opening Keynote · The Velocity of Translation', 
+                'Clinical Translation Roundtables', 
+                'Research Dissemination Forum', 
+                'Poster Session & Live Q&A', 
+                'Future Systems · Closing Plenary'
+              ].map((item, i) => (
+                <div key={item} className="flex items-center gap-4 border-b border-[hsl(var(--border))] py-5">
+                  <span className="mono text-xs text-[hsl(var(--accent))] font-bold">0{i + 1}</span>
+                  <p className="font-bold text-[hsl(var(--foreground))]">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
+    </Layout>
+  );
 }
 
 function BrochurePage() {
@@ -1193,7 +1327,7 @@ function SponsorsPage() {
 }
 
 function RegisterPage() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const eventSlug = new URLSearchParams(window.location.search).get('event') || '';
   const registerUrl = `${window.location.origin}${window.location.pathname}?event=${encodeURIComponent(eventSlug)}`;
   const [copied, setCopied] = useState(false);
@@ -1266,7 +1400,7 @@ function RegisterPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setSent(true);
+        navigate(`/thank-you?type=registration&eventTitle=${encodeURIComponent(eventInfo?.eventTitle || '')}`);
       } else {
         setError(data.error || 'Payment verification failed');
       }
@@ -2298,7 +2432,7 @@ function BlogPage() {
         <div className="container-wide">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {insightsList.length > 0 ? insightsList.map((insight, index) => (
-              <div key={insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full">
+              <div key={insight.id || insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full">
                 <div className="p-5 flex-1">
                   <div className="aspect-video w-full rounded-lg overflow-hidden mb-4">
                     <img src={insight.bannerUrl} alt={insight.title} className="h-full w-full object-cover" />
@@ -2308,9 +2442,9 @@ function BlogPage() {
                   <p className="mt-2 text-xs leading-5 text-[hsl(var(--muted-foreground))]">{insight.copy}</p>
                 </div>
                 <div className="px-5 pb-5 pt-0">
-                  <span className="inline-flex items-center gap-1 text-xs font-bold text-[hsl(var(--secondary))]">
+                  <Link href={`/blog/${encodeURIComponent(insight.id)}`} className="inline-flex items-center gap-1 text-xs font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition" data-testid={`link-blog-read-${index}`}>
                     Read field note <ArrowRight size={13} />
-                  </span>
+                  </Link>
                 </div>
               </div>
             )) : (
@@ -2325,8 +2459,95 @@ function BlogPage() {
   );
 }
 
+function BlogDetailPage() {
+  const { slug = '' } = useParams<{ slug: string }>();
+  const { insightsList } = useContext(APIContext);
+  const insight = insightsList.find((i: any) => String(i.id) === String(slug));
+
+  if (!insight) {
+    return (
+      <Layout>
+        <main className="section-pad">
+          <div className="container-wide max-w-xl text-center">
+            <SectionTitle eyebrow="Not found" title="This field note could not be found." />
+            <Link href="/blog" className="btn-main btn-quiet mt-8 group inline-flex items-center gap-2">
+              <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-1" /> Back to blog
+            </Link>
+          </div>
+        </main>
+      </Layout>
+    );
+  }
+
+  const authorName = insight.announcedBy || 'Stream Conferences';
+  const published = insight.createdAt ? new Date(insight.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+  const authorInitials = authorName.trim().split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
+
+  return (
+    <Layout>
+      <main className="section-pad">
+        <div className="container-wide max-w-3xl">
+          {/* Back Button Container */}
+          <div className="mb-6">
+            <Link href="/blog" className="inline-flex items-center gap-2 text-sm font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition-colors group">
+              <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-1" /> Back to blog
+            </Link>
+          </div>
+
+          {/* Label / Category Pill */}
+          <div className="mb-4">
+            <span className="inline-flex items-center rounded-full bg-[hsl(var(--accent)/.12)] px-3 py-1 text-[10px] font-bold tracking-wider uppercase text-[hsl(var(--accent))] border border-[hsl(var(--accent)/.25)]">
+              {insight.label}
+            </span>
+          </div>
+
+          {/* Title */}
+          <h1 className="display text-balance text-3xl font-bold leading-tight tracking-[-.04em] md:text-5xl text-[hsl(var(--foreground))]">
+            {insight.title}
+          </h1>
+
+          {/* Author & Meta Info Row */}
+          <div className="mt-6 flex items-center gap-3 text-sm text-[hsl(var(--muted-foreground))] border-b border-[hsl(var(--border))] pb-6">
+            <div className="h-8 w-8 rounded-full bg-[hsl(var(--secondary)/.12)] text-[hsl(var(--secondary))] flex items-center justify-center font-bold text-xs border border-[hsl(var(--secondary)/.2)]">
+              {authorInitials || 'SC'}
+            </div>
+            <div>
+              <span className="font-semibold text-[hsl(var(--foreground))]">{authorName}</span>
+              {published && <span className="mx-2 text-[hsl(var(--muted-foreground)/.5)]">·</span>}
+              {published && <span>{published}</span>}
+            </div>
+          </div>
+
+          {/* Banner Image */}
+          {insight.bannerUrl && (
+            <div className="mt-8 overflow-hidden rounded-2xl border border-[hsl(var(--border))] shadow-lg">
+              <img src={insight.bannerUrl} alt={insight.title} className="h-full w-full object-cover max-h-[420px]" />
+            </div>
+          )}
+
+          {/* Intro Copy */}
+          {insight.copy && (
+            <p className="mt-8 text-lg font-medium leading-relaxed text-[hsl(var(--foreground))] border-l-4 border-[hsl(var(--accent))] pl-4 italic bg-[hsl(var(--muted)/.15)] py-4 pr-4 rounded-r-xl">
+              {insight.copy}
+            </p>
+          )}
+
+          {/* Main Content */}
+          <div className="prose prose-neutral dark:prose-invert mt-8 max-w-none">
+            {insight.content ? (
+              <div className="whitespace-pre-wrap text-base leading-8 text-[hsl(var(--muted-foreground))]">{insight.content}</div>
+            ) : (
+              <p className="text-base leading-8 text-[hsl(var(--muted-foreground))]">No full content has been published for this note yet.</p>
+            )}
+          </div>
+        </div>
+      </main>
+    </Layout>
+  );
+}
+
 function AbstractSubmissionPage() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const eventSlug = new URLSearchParams(window.location.search).get('event') || '';
   const [copied, setCopied] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -2400,7 +2621,7 @@ function AbstractSubmissionPage() {
         const err = await res.json();
         throw new Error(err.error || 'Abstract submission failed');
       }
-      setSubmitted(true);
+      navigate(`/thank-you?type=abstract&eventTitle=${encodeURIComponent(eventInfo?.eventTitle || '')}`);
     } catch (err: any) {
       console.error('Abstract submission failed:', err);
       setError(err.message || 'Abstract submission failed');
@@ -2747,6 +2968,8 @@ function AbstractSubmissionPage() {
   );
 }
 
+
+
 function ConferencesPage() {
   return (
     <Layout>
@@ -2804,24 +3027,177 @@ function ExhibitorsPage() {
   return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80" eyebrow="On the floor" title="Exhibitors." body="Organizations showcasing the tools, services, and ideas shaping their fields." /><main className="section-pad"><div className="container-wide"><SectionTitle eyebrow="Exhibitors" title="What's on show." /><div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{exhibitors.length > 0 ? exhibitors.map((exhibitor) => <div key={exhibitor._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex items-start gap-4">{exhibitor.logo ? <img src={mediaUrl(exhibitor.logo)} alt={exhibitor.name} className="h-14 w-14 rounded-xl object-contain border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] shrink-0" /> : <div className="h-14 w-14 rounded-xl bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] shrink-0"><Store size={20} /></div>}<div className="min-w-0"><h3 className="display text-lg font-bold">{exhibitor.name}</h3>{exhibitor.description && <p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{exhibitor.description}</p>}</div></div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p>No exhibitors have been added yet.</p></div>}</div></div></main></Layout>;
 }
 
-function MentorsPage() {
-  const { mentors } = useContext(APIContext);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80" eyebrow="Guidance" title="Meet our mentors." body="Leaders who bring depth, direction, and a generous ear to the next generation of researchers." /><main className="section-pad"><div className="container-wide"><SectionTitle eyebrow="Mentor network" title="People worth learning from." /><div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{mentors.length > 0 ? mentors.map((mentor) => <Link key={mentor._id || mentor.username} href={`/mentors/${mentor.username}`} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex flex-col h-full items-center text-center">{mentor.avatar ? <img src={mediaUrl(mentor.avatar)} alt={mentor.fullName || mentor.username} className="h-24 w-24 rounded-full object-cover border border-[hsl(var(--border))] mb-4" /> : <div className="h-24 w-24 rounded-full bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] mb-4"><Users size={32} /></div>}<h3 className="display text-xl font-bold">{mentor.fullName || mentor.username}</h3>{mentor.title && <p className="mt-1 text-sm font-semibold text-[hsl(var(--secondary))]">{mentor.title}</p>}{mentor.bio && <p className="mt-3 text-sm leading-6 text-[hsl(var(--muted-foreground))] line-clamp-3">{mentor.bio}</p>}<span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-[hsl(var(--secondary))]">View profile <ArrowRight size={13} /></span></Link>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p>No mentors have added their profiles yet.</p></div>}</div></div></main></Layout>;
-}
-
 function MentorDetailsPage() {
   const { username = '' } = useParams<{ username: string }>();
   const { people } = useContext(APIContext);
   const mentor = people.find((m) => m.username === username);
-  const from = new URLSearchParams(window.location.search).get('from');
-  const backHref = from === 'speakers' ? '/speakers' : '/mentors';
-  const backLabel = from === 'speakers' ? 'Back to speakers' : 'All mentors';
+  const backHref = '/speakers';
+  const backLabel = 'Back to speakers';
 
   if (!mentor) {
-    return <Layout><main className="section-pad"><div className="container-wide"><SectionTitle eyebrow="Not found" title="This mentor could not be found." /><Link href={backHref} className="btn-main btn-quiet mt-6">← {backLabel}</Link></div></main></Layout>;
+    return (
+      <Layout>
+        <main className="section-pad">
+          <div className="container-wide max-w-xl text-center">
+            <SectionTitle eyebrow="Not found" title="This profile could not be found." />
+            <Link href={backHref} className="btn-main btn-quiet mt-8 group inline-flex items-center gap-2">
+              <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-1" /> {backLabel}
+            </Link>
+          </div>
+        </main>
+      </Layout>
+    );
   }
 
-  return <Layout><main className="section-pad"><div className="container-wide"><Link href={backHref} className="inline-flex items-center gap-1 text-sm font-bold text-[hsl(var(--secondary))] mb-8"><ChevronLeft size={16} /> {backLabel}</Link><div className="grid gap-10 lg:grid-cols-[320px_1fr]"><aside className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-7 self-start">{mentor.avatar ? <img src={mediaUrl(mentor.avatar)} alt={mentor.fullName || mentor.username} className="h-28 w-28 rounded-full object-cover border border-[hsl(var(--border))] mb-5" /> : <div className="h-28 w-28 rounded-full bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] mb-5"><Users size={40} /></div>}<h1 className="display text-2xl font-bold">{mentor.fullName || mentor.username}</h1>{mentor.title && <p className="mt-1 text-sm font-semibold text-[hsl(var(--secondary))]">{mentor.title}</p>}<div className="mt-6 space-y-3 text-sm text-[hsl(var(--muted-foreground))]">{mentor.email && <p className="inline-flex items-center gap-2"><Mail size={14} />{mentor.email}</p>}{mentor.location && <p className="flex items-center gap-2"><MapPin size={14} />{mentor.location}</p>}{mentor.linkedin && <a href={mentor.linkedin} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-[hsl(var(--secondary))]"><Linkedin size={14} />LinkedIn</a>}{mentor.website && <a href={mentor.website} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-[hsl(var(--secondary))]"><Globe2 size={14} />Website</a>}</div>{Array.isArray(mentor.expertise) && mentor.expertise.length > 0 && <div className="mt-6"><p className="label text-[hsl(var(--secondary))] mb-2">Expertise</p><div className="flex flex-wrap gap-2">{mentor.expertise.map((skill: string, i: number) => <span key={i} className="rounded-full bg-[hsl(var(--muted))] px-3 py-1.5 text-xs font-bold">{skill}</span>)}</div></div>}</aside><div className="space-y-10">{mentor.bio && <div><SectionTitle eyebrow="About" title="Profile." /><p className="mt-5 text-sm leading-7 text-[hsl(var(--muted-foreground))]">{mentor.bio}</p></div>}{Array.isArray(mentor.education) && mentor.education.length > 0 && <div><SectionTitle eyebrow="Education" title="Academic background." /><div className="mt-6 grid gap-3">{mentor.education.map((edu: any, i: number) => <div key={i} className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5"><p className="font-bold">{edu.degree || 'Degree'}</p><p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{edu.institution}{edu.year ? ` · ${edu.year}` : ''}</p></div>)}</div></div>}{Array.isArray(mentor.experiences) && mentor.experiences.length > 0 && <div><SectionTitle eyebrow="Experience" title="Professional journey." /><div className="mt-6 grid gap-3">{mentor.experiences.map((exp: any, i: number) => <div key={i} className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5"><p className="font-bold">{exp.title || 'Role'}</p><p className="mt-1 text-sm text-[hsl(var(--secondary))]">{exp.organization}</p>{exp.duration && <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{exp.duration}</p>}{exp.description && <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">{exp.description}</p>}</div>)}</div></div>}{Array.isArray(mentor.certifications) && mentor.certifications.length > 0 && <div><SectionTitle eyebrow="Certifications" title="Credentials." /><div className="mt-6 grid gap-3">{mentor.certifications.map((cert: any, i: number) => <div key={i} className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5"><p className="font-bold">{cert.name || 'Certification'}</p><p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{cert.issuer}{cert.year ? ` · ${cert.year}` : ''}</p></div>)}</div></div>}</div></div></div></main></Layout>;
+  return (
+    <Layout>
+      <main className="section-pad">
+        <div className="container-wide">
+          {/* Back Button Container */}
+          <div className="mb-6">
+            <Link href={backHref} className="inline-flex items-center gap-2 text-sm font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition-colors group">
+              <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-1" /> {backLabel}
+            </Link>
+          </div>
+
+          <div className="grid gap-10 lg:grid-cols-[320px_1fr]">
+            <aside className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-7 self-start shadow-md">
+              <div className="flex flex-col items-center text-center">
+                {mentor.avatar ? (
+                  <img src={mediaUrl(mentor.avatar)} alt={mentor.fullName || mentor.username} className="h-28 w-28 rounded-full object-cover border border-[hsl(var(--border))] mb-5 shadow-inner" />
+                ) : (
+                  <div className="h-28 w-28 rounded-full bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] mb-5 border border-[hsl(var(--border))]">
+                    <Users size={40} />
+                  </div>
+                )}
+                <h1 className="display text-2xl font-bold text-[hsl(var(--foreground))]">{mentor.fullName || mentor.username}</h1>
+                {mentor.title && <p className="mt-2 text-sm font-semibold text-[hsl(var(--secondary))]">{mentor.title}</p>}
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-[hsl(var(--border))] space-y-4 text-sm text-[hsl(var(--muted-foreground))]">
+                {mentor.email && (
+                  <p className="flex items-center gap-3">
+                    <Mail size={16} className="text-[hsl(var(--secondary))]" />
+                    <span className="truncate">{mentor.email}</span>
+                  </p>
+                )}
+                {mentor.location && (
+                  <p className="flex items-center gap-3">
+                    <MapPin size={16} className="text-[hsl(var(--secondary))]" />
+                    <span>{mentor.location}</span>
+                  </p>
+                )}
+                {mentor.linkedin && (
+                  <a href={mentor.linkedin} target="_blank" rel="noreferrer" className="flex items-center gap-3 hover:text-[hsl(var(--secondary))] transition-colors group">
+                    <Linkedin size={16} className="text-[hsl(var(--secondary))] transition-transform group-hover:scale-110" />
+                    <span>LinkedIn</span>
+                  </a>
+                )}
+                {mentor.website && (
+                  <a href={mentor.website} target="_blank" rel="noreferrer" className="flex items-center gap-3 hover:text-[hsl(var(--secondary))] transition-colors group">
+                    <Globe2 size={16} className="text-[hsl(var(--secondary))] transition-transform group-hover:scale-110" />
+                    <span>Website</span>
+                  </a>
+                )}
+              </div>
+
+              {Array.isArray(mentor.expertise) && mentor.expertise.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-[hsl(var(--border))]">
+                  <p className="label text-[hsl(var(--secondary))] mb-3">Expertise</p>
+                  <div className="flex flex-wrap gap-2">
+                    {mentor.expertise.map((skill: string, i: number) => (
+                      <span key={i} className="rounded-full bg-[hsl(var(--muted))] px-3 py-1.5 text-xs font-semibold border border-[hsl(var(--border))]">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </aside>
+
+            <div className="space-y-10">
+              {mentor.bio && (
+                <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl p-6 md:p-8 shadow-sm">
+                  <SectionTitle eyebrow="About" title="Profile." />
+                  <p className="mt-5 text-base leading-8 text-[hsl(var(--muted-foreground))] whitespace-pre-wrap">{mentor.bio}</p>
+                </div>
+              )}
+
+              {Array.isArray(mentor.education) && mentor.education.length > 0 && (
+                <div>
+                  <SectionTitle eyebrow="Education" title="Academic background." />
+                  <div className="mt-6 grid gap-4">
+                    {mentor.education.map((edu: any, i: number) => (
+                      <div key={i} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                        <div>
+                          <p className="font-bold text-lg text-[hsl(var(--foreground))]">{edu.degree || 'Degree'}</p>
+                          <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{edu.institution}</p>
+                        </div>
+                        {edu.year && (
+                          <span className="rounded-full bg-[hsl(var(--secondary)/.12)] text-[hsl(var(--secondary))] px-3 py-1 text-xs font-bold self-start sm:self-auto border border-[hsl(var(--secondary)/.2)]">
+                            {edu.year}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {Array.isArray(mentor.experiences) && mentor.experiences.length > 0 && (
+                <div>
+                  <SectionTitle eyebrow="Experience" title="Professional journey." />
+                  <div className="mt-6 grid gap-4">
+                    {mentor.experiences.map((exp: any, i: number) => (
+                      <div key={i} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                          <div>
+                            <p className="font-bold text-lg text-[hsl(var(--foreground))]">{exp.title || 'Role'}</p>
+                            <p className="mt-1 text-sm font-semibold text-[hsl(var(--secondary))]">{exp.organization}</p>
+                          </div>
+                          {exp.duration && (
+                            <span className="rounded-full bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] px-3 py-1 text-xs font-bold self-start sm:self-auto border border-[hsl(var(--border))]">
+                              {exp.duration}
+                            </span>
+                          )}
+                        </div>
+                        {exp.description && (
+                          <p className="mt-4 text-sm leading-6 text-[hsl(var(--muted-foreground))] border-t border-[hsl(var(--border)/.5)] pt-4">
+                            {exp.description}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {Array.isArray(mentor.certifications) && mentor.certifications.length > 0 && (
+                <div>
+                  <SectionTitle eyebrow="Certifications" title="Credentials." />
+                  <div className="mt-6 grid gap-4">
+                    {mentor.certifications.map((cert: any, i: number) => (
+                      <div key={i} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                        <div>
+                          <p className="font-bold text-lg text-[hsl(var(--foreground))]">{cert.name || 'Certification'}</p>
+                          <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{cert.issuer}</p>
+                        </div>
+                        {cert.year && (
+                          <span className="rounded-full bg-[hsl(var(--accent)/.12)] text-[hsl(var(--accent))] px-3 py-1 text-xs font-bold self-start sm:self-auto border border-[hsl(var(--accent)/.2)]">
+                            {cert.year}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+    </Layout>
+  );
 }
 
 function RoutedErrorBoundary({ children }: { children: ReactNode }) {
@@ -2830,7 +3206,7 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
 }
 
 function Router() {
-  return <RoutedErrorBoundary><Switch><Route path="/" component={Home} /><Route path="/about" component={AboutPage} /><Route path="/submit-abstract" component={AbstractSubmissionPage} /><Route path="/itinerary" component={ItineraryPage} /><Route path="/program" component={ProgramPage} /><Route path="/speakers" component={SpeakersPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/blog" component={BlogPage} /><Route path="/conferences" component={ConferencesPage} /><Route path="/conference/:slug" component={() => <EventDetailsPage type="conference" />} /><Route path="/webinars" component={WebinarsPage} /><Route path="/webinar/:slug" component={() => <EventDetailsPage type="webinar" />} /><Route path="/brochure" component={BrochurePage} /><Route path="/venue" component={VenuePage} /><Route path="/sponsors" component={SponsorsPage} /><Route path="/media-partners" component={MediaPartnersPage} /><Route path="/collaborators" component={CollaboratorsPage} /><Route path="/exhibitors" component={ExhibitorsPage} /><Route path="/mentors" component={MentorsPage} /><Route path="/mentors/:username" component={MentorDetailsPage} /><Route path="/register" component={RegisterPage} /><Route path="/terms" component={TermsPage} /><Route path="/faq" component={FAQPage} /><Route path="/guidelines" component={GuidelinesPage} /><Route path="/contact" component={ContactPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
+  return <RoutedErrorBoundary><Switch><Route path="/" component={Home} /><Route path="/about" component={AboutPage} /><Route path="/submit-abstract" component={AbstractSubmissionPage} /><Route path="/program" component={ProgramPage} /><Route path="/speakers" component={SpeakersPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/blog" component={BlogPage} /><Route path="/blog/:slug" component={BlogDetailPage} /><Route path="/conferences" component={ConferencesPage} /><Route path="/conference/:slug" component={() => <EventDetailsPage type="conference" />} /><Route path="/webinars" component={WebinarsPage} /><Route path="/webinar/:slug" component={() => <EventDetailsPage type="webinar" />} /><Route path="/brochure" component={BrochurePage} /><Route path="/venue" component={VenuePage} /><Route path="/sponsors" component={SponsorsPage} /><Route path="/media-partners" component={MediaPartnersPage} /><Route path="/collaborators" component={CollaboratorsPage} /><Route path="/exhibitors" component={ExhibitorsPage} /><Route path="/mentors/:username" component={MentorDetailsPage} /><Route path="/register" component={RegisterPage} /><Route path="/thank-you" component={ThankYouPage} /><Route path="/terms" component={TermsPage} /><Route path="/faq" component={FAQPage} /><Route path="/guidelines" component={GuidelinesPage} /><Route path="/contact" component={ContactPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
 }
 
 function App() {

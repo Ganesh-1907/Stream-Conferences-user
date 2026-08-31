@@ -118,6 +118,9 @@
 .reveal-delay-2 { animation-delay: .2s; }
 .reveal-delay-3 { animation-delay: .3s; }
 .float-mark { animation: drift 5s ease-in-out infinite alternate; }
+@keyframes pop-in { 0% { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes check-draw { from { stroke-dashoffset: 200; } to { stroke-dashoffset: 0; } }
+@keyframes float-up { 0% { transform: translateY(10px) scale(1); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-130px) scale(.5); opacity: 0; } }
 .site-grain::after { content: ''; position: fixed; inset: 0; pointer-events: none; opacity: .035; z-index: 50; background-image: repeating-linear-gradient(0deg, transparent 0, transparent 3px, hsl(var(--foreground) / .06) 4px), repeating-linear-gradient(90deg, transparent 0, transparent 5px, hsl(var(--foreground) / .035) 6px); }
 .display { font-family: 'Space Grotesk', sans-serif; }
 .mono { font-family: var(--app-font-mono); }
