@@ -1,27 +1,39 @@
 import { useState, useRef, useEffect, type FormEvent } from 'react';
-import { MessageSquare, X, Send, Sparkles, User, CheckCheck, Minimize2, Paperclip, Smile } from 'lucide-react';
+import { MessageSquare, X, Send, Sparkles, CheckCheck, Minimize2 } from 'lucide-react';
+import { io, type Socket } from 'socket.io-client';
+
+const SERVER_ORIGIN = 'http://localhost:7867';
+const VISITOR_KEY = 'stream-chat-visitor-id';
 
 interface ChatMessage {
-  id: string;
-  sender: 'bot' | 'user';
+  _id?: string;
+  sessionId?: string;
+  sender: 'visitor' | 'admin';
+  senderName?: string;
   text: string;
-  time: string;
+  createdAt?: string;
+}
+
+function getVisitorId(): string {
+  let id = localStorage.getItem(VISITOR_KEY);
+  if (!id) {
+    id = `v_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+    localStorage.setItem(VISITOR_KEY, id);
+  }
+  return id;
 }
 
 export function LiveChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [hasUnread, setHasUnread] = useState(true);
+  const [hasUnread, setHasUnread] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [connected, setConnected] = useState(false);
+  const [typing, setTyping] = useState(false);
+  const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '1',
-      sender: 'bot',
-      text: '👋 Hello! Welcome to Stream Conferences 2027. How can we assist your research or conference participation today?',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    },
-  ]);
+  const visitorIdRef = useRef(getVisitorId());
 
   const quickPrompts = [
     'How do I submit an abstract?',
@@ -33,6 +45,71 @@ export function LiveChatWidget() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Initialize session (REST) and socket connection
+  useEffect(() => {
+    let active = true;
+    const visitorId = visitorIdRef.current;
+
+    const ensureSession = async () => {
+      try {
+        const historyRes = await fetch(`${SERVER_ORIGIN}/api/chat/visitor/${encodeURIComponent(visitorId)}/history`);
+        if (historyRes.ok) {
+          const history = await historyRes.json();
+          if (!active) return;
+          if (history.session) {
+            setSessionId(history.session._id);
+            setMessages(history.messages || []);
+            return history.session;
+          }
+        }
+
+        const res = await fetch(`${SERVER_ORIGIN}/api/chat/session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ visitorId })
+        });
+        if (!res.ok) throw new Error('Failed to init chat session');
+        const session = await res.json();
+        if (!active) return;
+        setSessionId(session._id);
+        return session;
+      } catch (err) {
+        console.error('Chat session init error:', err);
+        if (active) setConnected(false);
+      }
+    };
+
+    ensureSession();
+
+    const socket = io(SERVER_ORIGIN, {
+      query: { role: 'visitor' }
+    });
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      setConnected(true);
+      socket.emit('visitor:join', visitorId);
+    });
+    socket.on('disconnect', () => setConnected(false));
+    socket.on('chat:message', (msg: ChatMessage) => {
+      setMessages((prev) => {
+        if (msg._id && prev.some((m) => m._id === msg._id)) return prev;
+        return [...prev, msg];
+      });
+      if (!isOpen) setHasUnread(true);
+    });
+    socket.on('chat:typing', (payload: { typing: boolean }) => {
+      setTyping(payload.typing);
+    });
+
+    return () => {
+      active = false;
+      socket.disconnect();
+      socketRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       setHasUnread(false);
@@ -40,48 +117,18 @@ export function LiveChatWidget() {
     }
   }, [isOpen, messages]);
 
-  const handleSend = (textToSend?: string) => {
-    const messageText = textToSend || input;
-    if (!messageText.trim()) return;
+  const sendMessage = (textToSend?: string) => {
+    const text = (textToSend || input).trim();
+    if (!text || !socketRef.current) return;
 
-    const userMsg: ChatMessage = {
-      id: Date.now().toString(),
-      sender: 'user',
-      text: messageText,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-
-    setMessages((prev) => [...prev, userMsg]);
-    if (!textToSend) setInput('');
-
-    // Simulate an automated friendly response
-    setTimeout(() => {
-      let botResponse = 'Thank you for your message! Our conference team has received your query and will reply shortly.';
-      const lower = messageText.toLowerCase();
-
-      if (lower.includes('abstract') || lower.includes('submit')) {
-        botResponse = 'You can submit your abstract via the "Call For Papers" portal or click "Submit Abstract" in the main navigation!';
-      } else if (lower.includes('fee') || lower.includes('register') || lower.includes('price')) {
-        botResponse = 'Registration pricing varies by tier (Academic, Delegate, Student). Visit our Registration page for full detail breakdown.';
-      } else if (lower.includes('venue') || lower.includes('location') || lower.includes('where')) {
-        botResponse = 'Stream Conferences 2027 will take place in Boston, Massachusetts. Venue address details are under the Venue tab!';
-      }
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          sender: 'bot',
-          text: botResponse,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        },
-      ]);
-    }, 800);
+    const socket = socketRef.current;
+    socket.emit('visitor:message', { visitorId: visitorIdRef.current, text });
+    setInput('');
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    handleSend();
+    sendMessage();
   };
 
   return (
@@ -101,8 +148,8 @@ export function LiveChatWidget() {
               <div>
                 <h3 className="font-bold text-sm leading-tight text-white">Stream Live Support</h3>
                 <p className="text-[11px] text-white/70 flex items-center gap-1 mt-0.5">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  Online · Answers instantly
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full ${connected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
+                  {connected ? 'Online · Team replies when active' : 'Connecting…'}
                 </p>
               </div>
             </div>
@@ -117,33 +164,49 @@ export function LiveChatWidget() {
 
           {/* Chat Messages Body */}
           <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-[hsl(var(--background)/.5)]">
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
-              >
-                <div className="flex items-end gap-2 max-w-[85%]">
-                  {msg.sender === 'bot' && (
-                    <div className="w-7 h-7 rounded-full bg-[hsl(var(--secondary)/.15)] text-[hsl(var(--secondary))] flex items-center justify-center text-xs font-bold shrink-0 mb-1">
-                      SC
-                    </div>
-                  )}
-                  <div
-                    className={`p-3 rounded-2xl text-xs leading-relaxed ${
-                      msg.sender === 'user'
-                        ? 'bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] rounded-br-xs'
-                        : 'bg-[hsl(var(--card))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] shadow-xs rounded-bl-xs'
-                    }`}
-                  >
-                    {msg.text}
-                  </div>
-                </div>
-                <span className="text-[10px] text-[hsl(var(--muted-foreground))] mt-1 px-1 flex items-center gap-1">
-                  {msg.time}
-                  {msg.sender === 'user' && <CheckCheck size={12} className="text-[hsl(var(--secondary))]" />}
-                </span>
+            {messages.length === 0 && (
+              <div className="text-center text-xs text-[hsl(var(--muted-foreground))] pt-8">
+                <p className="text-2xl mb-2">👋</p>
+                Hello! How can we assist your research or conference participation today?
               </div>
-            ))}
+            )}
+            {messages.map((msg, idx) => {
+              const isVisitor = msg.sender === 'visitor';
+              return (
+                <div key={msg._id || idx} className={`flex flex-col ${isVisitor ? 'items-end' : 'items-start'}`}>
+                  <div className="flex items-end gap-2 max-w-[85%]">
+                    {!isVisitor && (
+                      <div className="w-7 h-7 rounded-full bg-[hsl(var(--secondary)/.15)] text-[hsl(var(--secondary))] flex items-center justify-center text-xs font-bold shrink-0 mb-1">
+                        SC
+                      </div>
+                    )}
+                    <div
+                      className={`p-3 rounded-2xl text-xs leading-relaxed ${
+                        isVisitor
+                          ? 'bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] rounded-br-xs'
+                          : 'bg-[hsl(var(--card))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] shadow-xs rounded-bl-xs'
+                      }`}
+                    >
+                      {msg.text}
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-[hsl(var(--muted-foreground))] mt-1 px-1 flex items-center gap-1">
+                    {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                    {isVisitor && <CheckCheck size={12} className="text-[hsl(var(--secondary))]" />}
+                  </span>
+                </div>
+              );
+            })}
+            {typing && (
+              <div className="flex items-start gap-2">
+                <div className="w-7 h-7 rounded-full bg-[hsl(var(--secondary)/.15)] text-[hsl(var(--secondary))] flex items-center justify-center text-xs font-bold shrink-0">SC</div>
+                <div className="px-3 py-2.5 rounded-2xl rounded-bl-xs bg-[hsl(var(--card))] border border-[hsl(var(--border))] flex gap-1">
+                  <span className="w-1.5 h-1.5 bg-[hsl(var(--muted-foreground))] rounded-full animate-bounce"></span>
+                  <span className="w-1.5 h-1.5 bg-[hsl(var(--muted-foreground))] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
+                  <span className="w-1.5 h-1.5 bg-[hsl(var(--muted-foreground))] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
 
@@ -152,7 +215,7 @@ export function LiveChatWidget() {
             {quickPrompts.map((prompt, i) => (
               <button
                 key={i}
-                onClick={() => handleSend(prompt)}
+                onClick={() => sendMessage(prompt)}
                 className="whitespace-nowrap px-2.5 py-1 bg-[hsl(var(--muted)/.5)] hover:bg-[hsl(var(--secondary)/.15)] hover:text-[hsl(var(--secondary))] border border-[hsl(var(--border))] rounded-full text-[11px] text-[hsl(var(--muted-foreground))] transition shrink-0"
               >
                 {prompt}
@@ -171,7 +234,7 @@ export function LiveChatWidget() {
             />
             <button
               type="submit"
-              disabled={!input.trim()}
+              disabled={!input.trim() || !connected}
               className="w-9 h-9 rounded-xl bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--secondary)/.9)] text-[hsl(var(--secondary-foreground))] flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
               aria-label="Send message"
             >
@@ -193,7 +256,6 @@ export function LiveChatWidget() {
           <MessageSquare size={24} className="transition-transform duration-200 group-hover:scale-110" />
         )}
 
-        {/* Unread indicator dot */}
         {!isOpen && hasUnread && (
           <span className="absolute top-1 right-1 flex h-3.5 w-3.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(var(--accent))] opacity-75"></span>

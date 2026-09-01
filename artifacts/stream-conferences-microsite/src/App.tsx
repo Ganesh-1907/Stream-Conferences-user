@@ -42,6 +42,7 @@ import {
 } from 'lucide-react';
 import { Link, Route, Switch, Router as WouterRouter, useLocation, useParams } from 'wouter';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { LiveChatWidget } from '@/components/live-chat-widget';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
@@ -717,7 +718,7 @@ function Footer() {
 }
 
 function Layout({ children }: { children: ReactNode }) {
-  return <div className="site-grain min-h-[100dvh]"><SiteHeader />{children}<Footer /></div>;
+  return <div className="site-grain min-h-[100dvh]"><SiteHeader />{children}<Footer /><LiveChatWidget /></div>;
 }
 
 function Reveal({ children, className = '' }: { children: ReactNode; className?: string }) {
