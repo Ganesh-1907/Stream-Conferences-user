@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, type FormEvent } from 'react';
 import { MessageSquare, X, Send, Sparkles, CheckCheck, Minimize2 } from 'lucide-react';
 import { io, type Socket } from 'socket.io-client';
 
-const SERVER_ORIGIN = 'http://localhost:7867';
+const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
 const VISITOR_KEY = 'stream-chat-visitor-id';
 
 interface ChatMessage {

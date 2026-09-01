@@ -49,7 +49,8 @@ import NotFound from '@/pages/not-found';
 
 const queryClient = new QueryClient();
 
-const SERVER_ORIGIN = 'http://localhost:7867';
+const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
 const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
 
 const getStartAndEndDates = (eventDateStr?: string, dayRangeStr?: string) => {
@@ -402,15 +403,15 @@ function APIProvider({ children }: { children: ReactNode }) {
     const fetchData = async () => {
       try {
         const [confRes, webRes, blogRes, mpRes, collabRes, exhRes, mentorsRes, peopleRes, venuesRes] = await Promise.all([
-          fetch('http://localhost:7867/api/conferences'),
-          fetch('http://localhost:7867/api/webinars'),
-          fetch('http://localhost:7867/api/blogs'),
-          fetch('http://localhost:7867/api/media-partners'),
-          fetch('http://localhost:7867/api/collaborators'),
-          fetch('http://localhost:7867/api/exhibitors'),
-          fetch('http://localhost:7867/api/mentors'),
-          fetch('http://localhost:7867/api/people'),
-          fetch('http://localhost:7867/api/venues')
+          fetch(`${API_BASE}/conferences`),
+          fetch(`${API_BASE}/webinars`),
+          fetch(`${API_BASE}/blogs`),
+          fetch(`${API_BASE}/media-partners`),
+          fetch(`${API_BASE}/collaborators`),
+          fetch(`${API_BASE}/exhibitors`),
+          fetch(`${API_BASE}/mentors`),
+          fetch(`${API_BASE}/people`),
+          fetch(`${API_BASE}/venues`)
         ]);
         
         if (!confRes.ok || !webRes.ok || !blogRes.ok || !mpRes.ok || !collabRes.ok || !exhRes.ok || !mentorsRes.ok || !peopleRes.ok || !venuesRes.ok) {
@@ -1384,7 +1385,7 @@ function RegisterPage() {
   useEffect(() => {
     let active = true;
     if (eventSlug) {
-      fetch(`http://localhost:7867/api/registrations/link/${encodeURIComponent(eventSlug)}`)
+      fetch(`${API_BASE}/registrations/link/${encodeURIComponent(eventSlug)}`)
         .then(r => r.ok ? r.json() : Promise.reject())
         .then(data => { if (active) { setEventInfo(data); setEventLoading(false); } })
         .catch(() => { if (active) setEventLoading(false); });
@@ -1394,7 +1395,7 @@ function RegisterPage() {
 
   const verifyPayment = async (orderId: string, paymentId: string, signature: string) => {
     try {
-      const res = await fetch('http://localhost:7867/api/orders/verify', {
+      const res = await fetch(`${API_BASE}/orders/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderId, paymentId, signature })
@@ -1467,7 +1468,7 @@ function RegisterPage() {
     }
     setError('');
     try {
-      const regRes = await fetch('http://localhost:7867/api/registrations/register', {
+      const regRes = await fetch(`${API_BASE}/registrations/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -1491,7 +1492,7 @@ function RegisterPage() {
       }
       const regData = await regRes.json();
 
-      const orderRes = await fetch('http://localhost:7867/api/orders/create', {
+      const orderRes = await fetch(`${API_BASE}/orders/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2157,7 +2158,7 @@ function ContactPage() {
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const res = await fetch('http://localhost:7867/api/contacts/send', {
+      const res = await fetch(`${API_BASE}/contacts/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, phone, subject, conference: conferenceName, message, eventSlug: eventSlug || undefined })
@@ -2577,7 +2578,7 @@ function AbstractSubmissionPage() {
   useEffect(() => {
     let active = true;
     if (eventSlug) {
-      fetch(`http://localhost:7867/api/registrations/link/${encodeURIComponent(eventSlug)}`)
+      fetch(`${API_BASE}/registrations/link/${encodeURIComponent(eventSlug)}`)
         .then(r => r.ok ? r.json() : Promise.reject())
         .then(data => { if (active) { setEventInfo(data); setEventLoading(false); } })
         .catch(() => { if (active) setEventLoading(false); });
@@ -2614,7 +2615,7 @@ function AbstractSubmissionPage() {
         fd.append('eventId', eventInfo.eventId);
         fd.append('eventType', eventInfo.eventType);
       }
-      const res = await fetch('http://localhost:7867/api/abstracts/submit', {
+      const res = await fetch(`${API_BASE}/abstracts/submit`, {
         method: 'POST',
         body: fd
       });
