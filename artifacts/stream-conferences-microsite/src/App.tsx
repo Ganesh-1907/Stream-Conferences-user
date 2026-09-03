@@ -46,12 +46,22 @@ import { LiveChatWidget } from '@/components/live-chat-widget';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
+import { EventMicrosite } from '@/pages/event-microsite';
 
 const queryClient = new QueryClient();
 
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
+const ROOT_DOMAIN = import.meta.env.VITE_ROOT_DOMAIN || '';
 const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
+
+function detectSubdomain(hostname: string): string | null {
+  const root = ROOT_DOMAIN.toLowerCase();
+  const host = hostname.toLowerCase();
+  if (!root || host === root || !host.endsWith('.' + root)) return null;
+  const sub = host.slice(0, host.length - root.length - 1);
+  return sub || null;
+}
 
 const getStartAndEndDates = (eventDateStr?: string, dayRangeStr?: string) => {
   if (!eventDateStr) return { start: null, end: null };
@@ -3212,6 +3222,17 @@ function Router() {
 }
 
 function App() {
+  const subdomain = detectSubdomain(window.location.hostname);
+  if (subdomain) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <EventMicrosite subdomain={subdomain} />
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
+    );
+  }
   return <QueryClientProvider client={queryClient}><TooltipProvider><APIProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter><Toaster /></APIProvider></TooltipProvider></QueryClientProvider>;
 }
 
