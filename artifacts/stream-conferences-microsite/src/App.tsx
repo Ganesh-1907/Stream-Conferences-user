@@ -56,6 +56,12 @@ const ROOT_DOMAIN = import.meta.env.VITE_ROOT_DOMAIN || '';
 const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
 
 function detectSubdomain(hostname: string): string | null {
+  try {
+    const querySub = new URLSearchParams(window.location.search).get('subdomain');
+    if (querySub) return querySub.trim().toLowerCase();
+  } catch {
+    /* ignore */
+  }
   const root = ROOT_DOMAIN.toLowerCase();
   const host = hostname.toLowerCase();
   if (!root || host === root || !host.endsWith('.' + root)) return null;
