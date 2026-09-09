@@ -46,7 +46,7 @@ export function AbstractPage({ event }: { event: EventData }) {
 
   const eventPrices = useMemo(() => {
     if (event.fees?.length) {
-      return event.fees.map((f) => [f.label, `₹${f.amount}`, `₹${Math.round(f.amount * 1.2)}`]);
+      return event.fees.map((f) => [f.type, `$${f.usd}`, `$${Math.round(f.usd * 1.2)}`]);
     }
     return [['Student', '₹20000', '₹26000'], ['Academic', '₹32000', '₹39000'], ['Industry Delegate', '₹42000', '₹52000'], ['Virtual Attendee', '₹12000', '₹15000']];
   }, [event.fees]);
@@ -81,6 +81,7 @@ export function AbstractPage({ event }: { event: EventData }) {
       fd.append('eventId', event._id);
       fd.append('eventType', event.eventType);
       fd.append('eventSlug', event.slug || event.subdomain || event.eventId || '');
+      fd.append('cohortId', event.activeCohort?.cohortId || '');
       const res = await fetch(`${API_BASE}/abstracts/submit`, { method: 'POST', body: fd });
       if (!res.ok) throw new Error((await res.json()).error || 'Abstract submission failed');
       setSent(true);
@@ -134,9 +135,9 @@ export function AbstractPage({ event }: { event: EventData }) {
             </div>
           ) : step === 1 ? (
             <form onSubmit={handleStep1} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-5">
-                <div>
-                  <p className="label text-[hsl(var(--accent))]">Step 1 of 2</p>
-                  <h3 className="display mt-2 text-xl font-bold">Author Information</h3>
+                 <div>
+                  <p className="label text-[hsl(var(--primary))]">Step 1 of 2</p>
+                  <h3 className="display mt-2 text-xl font-bold text-[hsl(var(--foreground))]">Author Information</h3>
                   <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Tell us about yourself before uploading</p>
                 </div>
 
@@ -181,8 +182,8 @@ export function AbstractPage({ event }: { event: EventData }) {
           ) : (
             <form onSubmit={submit} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-5">
                 <div>
-                  <p className="label text-[hsl(var(--accent))]">Step 2 of 2</p>
-                  <h3 className="display mt-2 text-xl font-bold">Upload Your Abstract</h3>
+                  <p className="label text-[hsl(var(--primary))]">Step 2 of 2</p>
+                  <h3 className="display mt-2 text-xl font-bold text-[hsl(var(--foreground))]">Upload Your Abstract</h3>
                   <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Upload your research paper as a PDF file</p>
                 </div>
 
@@ -192,12 +193,12 @@ export function AbstractPage({ event }: { event: EventData }) {
 
                 <div className="space-y-1.5">
                   <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Abstract PDF *</label>
-                  <div className="border-2 border-dashed border-[hsl(var(--border))] rounded-xl p-8 text-center hover:border-[hsl(var(--accent))] transition-colors">
+                  <div className="border-2 border-dashed border-[hsl(var(--border))] rounded-xl p-8 text-center hover:border-[hsl(var(--primary))] transition-colors">
                     <input type="file" accept=".pdf" className="hidden" id="abstract-upload" onChange={(e) => setAbstractFile(e.target.files?.[0] || null)} />
                     <label htmlFor="abstract-upload" className="cursor-pointer">
                       {abstractFile ? (
                         <div>
-                          <p className="font-semibold text-[hsl(var(--accent))]">{abstractFile.name}</p>
+                          <p className="font-semibold text-[hsl(var(--primary))]">{abstractFile.name}</p>
                           <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">Click to change file</p>
                         </div>
                       ) : (
@@ -235,7 +236,7 @@ export function AbstractPage({ event }: { event: EventData }) {
                 <div><p className="font-semibold text-[hsl(var(--foreground))] text-xs">Date</p><p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">{formatDateRange(event)}</p></div>
               </div>
               <div className="flex items-start gap-3">
-                <MapPin className="mt-0.5 text-[hsl(var(--accent))] shrink-0" size={16} />
+                <MapPin className="mt-0.5 text-[hsl(var(--primary))] shrink-0" size={16} />
                 <div><p className="font-semibold text-[hsl(var(--foreground))] text-xs">Location</p><p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">{event.location || 'Online / Virtual'}</p></div>
               </div>
             </div>
@@ -250,7 +251,7 @@ export function AbstractPage({ event }: { event: EventData }) {
                   <div className="mt-2 pl-1 space-y-2 text-sm text-[hsl(var(--muted-foreground))]">
                     {guidelines.length > 0 ? guidelines.map((g: string, i: number) => (
                       <div key={i} className="flex items-start gap-1.5">
-                        <Check size={12} className="mt-0.5 text-[hsl(var(--accent))] shrink-0" />
+                        <Check size={12} className="mt-0.5 text-[hsl(var(--primary))] shrink-0" />
                         <span dangerouslySetInnerHTML={{ __html: g.replace(/\n/g, '<br/>') }} />
                       </div>
                     )) : (

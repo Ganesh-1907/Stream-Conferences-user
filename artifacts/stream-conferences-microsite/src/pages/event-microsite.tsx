@@ -33,6 +33,31 @@ function EventNotFound({ subdomain }: { subdomain: string }) {
   );
 }
 
+function CohortNotFound({ subdomain }: { subdomain: string }) {
+  return (
+    <div className="container-wide flex min-h-[60vh] flex-col items-center justify-center py-20 text-center">
+      <h1 className="text-3xl font-bold">Cohort not found</h1>
+      <p className="mt-3 text-sm text-[hsl(var(--muted-foreground))]">
+        This cohort does not exist at <span className="font-mono">{subdomain}</span>.{' '}
+        <a href="/" className="text-[hsl(var(--primary))] hover:underline">View the current cohort</a>.
+      </p>
+    </div>
+  );
+}
+
+function parseCohortPath(pathname: string): { year: string; batch: string | null; base: string } | null {
+  // /2026        -> year=2026, batch=null (current cohort for that year)
+  // /2026/2      -> year=2026, batch=2
+  // /2026/b2     -> year=2026, batch=2 (legacy)
+  let m = pathname.match(/^\/(\d{4})\/b(\d+)/);
+  if (m) return { year: m[1], batch: m[2], base: `/${m[1]}/b${m[2]}` };
+  m = pathname.match(/^\/(\d{4})\/(\d+)/);
+  if (m) return { year: m[1], batch: m[2], base: `/${m[1]}/${m[2]}` };
+  m = pathname.match(/^\/(\d{4})/);
+  if (m) return { year: m[1], batch: null, base: `/${m[1]}` };
+  return null;
+}
+
 export function EventMicrosite({ subdomain }: { subdomain: string }) {
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,35 +95,66 @@ export function EventMicrosite({ subdomain }: { subdomain: string }) {
     return <EventNotFound subdomain={subdomain} />;
   }
 
-  const navItems = buildNavItems(event);
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const cohortPath = parseCohortPath(pathname);
+  const base = cohortPath?.base || '/';
+
+  const cohorts = Array.isArray(event.cohorts) ? event.cohorts : [];
+  const currentCohort = event.currentCohort || cohorts.find((c) => c.isCurrent) || null;
+  const activeCohort = cohortPath
+    ? (cohorts.find((c) => {
+        if (String(c.year) !== cohortPath.year) return false;
+        if (cohortPath.batch === null) return c.isCurrent || c.batchNo === 1;
+        return String(c.batchNo) === cohortPath.batch;
+      }) || null)
+    : currentCohort;
+
+  if (cohortPath && !activeCohort) {
+    return <CohortNotFound subdomain={subdomain} />;
+  }
+
+  const displayEvent: EventData = {
+    ...event,
+    cohorts,
+    currentCohort,
+    activeCohort,
+  };
+  if (activeCohort) {
+    Object.assign(displayEvent, activeCohort.content || {});
+    displayEvent.startDate = displayEvent.startDate || event.startDate;
+    displayEvent.endDate = displayEvent.endDate || event.endDate;
+    displayEvent.eventDate = displayEvent.eventDate || event.eventDate;
+  }
+
+  const navItems = buildNavItems(displayEvent);
 
   return (
-    <WouterRouter base="/">
-      <MicrositeLayout event={event} navItems={navItems}>
+    <WouterRouter base={base}>
+      <MicrositeLayout event={displayEvent} navItems={navItems}>
         <Switch>
-          <Route path="/" component={() => <HomePage event={event} />} />
-          <Route path="/about" component={() => <AboutPage event={event} />} />
-          <Route path="/program" component={() => <ProgramPage event={event} />} />
-          <Route path="/speakers" component={() => <SpeakersPage event={event} />} />
-          <Route path="/itinerary" component={() => <ItineraryPage event={event} />} />
-          <Route path="/sponsors" component={() => <SponsorsExhibitorsPage event={event} />} />
-          <Route path="/exhibitors" component={() => <SponsorsExhibitorsPage event={event} />} />
-          <Route path="/sponsors-exhibitors" component={() => <SponsorsExhibitorsPage event={event} />} />
-          <Route path="/partners" component={() => <SponsorsExhibitorsPage event={event} />} />
-          <Route path="/resources" component={() => <ResourcesPage event={event} />} />
-          <Route path="/fees" component={() => <FeesPage event={event} />} />
-          <Route path="/tracks" component={() => <TracksPage event={event} />} />
-          <Route path="/faq" component={() => <FAQPage event={event} />} />
-          <Route path="/guidelines" component={() => <GuidelinesPage event={event} />} />
-          <Route path="/venue" component={() => <VenuePage event={event} />} />
-          <Route path="/contact" component={() => <ContactPage event={event} />} />
-          <Route path="/terms" component={() => <TermsPage event={event} />} />
-          <Route path="/register" component={() => <RegisterPage event={event} />} />
-          <Route path="/submit-abstract" component={() => <AbstractPage event={event} />} />
-          <Route path="/brochure" component={() => <BrochurePage event={event} />} />
-          <Route path="/organizing-committee" component={() => <OrganizingCommitteePage event={event} />} />
-          <Route path="/thank-you" component={() => <ThankYouPage event={event} />} />
-          <Route component={() => <HomePage event={event} />} />
+          <Route path="/" component={() => <HomePage event={displayEvent} />} />
+          <Route path="/about" component={() => <AboutPage event={displayEvent} />} />
+          <Route path="/program" component={() => <ProgramPage event={displayEvent} />} />
+          <Route path="/speakers" component={() => <SpeakersPage event={displayEvent} />} />
+          <Route path="/itinerary" component={() => <ItineraryPage event={displayEvent} />} />
+          <Route path="/sponsors" component={() => <SponsorsExhibitorsPage event={displayEvent} />} />
+          <Route path="/exhibitors" component={() => <SponsorsExhibitorsPage event={displayEvent} />} />
+          <Route path="/sponsors-exhibitors" component={() => <SponsorsExhibitorsPage event={displayEvent} />} />
+          <Route path="/partners" component={() => <SponsorsExhibitorsPage event={displayEvent} />} />
+          <Route path="/resources" component={() => <ResourcesPage event={displayEvent} />} />
+          <Route path="/fees" component={() => <FeesPage event={displayEvent} />} />
+          <Route path="/tracks" component={() => <TracksPage event={displayEvent} />} />
+          <Route path="/faq" component={() => <FAQPage event={displayEvent} />} />
+          <Route path="/guidelines" component={() => <GuidelinesPage event={displayEvent} />} />
+          <Route path="/venue" component={() => <VenuePage event={displayEvent} />} />
+          <Route path="/contact" component={() => <ContactPage event={displayEvent} />} />
+          <Route path="/terms" component={() => <TermsPage event={displayEvent} />} />
+          <Route path="/register" component={() => <RegisterPage event={displayEvent} />} />
+          <Route path="/submit-abstract" component={() => <AbstractPage event={displayEvent} />} />
+          <Route path="/brochure" component={() => <BrochurePage event={displayEvent} />} />
+          <Route path="/organizing-committee" component={() => <OrganizingCommitteePage event={displayEvent} />} />
+          <Route path="/thank-you" component={() => <ThankYouPage event={displayEvent} />} />
+          <Route component={() => <HomePage event={displayEvent} />} />
         </Switch>
       </MicrositeLayout>
     </WouterRouter>

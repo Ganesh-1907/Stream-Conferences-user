@@ -1,11 +1,18 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'wouter';
 import {
-  CalendarDays, Clock3, MapPin, Download, Users, ArrowUpRight, FileText,
-  Timer, Award, Store, Sparkles, ChevronLeft, ChevronRight, ChevronsRight,
-  Calendar, Megaphone, FileEdit, ListOrdered
+  CalendarDays, Clock3, MapPin, Download, Users, ArrowUpRight, ArrowRight, FileText,
+  Timer, Award, ChevronLeft, ChevronRight, ChevronsRight, ChevronDown,
+  Calendar, Megaphone, FileEdit, ListOrdered, Sparkles, Layers,
+  GraduationCap, Building2, Presentation, ExternalLink, Linkedin, Twitter, Globe
 } from 'lucide-react';
 import type { EventData } from './layout';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
 const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
@@ -71,7 +78,7 @@ function HeaderBannerCarousel({ banners, title, location }: { banners: string[];
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="relative w-full aspect-[2.6/1] min-h-[200px] md:min-h-[250px] max-h-[340px] rounded-2xl md:rounded-3xl overflow-hidden shadow-xl border border-[hsl(var(--border))] group bg-black/5">
+      <div className="relative w-full aspect-[1500/500] rounded-2xl md:rounded-3xl overflow-hidden shadow-xl border border-[hsl(var(--border))] group bg-black/5">
         {banners.map((imgUrl, idx) => (
           <div
             key={idx}
@@ -162,6 +169,83 @@ export function HomePage({ event }: { event: EventData }) {
   const programDays = Array.isArray(event.program) ? event.program.length : 0;
 
   const isExpired = startDate ? new Date(startDate).getTime() < Date.now() : false;
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const [selectedSpeaker, setSelectedSpeaker] = useState<any | null>(null);
+
+  const featuredSpeakers = useMemo(() => {
+    const list = Array.isArray(event.speakers) && event.speakers.length > 0 ? [...event.speakers] : [];
+    if (list.length === 0) {
+      return [
+        {
+          name: 'Dr. Sarah Chen',
+          degree: 'Ph.D.',
+          designation: 'Director of Genomics Research',
+          organization: 'Harvard Medical School',
+          topic: 'Next-Generation Gene Sequencing & Therapeutics',
+          bio: 'Pioneering researcher in functional genomics and precision medicine applications.',
+          isKeynote: true,
+        },
+        {
+          name: 'Prof. Marcus Vance',
+          degree: 'M.D., Ph.D.',
+          designation: 'Chair of Cellular Immunology',
+          organization: 'Johns Hopkins University',
+          topic: 'Targeted Immunotherapies in Oncology',
+          bio: 'Leading clinician-scientist specializing in novel cellular immunology and CAR-T platforms.',
+          isKeynote: true,
+        },
+        {
+          name: 'Dr. Elena Rostova',
+          degree: 'Ph.D.',
+          designation: 'Head of Computational Biology',
+          organization: 'Bioinformatics Global Institute',
+          topic: 'AI and Machine Learning in Structural Biology',
+          bio: 'Expert in generative deep learning frameworks for molecular dynamics and protein folding.',
+          isKeynote: false,
+        },
+        {
+          name: 'Dr. Kwame Mensah',
+          degree: 'M.D.',
+          designation: 'Professor of Public Health',
+          organization: 'Oxford Population Health',
+          topic: 'Global Health Systems & Clinical Epidemiology',
+          bio: 'Specialist in multi-center international trials and preventative clinical epidemiology.',
+          isKeynote: false,
+        },
+      ];
+    }
+    // Prioritize keynote speakers first so key speakers are covered
+    list.sort((a, b) => (b.isKeynote ? 1 : 0) - (a.isKeynote ? 1 : 0));
+    return list.slice(0, 4);
+  }, [event.speakers]);
+
+  const faqs = useMemo(() => {
+    if (Array.isArray(event.faqs) && event.faqs.length > 0) {
+      return [...event.faqs].sort((a, b) => (a.order || 0) - (b.order || 0));
+    }
+    return [
+      {
+        question: 'How do I register for the conference?',
+        answer: 'You can register online through our Registration page by selecting your attendee category (Presenter, Listener, Student, or Exhibitor) and completing the registration details.',
+      },
+      {
+        question: 'Can I submit an abstract before completing registration?',
+        answer: 'Yes, you can submit your abstract first through the Abstract Submission portal. After peer review and acceptance by the scientific committee, you will be invited to complete your registration.',
+      },
+      {
+        question: 'Will I receive a certificate of attendance or presentation?',
+        answer: 'Yes, all registered participants and oral/poster presenters receive an official Certificate of Participation / Presentation at the conclusion of the event.',
+      },
+      {
+        question: 'Is virtual / online participation available?',
+        answer: 'Yes, our conferences offer hybrid participation options with live streaming, interactive Q&A, and virtual presentation opportunities for remote delegates.',
+      },
+      {
+        question: 'How do I obtain an official invitation letter for visa purposes?',
+        answer: 'Official invitation letters for visa applications are provided to confirmed, registered attendees upon request. Please contact the organizing committee with your details.',
+      },
+    ];
+  }, [event.faqs]);
 
   const headerBanners = useMemo(() => {
     const list: string[] = [];
@@ -190,40 +274,30 @@ export function HomePage({ event }: { event: EventData }) {
       title: 'Abstracts Submission',
       icon: FileText,
       href: '/submit-abstract',
-      bg: 'bg-[#e11d48]',
-      hoverBg: 'hover:bg-[#be123c]',
       hasNew: false,
     },
     {
       title: 'Registration',
       icon: FileEdit,
       href: '/register',
-      bg: 'bg-[#708238]',
-      hoverBg: 'hover:bg-[#58672c]',
       hasNew: true,
     },
     {
       title: 'Scientific Program',
       icon: ListOrdered,
       href: '/program',
-      bg: 'bg-[#ea580c]',
-      hoverBg: 'hover:bg-[#c2410c]',
       hasNew: true,
     },
     {
       title: 'Organizing Committee',
       icon: Users,
-      href: '/speakers',
-      bg: 'bg-[#84cc16]',
-      hoverBg: 'hover:bg-[#65a30d]',
+      href: '/organizing-committee',
       hasNew: false,
     },
     {
       title: 'Call for Abstracts',
       icon: Megaphone,
       href: '/submit-abstract',
-      bg: 'bg-[#2563eb]',
-      hoverBg: 'hover:bg-[#1d4ed8]',
       hasNew: false,
     },
     {
@@ -231,8 +305,6 @@ export function HomePage({ event }: { event: EventData }) {
       icon: Download,
       href: event.brochureUrl ? mediaUrl(event.brochureUrl) : '/contact',
       isExternal: Boolean(event.brochureUrl),
-      bg: 'bg-[#9333ea]',
-      hoverBg: 'hover:bg-[#7e22ce]',
       hasNew: false,
     },
   ];
@@ -240,36 +312,42 @@ export function HomePage({ event }: { event: EventData }) {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden hero-grad text-[hsl(var(--primary-foreground))]">
+      <section className="relative overflow-hidden hero-grad text-[hsl(var(--primary-foreground))] min-h-[calc(100vh-64px)] flex flex-col justify-between">
         {banner && <img src={banner} alt={event.title} className="absolute inset-0 h-full w-full object-cover opacity-15" />}
         <div className="absolute inset-0 hero-grid-b" />
         <div className="absolute inset-0 hero-vignette" />
-        <div className="relative container-wide py-20 md:py-28 lg:py-32">
-          <div className="grid gap-12 lg:grid-cols-[1.25fr_1fr] lg:items-center">
-            <div>
+        <div className="relative container-wide flex-1 flex flex-col justify-between pt-6 pb-6 md:pt-9 md:pb-7">
+          <div className="grid gap-8 lg:grid-cols-[1.25fr_1fr] lg:items-center my-auto">
+            <div className="min-w-0 max-w-2xl lg:max-w-3xl">
               <span className="badge-pill">
-                <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--accent))] animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
                 {event.eventType === 'conference' ? 'International Conference' : 'Live Webinar'}
               </span>
-              <h1 className="mt-6 max-w-3xl font-['Space_Grotesk'] text-4xl font-bold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl text-balance">
+              <h1 className="mt-5 max-w-xl lg:max-w-2xl xl:max-w-3xl font-['Space_Grotesk'] text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.08] tracking-tight text-white">
                 {event.title}
               </h1>
+              {event.activeCohort && (
+                <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80 backdrop-blur">
+                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                  {event.activeCohort.isCurrent ? 'Current Cohort' : 'Cohort'} · {event.activeCohort.label || `${event.activeCohort.year} Batch ${event.activeCohort.batchNo}`}
+                </div>
+              )}
               <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-base text-white/85">
                 {formatDateRange(event) && (
-                  <span className="inline-flex items-center gap-2"><CalendarDays size={16} className="text-[hsl(var(--accent))]" />{formatDateRange(event)}</span>
+                  <span className="inline-flex items-center gap-2"><CalendarDays size={16} className="text-cyan-300" />{formatDateRange(event)}</span>
                 )}
                 {(event.startTime || event.endTime) && (
-                  <span className="inline-flex items-center gap-2"><Clock3 size={16} className="text-[hsl(var(--accent))]" />{event.startTime || '—'} – {event.endTime || '—'}</span>
+                  <span className="inline-flex items-center gap-2"><Clock3 size={16} className="text-cyan-300" />{event.startTime || '—'} – {event.endTime || '—'}</span>
                 )}
                 {(event.venue || event.location) && (
-                  <span className="inline-flex items-center gap-2"><MapPin size={16} className="text-[hsl(var(--accent))]" />{event.venue || event.location}</span>
+                  <span className="inline-flex items-center gap-2"><MapPin size={16} className="text-cyan-300" />{event.venue || event.location}</span>
                 )}
                 {event.speaker && (
-                  <span className="inline-flex items-center gap-2"><Users size={16} className="text-[hsl(var(--accent))]" />Speaker: {event.speaker}</span>
+                  <span className="inline-flex items-center gap-2"><Users size={16} className="text-cyan-300" />Speaker: {event.speaker}</span>
                 )}
               </div>
               {event.theme && (
-                <p className="mt-6 max-w-xl text-base leading-7 text-white/75 line-clamp-3">{event.theme}</p>
+                <p className="mt-6 max-w-2xl text-base leading-7 text-white/75 line-clamp-3">{event.theme}</p>
               )}
               {(() => {
                 const cd = useCountdown(startDate);
@@ -311,97 +389,118 @@ export function HomePage({ event }: { event: EventData }) {
             </div>
 
             <div className="hidden lg:block">
-              <div className="rounded-3xl border border-white/15 bg-white/5 backdrop-blur-xl p-8 shadow-2xl">
-                <p className="font-mono text-[11px] uppercase tracking-[.2em] text-white/60">Event at a glance</p>
-                <div className="mt-6 grid grid-cols-2 gap-5">
+              <div className="w-full rounded-3xl border border-white/15 bg-white/5 backdrop-blur-xl p-7 shadow-2xl">
+                <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
+                    <p className="font-mono text-[11px] uppercase tracking-[.2em] text-white/70 font-semibold">Event at a glance</p>
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-500/15 border border-cyan-400/30 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cyan-300">
+                    <Sparkles size={11} /> {event.eventType === 'conference' ? 'CPD Accredited' : 'Live Interactive'}
+                  </span>
+                </div>
+
+                <div className="mt-5 grid grid-cols-2 gap-3.5">
                   {startDate && (
-                    <div>
-                      <p className="text-xs text-white/60">Date</p>
-                      <p className="mt-1 font-['Space_Grotesk'] text-xl font-bold text-white">{new Date(startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
+                      <p className="flex items-center gap-1.5 text-[11px] font-medium text-white/60">
+                        <CalendarDays size={13} className="text-cyan-400" /> Date
+                      </p>
+                      <p className="mt-1 font-['Space_Grotesk'] text-base font-bold text-white leading-snug">
+                        {new Date(startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </p>
                     </div>
                   )}
                   {(event.venue || event.location) && (
-                    <div>
-                      <p className="text-xs text-white/60">Venue</p>
-                      <p className="mt-1 font-['Space_Grotesk'] text-xl font-bold text-white">{event.venue || event.location}</p>
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
+                      <p className="flex items-center gap-1.5 text-[11px] font-medium text-white/60">
+                        <MapPin size={13} className="text-cyan-400" /> Venue
+                      </p>
+                      <p className="mt-1 font-['Space_Grotesk'] text-base font-bold text-white leading-snug line-clamp-2">
+                        {event.venue || event.location}
+                      </p>
                     </div>
                   )}
-                  {fees.length > 0 && (
-                    <div>
-                      <p className="text-xs text-white/60">Registrations</p>
-                      <p className="mt-1 font-['Space_Grotesk'] text-xl font-bold text-white">{fees.length} categories</p>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-xs text-white/60">{event.eventType === 'conference' ? 'Sessions' : 'Format'}</p>
-                    <p className="mt-1 font-['Space_Grotesk'] text-xl font-bold text-white">{programDays || (event.eventType === 'webinar' ? 'Live' : 'In-person')}</p>
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
+                    <p className="flex items-center gap-1.5 text-[11px] font-medium text-white/60">
+                      <Clock3 size={13} className="text-cyan-400" /> Timing
+                    </p>
+                    <p className="mt-1 font-['Space_Grotesk'] text-base font-bold text-white leading-snug">
+                      {event.startTime && event.endTime ? `${event.startTime} – ${event.endTime}` : (event.startTime || 'Full Day Sessions')}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
+                    <p className="flex items-center gap-1.5 text-[11px] font-medium text-white/60">
+                      <Layers size={13} className="text-cyan-400" /> {event.eventType === 'conference' ? 'Tracks' : 'Format'}
+                    </p>
+                    <p className="mt-1 font-['Space_Grotesk'] text-base font-bold text-white leading-snug">
+                      {event.tracks && event.tracks.length > 0
+                        ? `${event.tracks.length} Scientific Tracks`
+                        : (programDays ? `${programDays} Days Program` : 'Multi-Track Sessions')}
+                    </p>
                   </div>
                 </div>
-                {speakersCount > 0 && (
-                  <div className="mt-6 flex items-center gap-3 border-t border-white/12 pt-5">
-                    <div className="flex -space-x-2">
-                      {(event.speakers || []).slice(0, 4).map((s, i) => (
-                        s.avatar
-                          ? <img key={i} src={mediaUrl(s.avatar)} alt={s.name} className="h-9 w-9 rounded-full border-2 border-[hsl(216,60%,16%)] object-cover" />
-                          : <span key={i} className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[hsl(216,60%,16%)] bg-white/20 text-xs font-bold">{s.name.charAt(0)}</span>
-                      ))}
-                    </div>
-                    <p className="text-xs text-white/70"><span className="font-bold text-white">{speakersCount}</span> speakers</p>
+
+                {/* Bottom Card Footer */}
+                <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-xs text-amber-300/90 font-medium">
+                    <Award size={14} className="text-amber-400 shrink-0" />
+                    <span>{fees.length > 0 ? `${fees.length} Registration Tiers Open` : 'Early Bird Active'}</span>
                   </div>
-                )}
+                  <Link
+                    href="/fees"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-white/90 hover:text-white underline underline-offset-4 decoration-white/40 hover:decoration-white transition-colors"
+                  >
+                    View Pricing <ArrowUpRight size={13} />
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-16 grid grid-cols-2 gap-4 md:grid-cols-4">
-            {startDate && (
-              <div className="stat-card text-center">
-                <div className="stat-num">{new Date(startDate).toLocaleDateString(undefined, { day: '2-digit' })}</div>
-                <div className="stat-label">{new Date(startDate).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</div>
-              </div>
-            )}
-            <div className="stat-card text-center">
-              <div className="stat-num">{fees.length || '—'}</div>
-              <div className="stat-label">Fee Categories</div>
+          {/* Quick Links Section (Integrated into Hero) */}
+          <div className="mt-7 pt-5 border-t border-white/12 flex flex-col items-center">
+            <div className="mb-4">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-white/90 backdrop-blur-md shadow-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                Quick Links
+              </span>
             </div>
-            <div className="stat-card text-center">
-              <div className="stat-num">{speakersCount || '—'}</div>
-              <div className="stat-label">Speakers</div>
-            </div>
-            <div className="stat-card text-center">
-              <div className="stat-num">{programDays || (event.eventType === 'webinar' ? '1' : '—')}</div>
-              <div className="stat-label">Days</div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 w-full max-w-6xl">
+              {quickLinks.map((item, idx) => (
+                <Link
+                  key={idx}
+                  href={item.href}
+                  target={item.isExternal ? '_blank' : undefined}
+                  rel={item.isExternal ? 'noreferrer' : undefined}
+                  className="relative flex flex-col items-center justify-center text-center p-3.5 sm:p-4 rounded-2xl text-white bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 hover:border-cyan-400/40 backdrop-blur-xl shadow-lg hover:shadow-cyan-500/10 transition-all duration-200 transform hover:-translate-y-1 group min-h-[100px] cursor-pointer"
+                >
+                  {item.hasNew && (
+                    <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8.5px] font-bold uppercase tracking-wider rounded-full shadow-sm">
+                      New
+                    </span>
+                  )}
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-cyan-300 group-hover:bg-cyan-500/20 group-hover:text-cyan-200 group-hover:scale-110 transition-all duration-200 mb-2">
+                    <item.icon size={20} />
+                  </div>
+                  <span className="text-xs font-semibold leading-tight line-clamp-2 text-white/90 group-hover:text-white transition-colors">
+                    {item.title}
+                  </span>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Interactive Banner Carousel, Logo, CTAs & Quick Action Navigation (Matching Reference Design) */}
-      <section className="container-wide py-12 md:py-16 border-b border-[hsl(var(--border))]">
-        {/* Header Title & Date/Mode */}
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-widest text-[#0f4c81] dark:text-cyan-400 mb-1.5 block">
-              Official Conference Overview
-            </span>
-            <h2 className="font-['Space_Grotesk'] text-2xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#1e3a8a] dark:text-blue-300 max-w-3xl">
-              {event.title}
-            </h2>
-          </div>
-          <div className="md:text-right shrink-0 bg-muted/20 border border-foreground/5 p-3.5 rounded-2xl">
-            <p className="font-bold text-sm md:text-base text-[#65a30d] dark:text-lime-400">
-              {formatDateRange(event) || 'November 02-04, 2026'}
-            </p>
-            <p className="text-xs md:text-sm font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
-              {event.venue || event.location || (event.eventType === 'webinar' ? 'Virtual Conference' : 'Hybrid Conference')}
-            </p>
-          </div>
-        </div>
 
-        {/* 2-Column Grid: Left Carousel, Right Logo & CTAs */}
-        <div className="grid lg:grid-cols-[1.55fr_1fr] gap-8 lg:gap-12 items-center">
-          {/* Left Column: Banner Carousel */}
-          <div>
+      {/* Interactive Banner Carousel, Logo, CTAs & Quick Action Navigation (Matching Reference Design) */}
+      <section className="container-wide mt-12 md:mt-20 py-10 md:py-14 border-b border-[hsl(var(--border))]">
+        {/* Centered 2-Column Unit with Balanced Margins & Matched Heights */}
+        <div className="max-w-[1440px] w-full mx-auto flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-10">
+          {/* Left Column: Banner Carousel (1500x500 aspect ratio, refined to 1060px width x 353px height) */}
+          <div className="w-full lg:flex-1 max-w-[1060px]">
             <HeaderBannerCarousel
               banners={headerBanners}
               title={event.title}
@@ -409,20 +508,10 @@ export function HomePage({ event }: { event: EventData }) {
             />
           </div>
 
-          {/* Right Column: Date, Logo, and Action Buttons (Matching Screenshot) */}
-          <div className="flex flex-col items-center justify-center text-center">
-            {/* Date & Format above logo */}
-            <div className="mb-2">
-              <p className="font-bold text-sm md:text-base text-[#65a30d] dark:text-lime-400">
-                {formatDateRange(event) || 'November 02-04, 2026'}
-              </p>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
-                {event.venue || event.location || (event.eventType === 'webinar' ? 'Virtual Conference' : 'Hybrid Conference')}
-              </p>
-            </div>
-
-            {/* Circular Logo (Matching Screenshot) */}
-            <div className="relative w-36 h-36 sm:w-44 sm:h-44 rounded-full border-4 border-[#0f4c81]/30 bg-white shadow-xl flex items-center justify-center p-3 my-2 overflow-hidden group">
+          {/* Right Column: Logo and Side-by-Side Action Buttons (Height matches banner) */}
+          <div className="flex flex-col items-center justify-center text-center shrink-0">
+            {/* Circular Logo */}
+            <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-60 md:h-60 rounded-full border-4 border-[#0f4c81]/30 bg-white shadow-xl flex items-center justify-center p-4 overflow-hidden group shrink-0">
               {event.logoUrl ? (
                 <img
                   src={mediaUrl(event.logoUrl)}
@@ -430,27 +519,27 @@ export function HomePage({ event }: { event: EventData }) {
                   className="w-full h-full object-contain rounded-full group-hover:scale-105 transition-transform duration-300"
                 />
               ) : (
-                <div className="w-full h-full rounded-full bg-gradient-to-br from-[#0f4c81] to-[#0d9488] flex flex-col items-center justify-center text-white p-3 text-center">
-                  <Award size={36} />
-                  <span className="text-[11px] font-bold mt-1 line-clamp-2 uppercase tracking-tight">{event.title}</span>
+                <div className="w-full h-full rounded-full bg-gradient-to-br from-[#0f4c81] to-[#0d9488] flex flex-col items-center justify-center text-white p-5 text-center">
+                  <Award size={48} />
+                  <span className="text-xs font-bold mt-2 line-clamp-2 uppercase tracking-tight">{event.title}</span>
                 </div>
               )}
             </div>
 
-            {/* Quick Action Navigation Buttons beside Logo */}
-            <div className="flex flex-col items-center gap-2.5 w-full mt-2">
+            {/* Quick Action Navigation Buttons - Side by Side */}
+            <div className="flex flex-row items-center justify-center gap-3 w-full mt-5 flex-wrap sm:flex-nowrap">
               <Link
                 href="/submit-abstract"
-                className="inline-flex items-center justify-center gap-2 w-full max-w-[260px] px-6 py-2.5 rounded-full bg-[#0f4c81] hover:bg-[#0c3c66] text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 border-2 border-[#155e75]/40 cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[#0f4c81] hover:bg-[#0c3c66] text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 border-2 border-[#155e75]/40 cursor-pointer whitespace-nowrap"
               >
                 <ChevronsRight size={18} className="text-[#38bdf8]" />
-                <span>SUBMIT YOUR ABSTRACT</span>
+                <span>SUBMIT ABSTRACT</span>
               </Link>
 
               <button
                 type="button"
                 onClick={() => createCalendarReminder(event)}
-                className="inline-flex items-center justify-center gap-2 w-full max-w-[220px] px-5 py-2 rounded-full bg-[#262626] hover:bg-black text-white font-medium text-xs shadow hover:shadow-md transition-all cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[#262626] hover:bg-black text-white font-medium text-xs shadow hover:shadow-md transition-all cursor-pointer whitespace-nowrap"
                 title="Add to Calendar"
               >
                 <Calendar size={14} className="text-white/80" />
@@ -459,144 +548,317 @@ export function HomePage({ event }: { event: EventData }) {
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Status Indicator (Matching "EXPIRED" / "REGISTRATIONS OPEN") */}
-        <div className="mt-12 text-center">
-          {isExpired ? (
-            <div className="font-['Space_Grotesk'] text-3xl md:text-4xl font-extrabold tracking-widest text-slate-800 dark:text-slate-100 uppercase">
-              EXPIRED
+      {/* Featured Speakers Section (Before FAQs) */}
+      {featuredSpeakers.length > 0 && (
+        <section className="container-wide py-14 md:py-20 border-b border-[hsl(var(--border))]">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+            <div>
+              <span className="section-eyebrow">Speakers</span>
+              <h2 className="mt-3 text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">
+                Featured Speakers
+              </h2>
+              <p className="mt-2 text-sm md:text-base text-[hsl(var(--muted-foreground))] max-w-xl">
+                Learn from world-renowned keynote experts and pioneering practitioners leading the sessions
+              </p>
             </div>
-          ) : (
-            <div className="font-['Space_Grotesk'] text-2xl md:text-3xl font-extrabold tracking-wider text-[#0f4c81] dark:text-blue-400 uppercase">
-              REGISTRATIONS OPEN
-            </div>
-          )}
+            <Link
+              href="/speakers"
+              className="inline-flex items-center gap-2 self-start md:self-auto px-5 py-2.5 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--primary)/0.08)] hover:border-[hsl(var(--primary)/0.4)] text-[hsl(var(--foreground))] font-semibold text-sm transition-all shadow-sm group cursor-pointer shrink-0"
+            >
+              <span>View All Speakers</span>
+              {speakersCount > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[hsl(var(--primary)/0.12)] text-[hsl(var(--primary))]">
+                  {speakersCount}
+                </span>
+              )}
+              <ArrowRight size={16} className="text-[hsl(var(--primary))] group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {featuredSpeakers.map((speaker, idx) => (
+              <div
+                key={speaker.name || idx}
+                onClick={() => setSelectedSpeaker(speaker)}
+                className="group relative flex flex-col items-center text-center rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-6 shadow-sm hover:shadow-xl hover:border-[hsl(var(--primary)/.5)] transition-all duration-300 cursor-pointer overflow-hidden"
+              >
+                {/* Lanyard Notch / ID Badge Slot */}
+                <div className="w-12 h-1.5 rounded-full bg-[hsl(var(--border))] mb-4 group-hover:bg-[hsl(var(--primary)/.4)] transition-colors shadow-inner shrink-0" />
+
+                {/* Top-Right Keynote Badge */}
+                {speaker.isKeynote && (
+                  <div className="absolute top-3.5 right-3.5">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm">
+                      <Award size={12} /> Keynote
+                    </span>
+                  </div>
+                )}
+
+                {/* Top Center Circular Image */}
+                <div className="relative mb-4 w-28 h-28 sm:w-32 sm:h-32 rounded-full ring-4 ring-[hsl(var(--border))] group-hover:ring-[hsl(var(--primary)/.5)] transition-all duration-300 overflow-hidden bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] shadow-md flex items-center justify-center shrink-0">
+                  {speaker.avatar ? (
+                    <img
+                      src={mediaUrl(speaker.avatar)}
+                      alt={speaker.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-3xl font-['Space_Grotesk'] shadow-inner">
+                      {(speaker.name || 'S').charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  {speaker.isKeynote && (
+                    <div className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md border-2 border-[hsl(var(--card))]">
+                      <Award size={13} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Speaker Name */}
+                <h3 className="font-['Space_Grotesk'] font-bold text-lg sm:text-xl text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 w-full px-1">
+                  {speaker.name}
+                </h3>
+
+                {/* Degree */}
+                {speaker.degree && (
+                  <div className="mt-1">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[hsl(var(--primary))] uppercase tracking-wider bg-[hsl(var(--primary)/0.1)] px-2.5 py-0.5 rounded-full">
+                      <GraduationCap size={12} />
+                      {speaker.degree}
+                    </span>
+                  </div>
+                )}
+
+                {/* Designation */}
+                {speaker.designation && (
+                  <p className="text-sm font-semibold text-[hsl(var(--primary))] mt-1.5 line-clamp-1 w-full px-1">
+                    {speaker.designation}
+                  </p>
+                )}
+
+                {/* Organization */}
+                {speaker.organization && (
+                  <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1 flex items-center justify-center gap-1.5 line-clamp-1 w-full px-1">
+                    <Building2 size={12} className="shrink-0 opacity-70" />
+                    <span>{speaker.organization}</span>
+                  </p>
+                )}
+
+                {/* Topic Pill */}
+                {speaker.topic && (
+                  <div className="mt-3 w-full">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[hsl(var(--primary)/.08)] border border-[hsl(var(--primary)/.15)] text-[hsl(var(--primary))] text-xs font-medium max-w-full">
+                      <Presentation size={12} className="shrink-0" />
+                      <span className="truncate">{speaker.topic}</span>
+                    </span>
+                  </div>
+                )}
+
+                {/* Bio Excerpt */}
+                {speaker.bio && (
+                  <p className="mt-3 text-xs text-[hsl(var(--muted-foreground))] line-clamp-2 leading-relaxed px-1">
+                    {speaker.bio}
+                  </p>
+                )}
+
+                {/* Footer */}
+                <div className="mt-auto pt-4 w-full flex items-center justify-between border-t border-[hsl(var(--border)/.6)] text-xs">
+                  <span className="text-[11px] font-medium text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(var(--foreground))] transition-colors flex items-center gap-1">
+                    View Profile <ExternalLink size={11} className="opacity-70" />
+                  </span>
+                  {(speaker.linkedin || speaker.twitter || speaker.website) && (
+                    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                      {speaker.linkedin && (
+                        <a
+                          href={speaker.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-7 h-7 rounded-md flex items-center justify-center bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white transition-all"
+                          title="LinkedIn"
+                        >
+                          <Linkedin size={13} />
+                        </a>
+                      )}
+                      {speaker.twitter && (
+                        <a
+                          href={speaker.twitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-7 h-7 rounded-md flex items-center justify-center bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white transition-all"
+                          title="Twitter"
+                        >
+                          <Twitter size={13} />
+                        </a>
+                      )}
+                      {speaker.website && (
+                        <a
+                          href={speaker.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-7 h-7 rounded-md flex items-center justify-center bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white transition-all"
+                          title="Website"
+                        >
+                          <Globe size={13} />
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Decorative ID bottom stripe */}
+                <div className="w-full h-1 bg-gradient-to-r from-transparent via-[hsl(var(--primary)/.4)] to-transparent absolute bottom-0 left-0" />
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom View All CTA */}
+          <div className="mt-10 text-center">
+            <Link
+              href="/speakers"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.9)] text-white font-bold text-sm shadow-md hover:shadow-lg transition-all cursor-pointer"
+            >
+              <span>View All Speakers</span>
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* Frequently Asked Questions Section */}
+      <section className="container-wide py-16 md:py-24">
+        <div className="mb-12 text-center max-w-2xl mx-auto">
+          <span className="section-eyebrow justify-center">FAQ</span>
+          <h2 className="mt-3 text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">
+            Frequently Asked Questions
+          </h2>
+          <p className="mt-2 text-sm md:text-base text-[hsl(var(--muted-foreground))]">
+            Find answers to common questions about participation, registration, and attendance
+          </p>
         </div>
 
-        {/* Quick Links Header & Navigation Grid (Matching Screenshot) */}
-        <div className="mt-6 flex flex-col items-center">
-          <span className="inline-block bg-[#dc2626] text-white text-xs font-bold uppercase tracking-widest px-5 py-1.5 rounded-md shadow-sm mb-6">
-            QUICK LINKS
-          </span>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 w-full max-w-6xl">
-            {quickLinks.map((item, idx) => (
-              <Link
-                key={idx}
-                href={item.href}
-                target={item.isExternal ? '_blank' : undefined}
-                rel={item.isExternal ? 'noreferrer' : undefined}
-                className={`relative flex flex-col items-center justify-center text-center p-5 rounded-xl text-white ${item.bg} ${item.hoverBg} shadow-md hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1 group min-h-[110px] cursor-pointer`}
+        <div className="max-w-4xl mx-auto divide-y divide-[hsl(var(--border))] border-t border-b border-[hsl(var(--border))]">
+          {faqs.map((faq, idx) => (
+            <div key={idx} className="faq-item border-0">
+              <button
+                type="button"
+                onClick={() => setOpenFaqIndex(openFaqIndex === idx ? null : idx)}
+                className="faq-question cursor-pointer py-5 px-1 hover:text-[hsl(var(--primary))] transition-colors"
+                aria-expanded={openFaqIndex === idx}
               >
-                {item.hasNew && (
-                  <span className="absolute top-2 left-2 px-1.5 py-0.5 bg-[#ef4444] border border-white/40 text-white text-[9px] font-black uppercase tracking-wider rounded shadow-sm">
-                    New
+                <span className="font-semibold text-base md:text-lg pr-4">{faq.question}</span>
+                <ChevronDown
+                  size={20}
+                  className={`text-[hsl(var(--muted-foreground))] shrink-0 transition-transform duration-200 ${
+                    openFaqIndex === idx ? 'rotate-180 text-[hsl(var(--primary))]' : ''
+                  }`}
+                />
+              </button>
+              {openFaqIndex === idx && (
+                <div className="faq-answer px-1 pb-5 pt-1 text-sm md:text-base text-[hsl(var(--muted-foreground))] leading-relaxed">
+                  {faq.answer}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Speaker Details Modal */}
+      <Dialog open={Boolean(selectedSpeaker)} onOpenChange={(open) => !open && setSelectedSpeaker(null)}>
+        {selectedSpeaker && (
+          <DialogContent className="sm:max-w-md bg-[hsl(var(--card))] border-[hsl(var(--border))] text-[hsl(var(--foreground))] p-6">
+            <DialogHeader className="flex flex-col items-center text-center space-y-3">
+              <div className="relative w-24 h-24 rounded-full ring-4 ring-[hsl(var(--primary)/.3)] overflow-hidden shadow-lg bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] flex items-center justify-center">
+                {selectedSpeaker.avatar ? (
+                  <img
+                    src={mediaUrl(selectedSpeaker.avatar)}
+                    alt={selectedSpeaker.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-2xl font-['Space_Grotesk']">
+                    {(selectedSpeaker.name || 'S').charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-bold font-['Space_Grotesk'] text-[hsl(var(--foreground))]">
+                  {selectedSpeaker.name}
+                </DialogTitle>
+                {selectedSpeaker.degree && (
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-[hsl(var(--primary))] uppercase tracking-wider bg-[hsl(var(--primary)/0.1)] px-2.5 py-0.5 rounded-full mt-1.5">
+                    <GraduationCap size={13} />
+                    {selectedSpeaker.degree}
                   </span>
                 )}
-                <item.icon size={28} className="mb-2 group-hover:scale-110 transition-transform" />
-                <span className="text-xs font-bold leading-tight line-clamp-2">
-                  {item.title}
+                {selectedSpeaker.designation && (
+                  <p className="text-sm font-semibold text-[hsl(var(--primary))] mt-1">
+                    {selectedSpeaker.designation}
+                  </p>
+                )}
+                {selectedSpeaker.organization && (
+                  <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1 flex items-center justify-center gap-1.5">
+                    <Building2 size={13} className="opacity-70" />
+                    <span>{selectedSpeaker.organization}</span>
+                  </p>
+                )}
+              </div>
+            </DialogHeader>
+
+            {selectedSpeaker.topic && (
+              <div className="mt-2 text-center">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[hsl(var(--primary)/.08)] border border-[hsl(var(--primary)/.15)] text-[hsl(var(--primary))] text-xs font-medium">
+                  <Presentation size={13} />
+                  <span>Topic: {selectedSpeaker.topic}</span>
                 </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Quick Overview */}
-      <section className="container-wide py-12">
-        <div className="grid gap-6 md:grid-cols-3">
-          {event.description && (
-            <Link href="/about" className="block rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 hover:border-[hsl(var(--primary)/.5)] hover:shadow-lg transition-all">
-              <p className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--primary))] mb-2">About</p>
-              <p className="text-base text-[hsl(var(--muted-foreground))] line-clamp-3">{event.description.substring(0, 150)}...</p>
-            </Link>
-          )}
-          {event.speakers && event.speakers.length > 0 && (
-            <Link href="/speakers" className="block rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 hover:border-[hsl(var(--primary)/.5)] hover:shadow-lg transition-all">
-              <p className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--secondary))] mb-2">Speakers</p>
-              <p className="text-base text-[hsl(var(--muted-foreground))]">{event.speakers.length} speakers featured</p>
-            </Link>
-          )}
-          {event.fees && event.fees.length > 0 && (
-            <Link href="/fees" className="block rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 hover:border-[hsl(var(--primary)/.5)] hover:shadow-lg transition-all">
-              <p className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--accent))] mb-2">Registration</p>
-              <p className="text-base text-[hsl(var(--muted-foreground))]">{event.fees.length} fee categories available</p>
-            </Link>
-          )}
-        </div>
-      </section>
-
-      {/* Sponsors & Exhibitors Section */}
-      <section className="container-wide pb-16">
-        <div className="rounded-3xl border border-[hsl(var(--border))] bg-gradient-to-br from-[hsl(var(--card))] to-[hsl(var(--muted)/.4)] p-8 md:p-12">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="max-w-2xl">
-              <span className="section-eyebrow">Sponsors & Exhibitors</span>
-              <h2 className="mt-3 text-2xl md:text-4xl font-['Space_Grotesk'] font-bold text-[hsl(var(--foreground))]">
-                Showcase Your Organization at {event.title}
-              </h2>
-              <p className="mt-3 text-sm md:text-base text-[hsl(var(--muted-foreground))] leading-relaxed">
-                Connect with leading researchers, clinicians, and industry authorities. Maximize your reach through our tailored sponsorship tiers and premier exhibition space.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/sponsors" className="btn-main btn-primary text-xs py-3 px-6">
-                View All Packages <ArrowUpRight size={15} />
-              </Link>
-              <Link href="/sponsors#enquire" className="btn-main btn-quiet text-xs py-3 px-6">
-                Enquire Now
-              </Link>
-            </div>
-          </div>
-
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { title: 'Elite Sponsor', desc: '10 Poster Awards, 3 Workshop Slots, 2 Booths (3x3), 4 Passes, 20% Future Waiver', highlight: true },
-              { title: 'Gold Sponsor', desc: '5 Poster Awards, 2 Workshop Slots, 1 Booth (3x3), 3 Passes, 15% Future Waiver', highlight: false },
-              { title: 'Silver Sponsor', desc: '3 Poster Awards, 1 Workshop Slot, 1 Booth (3x3), 2 Passes, 10% Future Waiver', highlight: false },
-              { title: 'Exhibition', desc: 'Tailor-made 3x3 sqm Booth, 1 Pass, Delegate Bags Insert, 5% Future Waiver', highlight: false },
-            ].map((tier, idx) => (
-              <div
-                key={idx}
-                className={`p-5 rounded-2xl border transition-all ${
-                  tier.highlight
-                    ? 'border-[hsl(var(--primary))] bg-[hsl(var(--card))] shadow-sm'
-                    : 'border-[hsl(var(--border))] bg-[hsl(var(--card))]'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className={`text-xs font-mono uppercase font-bold tracking-wider ${tier.highlight ? 'text-[hsl(var(--primary))]' : 'text-[hsl(var(--secondary))]'}`}>
-                    Tier {idx + 1}
-                  </span>
-                  {tier.highlight && <Sparkles size={14} className="text-[hsl(var(--primary))]" />}
-                </div>
-                <h3 className="mt-2 text-lg font-['Space_Grotesk'] font-bold text-[hsl(var(--foreground))]">
-                  {tier.title}
-                </h3>
-                <p className="mt-2 text-xs leading-relaxed text-[hsl(var(--muted-foreground))]">
-                  {tier.desc}
-                </p>
               </div>
-            ))}
-          </div>
+            )}
 
-          {((event.partners && event.partners.length > 0) || (event.sponsors && event.sponsors.length > 0) || (event.exhibitors && event.exhibitors.length > 0)) && (
-            <div className="mt-8 pt-6 border-t border-[hsl(var(--border))]">
-              <p className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-3">
-                Confirmed Sponsors & Exhibitors:
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {((event.partners && event.partners.length > 0) ? event.partners : (event.sponsors || event.exhibitors || [])).map((p, i) => (
-                  <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-xs font-semibold text-[hsl(var(--foreground))]">
-                    <Store size={13} className="text-[hsl(var(--primary))]" /> {p.title}
-                  </span>
-                ))}
+            {selectedSpeaker.bio && (
+              <div className="mt-4 text-xs text-[hsl(var(--muted-foreground))] leading-relaxed text-center px-2">
+                {selectedSpeaker.bio}
               </div>
-            </div>
-          )}
-        </div>
-      </section>
+            )}
+
+            {(selectedSpeaker.linkedin || selectedSpeaker.twitter || selectedSpeaker.website) && (
+              <div className="mt-5 pt-4 flex items-center justify-center gap-3 border-t border-[hsl(var(--border)/.6)]">
+                {selectedSpeaker.linkedin && (
+                  <a
+                    href={selectedSpeaker.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white transition-all flex items-center gap-1.5 text-xs font-medium"
+                  >
+                    <Linkedin size={15} /> LinkedIn
+                  </a>
+                )}
+                {selectedSpeaker.twitter && (
+                  <a
+                    href={selectedSpeaker.twitter}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white transition-all flex items-center gap-1.5 text-xs font-medium"
+                  >
+                    <Twitter size={15} /> Twitter
+                  </a>
+                )}
+                {selectedSpeaker.website && (
+                  <a
+                    href={selectedSpeaker.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white transition-all flex items-center gap-1.5 text-xs font-medium"
+                  >
+                    <Globe size={15} /> Website
+                  </a>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        )}
+      </Dialog>
     </>
   );
 }

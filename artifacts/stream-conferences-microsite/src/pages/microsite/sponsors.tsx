@@ -5,18 +5,6 @@ import {
 } from 'lucide-react';
 import type { EventData } from './layout';
 
-function formatDateRange(event: EventData): string {
-  const start = event.startDate || event.eventDate;
-  if (!start) return event.day && event.month ? `${event.month} ${event.day}` : '';
-  const startD = new Date(start);
-  const end = event.endDate ? new Date(event.endDate) : null;
-  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
-  if (end && end.getTime() !== startD.getTime()) {
-    return `${startD.toLocaleDateString(undefined, opts)} – ${end.toLocaleDateString(undefined, opts)}`;
-  }
-  return startD.toLocaleDateString(undefined, opts);
-}
-
 export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
   const [formSent, setFormSent] = useState(false);
   const [company, setCompany] = useState('');
@@ -25,14 +13,6 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
   const [phone, setPhone] = useState('');
   const [selectedTier, setSelectedTier] = useState('Elite Sponsor');
   const [message, setMessage] = useState('');
-
-  const partners = (event.partners && event.partners.length > 0)
-    ? event.partners
-    : (event.sponsors && event.sponsors.length > 0)
-      ? event.sponsors
-      : (event.exhibitors && event.exhibitors.length > 0)
-        ? event.exhibitors
-        : [];
 
   const handleEnquiry = (e: FormEvent) => {
     e.preventDefault();
@@ -111,43 +91,20 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
   ];
 
   const conferenceTitle = event.title || 'Conference';
-  const datesText = formatDateRange(event) || (event.month && event.day ? `${event.month} ${event.day}` : 'Dates TBA');
-  const venueText = event.venue || event.location || 'Virtual Conference';
-  const themeText = event.theme || 'Advancing Global Research, Clinical Innovation & Industry Practice';
 
   return (
     <div className="py-10 md:py-14">
-      {/* Header Banner */}
-      <div className="container-wide">
+      {/* Header Banner - Centered Conference Title */}
+      <div className="container-wide mb-10 md:mb-14">
         <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-3xl md:text-5xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))] text-balance">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))] text-balance leading-tight">
             {conferenceTitle}
           </h1>
-        </div>
-
-        {/* Highlighted Event Info Callout Box */}
-        <div className="mt-10 max-w-3xl mx-auto rounded-2xl border-l-4 border-l-[hsl(var(--primary))] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-sm">
-          <h2 className="text-lg md:text-xl font-['Space_Grotesk'] font-bold text-[hsl(var(--foreground))]">
-            {conferenceTitle}
-          </h2>
-          <p className="mt-2 text-sm md:text-base text-[hsl(var(--muted-foreground))] leading-relaxed">
-            <strong className="text-[hsl(var(--foreground))]">Theme:</strong> {themeText}
-          </p>
-          <ul className="mt-4 space-y-1.5 text-xs md:text-sm text-[hsl(var(--muted-foreground))] font-medium">
-            <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--primary))]" />
-              <strong>Dates:</strong> {datesText}
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--primary))]" />
-              <strong>Venue:</strong> {venueText}
-            </li>
-          </ul>
         </div>
       </div>
 
       {/* Why With Us Section */}
-      <section className="container-wide mt-14 md:mt-18">
+      <section className="container-wide">
         <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-7 md:p-12 shadow-sm">
           <div className="max-w-3xl">
             <span className="section-eyebrow">Strategic Value</span>
@@ -184,37 +141,6 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
           </div>
         </div>
       </section>
-
-      {/* Confirmed Sponsors & Exhibitors from Admin Dashboard (Dynamic) */}
-      {partners.length > 0 && (
-        <section className="container-wide mt-14">
-          <div className="mb-6">
-            <span className="section-eyebrow">Confirmed Partners</span>
-            <h2 className="mt-2 text-2xl font-['Space_Grotesk'] font-bold text-[hsl(var(--foreground))]">
-              Our Sponsors & Exhibitors
-            </h2>
-            <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-              Organizations proudly supporting {conferenceTitle}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {partners.map((p, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-3 p-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[hsl(var(--primary)/.5)] transition-colors"
-              >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] flex items-center justify-center text-sm font-bold text-[hsl(var(--primary-foreground))] shrink-0 shadow-sm">
-                  {p.title ? p.title.charAt(0).toUpperCase() : <Store size={18} />}
-                </div>
-                <span className="font-semibold text-sm md:text-base text-[hsl(var(--foreground))] truncate">
-                  {p.title}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* Premium Sponsorship Packages */}
       <section className="container-wide mt-14 md:mt-20">
@@ -269,13 +195,13 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
             </div>
 
             {/* Gold Sponsor Card */}
-            <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-sm hover:border-[hsl(var(--accent)/.7)] transition-colors">
+            <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-sm hover:border-amber-500/70 transition-colors">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-11 h-11 rounded-xl bg-[hsl(var(--accent)/.15)] text-[hsl(var(--accent))] flex items-center justify-center">
+                <div className="w-11 h-11 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
                   <Award size={22} />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-['Space_Grotesk'] font-bold text-[hsl(var(--accent))]">
+                  <h3 className="text-2xl font-['Space_Grotesk'] font-bold text-amber-600 dark:text-amber-400">
                     Gold Sponsor
                   </h3>
                   <p className="text-xs text-[hsl(var(--muted-foreground))]">Prominent branding & technical workshop presence</p>
@@ -285,7 +211,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
               <div className="divide-y divide-[hsl(var(--border))]">
                 {goldBenefits.map((benefit, idx) => (
                   <div key={idx} className="py-3 flex items-start gap-3 text-sm text-[hsl(var(--foreground))]">
-                    <Check size={16} className="text-[hsl(var(--accent))] shrink-0 mt-0.5" />
+                    <Check size={16} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                     <span>{benefit}</span>
                   </div>
                 ))}
@@ -295,7 +221,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
                 <a
                   href="#enquire"
                   onClick={() => setSelectedTier('Gold Sponsor')}
-                  className="btn-main btn-quiet text-xs py-2.5 px-5 hover:border-[hsl(var(--accent))] hover:text-[hsl(var(--accent))]"
+                  className="btn-main btn-quiet text-xs py-2.5 px-5 hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
                 >
                   Choose Gold Sponsor
                 </a>
@@ -408,7 +334,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
           {/* Advertisements */}
           <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-sm">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-xl bg-[hsl(var(--accent)/.12)] text-[hsl(var(--accent))] flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-xl bg-[hsl(var(--primary)/.12)] text-[hsl(var(--primary))] flex items-center justify-center font-bold">
                 <Sparkles size={20} />
               </div>
               <h3 className="text-xl font-['Space_Grotesk'] font-bold text-[hsl(var(--foreground))]">
@@ -420,7 +346,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
               {advertisementItems.map((ad, idx) => (
                 <div key={idx} className="p-4 flex items-center justify-between text-sm font-medium text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted)/.4)] transition-colors">
                   <span className="flex items-center gap-2">
-                    <ChevronRight size={15} className="text-[hsl(var(--accent))]" />
+                    <ChevronRight size={15} className="text-[hsl(var(--primary))]" />
                     {ad}
                   </span>
                   <span className="text-xs uppercase font-mono tracking-wider font-semibold text-[hsl(var(--muted-foreground))]">
@@ -442,7 +368,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-mono font-bold tracking-widest uppercase mb-4">
                 Exclusive Opportunity
               </div>
-              <h2 className="text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight">
+              <h2 className="text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight text-white">
                 Avail the Opportunity!!
               </h2>
               <p className="mt-4 text-white/85 text-sm md:text-base leading-relaxed max-w-md">

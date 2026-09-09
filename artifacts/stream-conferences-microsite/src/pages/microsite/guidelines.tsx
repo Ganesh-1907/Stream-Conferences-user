@@ -17,7 +17,10 @@ export function GuidelinesPage({ event }: { event: EventData }) {
         <p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Everything participants need to know</p>
       </div>
 
-      <div className="prose prose-lg max-w-none text-[hsl(var(--muted-foreground))]" dangerouslySetInnerHTML={{ __html: event.guidelines }} />
+      <div
+        className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-['Space_Grotesk'] prose-headings:text-[hsl(var(--foreground))] prose-p:text-[hsl(var(--foreground)/0.85)] prose-strong:text-[hsl(var(--foreground))] prose-li:text-[hsl(var(--foreground)/0.85)]"
+        dangerouslySetInnerHTML={{ __html: event.guidelines }}
+      />
     </div>
   );
 }

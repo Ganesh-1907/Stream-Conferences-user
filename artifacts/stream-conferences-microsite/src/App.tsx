@@ -193,7 +193,7 @@ type EventItem = {
   logoUrl?: string;
   bannerUrl?: string;
   brochureUrl?: string;
-  fees?: { label: string; amount: number }[];
+  fees?: { type: string; dateLabel: string; usd: number; gbp: number; eur: number }[];
   organizerContact?: { name: string; email: string; phone: string };
   tracks?: { title: string; description: string; image: string; referenceLinks: { label: string; url: string }[] }[];
 };
@@ -1385,9 +1385,9 @@ function RegisterPage() {
 
   const eventPrices = useMemo(() => {
     if (fullEvent?.fees && fullEvent.fees.length > 0) {
-      return fullEvent.fees.map((f: any) => [f.label, `₹${f.amount}`, `₹${Math.round(f.amount * 1.2)}`]);
+      return fullEvent.fees.map((f: any) => [f.type, `$${f.usd}`, `$${Math.round(f.usd * 1.2)}`]);
     }
-    return [['Student', '₹20000', '₹26000'], ['Academic', '₹32000', '₹39000'], ['Industry Delegate', '₹42000', '₹52000'], ['Virtual Attendee', '₹12000', '₹15000']];
+    return [['Student', '$200', '$260'], ['Academic', '$320', '$390'], ['Industry Delegate', '$420', '$520'], ['Virtual Attendee', '$120', '$150']];
   }, [fullEvent]);
 
   useEffect(() => {
@@ -2227,7 +2227,7 @@ function EventDetailsPage({ type }: { type: 'conference' | 'webinar' }) {
   const logo = mediaUrl(item.logoUrl || '');
   const brochure = mediaUrl(item.brochureUrl || '');
   const registerHref = `/register?event=${encodeURIComponent(item.eventId || item.slug || item._id)}`;
-  const fees: { label: string; amount: number }[] = Array.isArray(item.fees) ? item.fees : [];
+  const fees: { type: string; dateLabel: string; usd: number; gbp: number; eur: number }[] = Array.isArray(item.fees) ? item.fees : [];
 
   return (
     <Layout>
@@ -2287,27 +2287,48 @@ function EventDetailsPage({ type }: { type: 'conference' | 'webinar' }) {
             
             <div>
               <SectionTitle eyebrow="Registration" title="Participation Fees." />
-              <div className="mt-6 overflow-hidden rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-[hsl(var(--muted)/.5)] text-[hsl(var(--muted-foreground))]">
-                    <tr>
-                      <th className="px-6 py-4 font-bold uppercase tracking-wider text-[11px]">Category</th>
-                      <th className="px-6 py-4 font-bold uppercase tracking-wider text-[11px] text-right">Fee Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[hsl(var(--border))]">
-                    {fees.length ? fees.map((f, i) => (
-                      <tr key={i} className="hover:bg-[hsl(var(--muted)/.2)]">
-                        <td className="px-6 py-4 font-bold">{f.label}</td>
-                        <td className="px-6 py-4 text-right font-bold text-[hsl(var(--secondary))]">₹{Number(f.amount).toLocaleString('en-IN')}</td>
-                      </tr>
-                    )) : (
-                      <tr>
-                        <td colSpan={2} className="px-6 py-4 text-center text-[hsl(var(--muted-foreground))]">Registration fees will be announced soon.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+              <div className="mt-6 mx-auto max-w-[60%] space-y-4">
+                {(() => {
+                  const feeGrouped = new Map<string, any[]>();
+                  for (const f of fees) {
+                    const key = f.type || 'General';
+                    if (!feeGrouped.has(key)) feeGrouped.set(key, []);
+                    feeGrouped.get(key)!.push(f);
+                  }
+                  return Array.from(feeGrouped.entries()).map(([type, items]) => (
+                    <div key={type}>
+                      <h4 className="font-bold text-sm mb-2 text-[hsl(var(--foreground))]">{type}</h4>
+                      <div className="overflow-hidden rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+                        <table className="w-full text-left text-sm border-separate border-spacing-0" style={{ tableLayout: 'fixed' }}>
+                          <colgroup>
+                            <col style={{ width: '40%' }} />
+                            <col style={{ width: '20%' }} />
+                            <col style={{ width: '20%' }} />
+                            <col style={{ width: '20%' }} />
+                          </colgroup>
+                          <thead className="bg-[hsl(var(--muted)/.5)] text-[hsl(var(--muted-foreground))]">
+                            <tr>
+                              <th className="px-6 py-3 font-bold uppercase tracking-wider text-[11px]">Heading</th>
+                              <th className="px-6 py-3 font-bold uppercase tracking-wider text-[11px] text-right">EUR</th>
+                              <th className="px-6 py-3 font-bold uppercase tracking-wider text-[11px] text-right">USD</th>
+                              <th className="px-6 py-3 font-bold uppercase tracking-wider text-[11px] text-right">GBP</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-[hsl(var(--border))]">
+                            {items.map((f: any, i: number) => (
+                              <tr key={i} className="hover:bg-[hsl(var(--muted)/.2)]">
+                                <td className="px-6 py-3 font-bold">{f.dateLabel || 'Standard'}</td>
+                                <td className="px-6 py-3 text-right font-bold">€{Number(f.eur).toLocaleString()}</td>
+                                <td className="px-6 py-3 text-right font-bold">${Number(f.usd).toLocaleString()}</td>
+                                <td className="px-6 py-3 text-right font-bold">£{Number(f.gbp).toLocaleString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ));
+                })()}
               </div>
             </div>
 

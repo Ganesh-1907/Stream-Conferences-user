@@ -15,7 +15,7 @@ export function AboutPage({ event }: { event: EventData }) {
         <span className="section-eyebrow">About</span>
         <h1 className="mt-3 text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">About the event</h1>
       </div>
-      <div className="prose prose-lg max-w-none text-[hsl(var(--muted-foreground))] whitespace-pre-wrap leading-relaxed text-base">
+      <div className="prose prose-lg dark:prose-invert max-w-none text-[hsl(var(--foreground)/0.85)] prose-headings:text-[hsl(var(--foreground))] whitespace-pre-wrap leading-relaxed text-base">
         {event.description}
       </div>
     </div>

@@ -67,7 +67,10 @@ export function TermsPage({ event }: { event: EventData }) {
         <p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Please read the terms and conditions carefully before registering for {event.title}</p>
       </div>
 
-      <div className="prose prose-lg max-w-none text-[hsl(var(--muted-foreground))]" dangerouslySetInnerHTML={{ __html: TERMS_AND_CONDITIONS }} />
+      <div
+        className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-['Space_Grotesk'] prose-headings:text-[hsl(var(--foreground))] prose-p:text-[hsl(var(--foreground)/0.85)] prose-strong:text-[hsl(var(--foreground))] prose-li:text-[hsl(var(--foreground)/0.85)]"
+        dangerouslySetInnerHTML={{ __html: TERMS_AND_CONDITIONS }}
+      />
     </div>
   );
 }

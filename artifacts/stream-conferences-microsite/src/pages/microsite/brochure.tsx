@@ -37,6 +37,7 @@ export function BrochurePage({ event }: { event: EventData }) {
           eventId: event._id,
           eventType: event.eventType,
           eventSlug: event.slug || event.subdomain || event.eventId || '',
+          cohortId: event.activeCohort?.cohortId || null,
         }),
       });
       if (!res.ok) {

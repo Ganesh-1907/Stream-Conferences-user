@@ -47,7 +47,7 @@ export function VenuePage({ event }: { event: EventData }) {
 
           {venue.directions && (
             <div>
-              <h4 className="font-semibold text-base flex items-center gap-2"><Map size={16} className="text-[hsl(var(--primary))]" />How to Reach</h4>
+              <h4 className="font-semibold text-base flex items-center gap-2 text-[hsl(var(--foreground))]"><Map size={16} className="text-[hsl(var(--primary))]" />How to Reach</h4>
               <p className="mt-2 text-base text-[hsl(var(--muted-foreground))] leading-relaxed">{venue.directions}</p>
             </div>
           )}
@@ -55,13 +55,13 @@ export function VenuePage({ event }: { event: EventData }) {
           <div className="grid gap-4 sm:grid-cols-2">
             {venue.parking && (
               <div>
-                <h4 className="font-semibold text-base">Parking</h4>
+                <h4 className="font-semibold text-base text-[hsl(var(--foreground))]">Parking</h4>
                 <p className="mt-1 text-base text-[hsl(var(--muted-foreground))]">{venue.parking}</p>
               </div>
             )}
             {venue.accommodation && (
               <div>
-                <h4 className="font-semibold text-base">Accommodation</h4>
+                <h4 className="font-semibold text-base text-[hsl(var(--foreground))]">Accommodation</h4>
                 <p className="mt-1 text-base text-[hsl(var(--muted-foreground))]">{venue.accommodation}</p>
               </div>
             )}

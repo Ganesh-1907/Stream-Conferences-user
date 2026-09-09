@@ -4,6 +4,9 @@ import type { EventData } from './layout';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
 
+type FeeItem = { type: string; dateLabel: string; usd: number; gbp: number; eur: number };
+type Currency = 'USD' | 'EUR' | 'GBP';
+
 function formatDateRange(event: EventData): string {
   const start = event.startDate || event.eventDate;
   if (!start) return event.day && event.month ? `${event.month} ${event.day}` : '';
@@ -16,17 +19,18 @@ function formatDateRange(event: EventData): string {
   return startD.toLocaleDateString(undefined, opts);
 }
 
+const CURRENCY_SYMBOL: Record<Currency, string> = { USD: '$', EUR: '€', GBP: '£' };
+
 export function RegisterPage({ event }: { event: EventData }) {
   const [step, setStep] = useState<1 | 2>(1);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNum, setPhoneNum] = useState('');
-  const [countryCode, setCountryCode] = useState('+91');
   const [institution, setInstitution] = useState('');
   const [country, setCountry] = useState('');
-  const [category, setCategory] = useState(event.fees?.[0]?.label || '');
-  const [presentingAbstract, setPresentingAbstract] = useState('No');
+  const [currency, setCurrency] = useState<Currency>('USD');
+  const [selectedFeeIndex, setSelectedFeeIndex] = useState<number>(0);
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState('');
   const [paying, setPaying] = useState(false);
@@ -38,19 +42,21 @@ export function RegisterPage({ event }: { event: EventData }) {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const categories = useMemo(() => {
-    if (event.fees?.length) return event.fees.map((f) => f.label);
-    return ['Student', 'Academic', 'Industry Delegate', 'Virtual Attendee'];
-  }, [event.fees]);
+  const fees = useMemo(() => (Array.isArray(event.fees) ? (event.fees as FeeItem[]) : []), [event.fees]);
 
-  const eventPrices = useMemo(() => {
-    if (event.fees?.length) {
-      return event.fees.map((f) => [f.label, `₹${f.amount}`, `₹${Math.round(f.amount * 1.2)}`]);
+  const groupedFees = useMemo(() => {
+    const map = new Map<string, FeeItem[]>();
+    for (const f of fees) {
+      const key = f.type || 'General';
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(f);
     }
-    return [['Student', '₹20000', '₹26000'], ['Academic', '₹32000', '₹39000'], ['Industry Delegate', '₹42000', '₹52000'], ['Virtual Attendee', '₹12000', '₹15000']];
-  }, [event.fees]);
+    return Array.from(map.entries());
+  }, [fees]);
 
-  const phone = `${countryCode} ${phoneNum}`.trim();
+  const selectedFee = fees[selectedFeeIndex] || fees[0] || null;
+
+  const phone = phoneNum.trim();
   const name = `${firstName} ${lastName}`.trim();
 
   const verifyPayment = async (orderId: string, paymentId: string, signature: string) => {
@@ -79,7 +85,7 @@ export function RegisterPage({ event }: { event: EventData }) {
     script.onload = () => {
       const options = {
         key: order.key, amount: order.amount, currency: order.currency,
-        name: event.title, description: `${category} Registration`, order_id: order.id,
+        name: event.title, description: `${selectedFee?.type || category} Registration`, order_id: order.id,
         modal: { ondismiss: () => setPaying(false) },
         handler: (response: any) => verifyPayment(order.id, response.razorpay_payment_id, response.razorpay_signature),
         prefill: { name, email, contact: phone },
@@ -115,6 +121,8 @@ export function RegisterPage({ event }: { event: EventData }) {
     setStep(2);
   };
 
+  const category = selectedFee?.type || '';
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!consent) {
@@ -127,8 +135,9 @@ export function RegisterPage({ event }: { event: EventData }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name, email, phone, institution, country, category, presentingAbstract,
+          name, email, phone, institution, country, category,
           eventId: event._id, eventType: event.eventType, eventSlug: event.slug || event.subdomain || event.eventId,
+          cohortId: event.activeCohort?.cohortId || null,
         }),
       });
       if (!regRes.ok) throw new Error((await regRes.json()).error || 'Registration failed');
@@ -140,6 +149,7 @@ export function RegisterPage({ event }: { event: EventData }) {
         body: JSON.stringify({
           name, email, phone, category, registrationId: regData._id,
           eventId: event._id, eventType: event.eventType, eventTitle: event.title, eventSlug: event.slug || event.subdomain || event.eventId,
+          cohortId: event.activeCohort?.cohortId || null,
         }),
       });
       if (!orderRes.ok) throw new Error((await orderRes.json()).error || 'Payment order creation failed');
@@ -171,9 +181,10 @@ export function RegisterPage({ event }: { event: EventData }) {
           'Virtual attendees receive access links 24 hours before the event.',
         ];
 
+  const sym = CURRENCY_SYMBOL[currency];
+
   return (
     <div className="container-wide py-12 max-w-6xl">
-      {/* Title + step indicators above the grid */}
       <div className="mb-8 text-center md:text-left">
         <span className="section-eyebrow">Event Registration Gateway</span>
         <h1 className="mt-3 text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">{event.title}</h1>
@@ -203,21 +214,21 @@ export function RegisterPage({ event }: { event: EventData }) {
                 <h3 className="text-xl font-bold text-[hsl(var(--foreground))]">Registration Complete!</h3>
                 <p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Your registration and payment have been successfully recorded. A confirmation email has been sent to {email}.</p>
               </div>
-              <button onClick={() => { setSent(false); setStep(1); setFirstName(''); setLastName(''); setEmail(''); setPhoneNum(''); setInstitution(''); setCountry(''); setCategory(event.fees?.[0]?.label || ''); setConsent(false); setPaymentOrderId(''); }} className="mt-4 btn-main btn-primary">Register Another</button>
+              <button onClick={() => { setSent(false); setStep(1); setFirstName(''); setLastName(''); setEmail(''); setPhoneNum(''); setInstitution(''); setCountry(''); setSelectedFeeIndex(0); setConsent(false); setPaymentOrderId(''); }} className="mt-4 btn-main btn-primary">Register Another</button>
             </div>
           ) : paymentOrderId && !sent ? (
             <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-6">
               <div>
-                <p className="label text-[hsl(var(--accent))]">Payment</p>
-                <h3 className="display mt-2 text-xl font-bold">Complete your registration</h3>
+                <p className="label text-[hsl(var(--primary))]">Payment</p>
+                <h3 className="display mt-2 text-xl font-bold text-[hsl(var(--foreground))]">Complete your registration</h3>
                 <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">Registration recorded for <strong>{name}</strong> as <strong>{category}</strong>.</p>
               </div>
               <div className="rounded-xl bg-[hsl(var(--muted)/.4)] p-4 border border-[hsl(var(--border))] flex justify-between items-center">
-                <span className="text-base font-medium">Amount due</span>
-                <span className="text-xl font-bold text-[hsl(var(--secondary))]">₹{paymentAmount.toFixed(2)}</span>
+                <span className="text-base font-medium text-[hsl(var(--foreground))]">Amount due</span>
+                <span className="text-xl font-bold text-[hsl(var(--secondary))]">{sym}{paymentAmount.toFixed(2)}</span>
               </div>
               {error && <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600">{error}</div>}
-              <button type="button" onClick={handlePayNow} disabled={paying} className="w-full btn-main btn-primary py-3">{paying ? 'Processing...' : `Pay Now · ₹${paymentAmount.toFixed(2)}`} <ArrowUpRight size={16} /></button>
+              <button type="button" onClick={handlePayNow} disabled={paying} className="w-full btn-main btn-primary py-3">{paying ? 'Processing...' : `Pay Now · ${sym}${paymentAmount.toFixed(2)}`} <ArrowUpRight size={16} /></button>
               <p className="text-xs text-[hsl(var(--muted-foreground))] text-center">Secure payment via Razorpay. All major cards, UPI and net banking accepted.</p>
             </div>
           ) : (
@@ -225,8 +236,8 @@ export function RegisterPage({ event }: { event: EventData }) {
               {step === 1 ? (
                 <form onSubmit={handleStep1} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-5">
                   <div>
-                    <p className="label text-[hsl(var(--accent))]">Step 1 of 2</p>
-                    <h3 className="display mt-2 text-xl font-bold">Delegate Personal Information</h3>
+                    <p className="label text-[hsl(var(--primary))]">Step 1 of 2</p>
+                    <h3 className="display mt-2 text-xl font-bold text-[hsl(var(--foreground))]">Delegate Personal Information</h3>
                   </div>
 
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -247,12 +258,7 @@ export function RegisterPage({ event }: { event: EventData }) {
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Phone Number *</label>
-                      <div className="flex gap-2">
-                        <select className="form-field shrink-0" style={{ width: '96px', minWidth: '96px' }} value={countryCode} onChange={(e) => setCountryCode(e.target.value)}>
-                          <option>+91</option><option>+1</option><option>+44</option><option>+33</option><option>+65</option><option>+61</option>
-                        </select>
-                        <input required type="tel" className="form-field" style={{ flex: 1, minWidth: 0 }} placeholder="Mobile number" value={phoneNum} onChange={(e) => setPhoneNum(e.target.value)} />
-                      </div>
+                      <input required type="tel" className="form-field w-full" placeholder="Mobile number" value={phoneNum} onChange={(e) => setPhoneNum(e.target.value)} />
                     </div>
                   </div>
 
@@ -265,13 +271,6 @@ export function RegisterPage({ event }: { event: EventData }) {
                       <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Country *</label>
                       <input required className="form-field w-full" placeholder="Country of residence" value={country} onChange={(e) => setCountry(e.target.value)} />
                     </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Presenting Abstract? *</label>
-                    <select className="form-field w-full" value={presentingAbstract} onChange={(e) => setPresentingAbstract(e.target.value)}>
-                      <option value="No">No</option><option value="Yes">Yes</option>
-                    </select>
                   </div>
 
                   <div className="space-y-3 pt-2">
@@ -288,28 +287,50 @@ export function RegisterPage({ event }: { event: EventData }) {
               ) : (
                 <form onSubmit={handleSubmit} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-5">
                   <div>
-                    <p className="label text-[hsl(var(--accent))]">Step 2 of 2</p>
-                    <h3 className="display mt-2 text-xl font-bold">Fee & Confirmation</h3>
+                    <p className="label text-[hsl(var(--primary))]">Step 2 of 2</p>
+                    <h3 className="display mt-2 text-xl font-bold text-[hsl(var(--foreground))]">Fee & Confirmation</h3>
                   </div>
 
                   <div className="rounded-xl bg-[hsl(var(--muted)/.3)] p-4 border border-[hsl(var(--border))]">
                     <p className="text-sm font-medium text-[hsl(var(--foreground))]">Registering as: <strong>{name}</strong> ({email})</p>
                   </div>
 
-                  <div className="space-y-3">
-                    <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Registration Category *</label>
-                    <div className="grid gap-3">
-                      {eventPrices.map(([catName, earlyPrice, regularPrice]: string[]) => (
-                        <label key={catName} className="flex items-center justify-between p-4 rounded-xl border border-[hsl(var(--border))] cursor-pointer hover:border-[hsl(var(--accent))] transition-colors">
-                          <div className="flex items-center gap-3">
-                            <input type="radio" name="feeCategory" value={catName} checked={category === catName} onChange={() => setCategory(catName)} required className="h-4 w-4" />
-                            <span className="text-base font-medium">{catName}</span>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-lg font-bold text-[hsl(var(--secondary))]">{earlyPrice}</span>
-                            <span className="block text-[10px] line-through opacity-60">{regularPrice}</span>
-                          </div>
+                  {/* Currency selector */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Select Currency</label>
+                    <div className="flex gap-3">
+                      {(['USD', 'EUR', 'GBP'] as Currency[]).map((c) => (
+                        <label key={c} className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold cursor-pointer transition-colors ${currency === c ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))]' : 'border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--primary)/.5)]'}`}>
+                          <input type="radio" name="currency" value={c} checked={currency === c} onChange={() => setCurrency(c)} className="sr-only" />
+                          {CURRENCY_SYMBOL[c]} {c}
                         </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Fee selection grouped by type */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Select Fee Category *</label>
+                    <div className="space-y-4">
+                      {groupedFees.map(([type, items]) => (
+                        <div key={type}>
+                          <p className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-2">{type}</p>
+                          <div className="grid gap-2">
+                            {items.map((item, idx) => {
+                              const globalIdx = fees.indexOf(item);
+                              const price = currency === 'USD' ? item.usd : currency === 'EUR' ? item.eur : item.gbp;
+                              return (
+                                <label key={idx} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors ${selectedFeeIndex === globalIdx ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary)/.05)]' : 'border-[hsl(var(--border))] hover:border-[hsl(var(--primary)/.5)]'}`}>
+                                  <div className="flex items-center gap-3">
+                                    <input type="radio" name="feeSelect" checked={selectedFeeIndex === globalIdx} onChange={() => setSelectedFeeIndex(globalIdx)} required className="h-4 w-4" />
+                                    <span className="text-sm font-medium text-[hsl(var(--foreground))]">{item.dateLabel || 'Standard'}</span>
+                                  </div>
+                                  <span className="text-base font-bold text-[hsl(var(--secondary))]">{sym}{Number(price).toLocaleString()}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -318,7 +339,7 @@ export function RegisterPage({ event }: { event: EventData }) {
                     <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Declaration</label>
                     <label className="flex items-start gap-3 cursor-pointer p-4 bg-[hsl(var(--muted)/.3)] rounded-xl border border-[hsl(var(--border))]">
                       <input type="checkbox" checked={consent} onChange={(e) => { setConsent(e.target.checked); if (e.target.checked) setError(''); }} className="mt-1 h-4 w-4" />
-                      <span className="text-xs leading-5">I have read and agree to the <span className="text-[hsl(var(--accent))]">Health Declaration</span>, <span className="text-[hsl(var(--accent))]">Program Participant Agreement</span> and <span className="text-[hsl(var(--accent))]">Privacy Policy</span>.*</span>
+                      <span className="text-xs leading-5">I have read and agree to the <span className="text-[hsl(var(--primary))] font-semibold">Health Declaration</span>, <span className="text-[hsl(var(--primary))] font-semibold">Program Participant Agreement</span> and <span className="text-[hsl(var(--primary))] font-semibold">Privacy Policy</span>.*</span>
                     </label>
                   </div>
 
@@ -347,12 +368,11 @@ export function RegisterPage({ event }: { event: EventData }) {
                 <div><p className="font-semibold text-[hsl(var(--foreground))] text-xs">Date</p><p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">{formatDateRange(event)}</p></div>
               </div>
               <div className="flex items-start gap-3">
-                <MapPin className="mt-0.5 text-[hsl(var(--accent))] shrink-0" size={16} />
+                <MapPin className="mt-0.5 text-[hsl(var(--primary))] shrink-0" size={16} />
                 <div><p className="font-semibold text-[hsl(var(--foreground))] text-xs">Location</p><p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">{event.location || 'Online / Virtual'}</p></div>
               </div>
             </div>
             <div className="border-t border-[hsl(var(--border))] pt-4 space-y-2">
-              {/* Guidelines accordion */}
               <div className="border-b border-[hsl(var(--border)]/60 pb-3">
                 <button type="button" onClick={() => setOpenAccordion(openAccordion === 'guidelines' ? null : 'guidelines')} className="w-full flex items-center justify-between font-semibold text-sm text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors">
                   <span className="uppercase tracking-wider">Guidelines</span>
@@ -362,7 +382,7 @@ export function RegisterPage({ event }: { event: EventData }) {
                   <div className="mt-2 pl-1 space-y-2 text-sm text-[hsl(var(--muted-foreground))]">
                     {guidelines.length > 0 ? guidelines.map((g: string, i: number) => (
                       <div key={i} className="flex items-start gap-1.5">
-                        <Check size={12} className="mt-0.5 text-[hsl(var(--accent))] shrink-0" />
+                        <Check size={12} className="mt-0.5 text-[hsl(var(--primary))] shrink-0" />
                         <span dangerouslySetInnerHTML={{ __html: g.replace(/\n/g, '<br/>') }} />
                       </div>
                     )) : (
@@ -371,7 +391,6 @@ export function RegisterPage({ event }: { event: EventData }) {
                   </div>
                 )}
               </div>
-              {/* Fee Details accordion */}
               <div className="border-b border-[hsl(var(--border)]/60 pb-3">
                 <button type="button" onClick={() => setOpenAccordion(openAccordion === 'fees' ? null : 'fees')} className="w-full flex items-center justify-between font-semibold text-sm text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors">
                   <span className="uppercase tracking-wider">Fee Details</span>
@@ -379,16 +398,23 @@ export function RegisterPage({ event }: { event: EventData }) {
                 </button>
                 {openAccordion === 'fees' && (
                   <div className="mt-2 pl-1 space-y-2 text-sm text-[hsl(var(--muted-foreground))]">
-                    {eventPrices.map(([catLabel, earlyPrice, regularPrice]: string[]) => (
-                      <div key={catLabel} className="flex justify-between items-center border-b border-[hsl(var(--border))]/30 pb-1.5 last:border-0 last:pb-0">
-                        <span className="font-medium text-[hsl(var(--foreground))]">{catLabel}</span>
-                        <div className="text-right"><span className="font-bold text-[hsl(var(--secondary))]">{earlyPrice}</span><span className="block text-[10px] line-through opacity-60">{regularPrice}</span></div>
+                    {groupedFees.map(([type, items]) => (
+                      <div key={type} className="mb-2">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">{type}</p>
+                        {items.map((item, i) => {
+                          const price = currency === 'USD' ? item.usd : currency === 'EUR' ? item.eur : item.gbp;
+                          return (
+                            <div key={i} className="flex justify-between items-center border-b border-[hsl(var(--border))]/30 pb-1.5 last:border-0 last:pb-0">
+                              <span className="font-medium text-[hsl(var(--foreground))] text-xs">{item.dateLabel || 'Standard'}</span>
+                              <span className="font-bold text-[hsl(var(--secondary))]">{sym}{Number(price).toLocaleString()}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                     ))}
                   </div>
                 )}
               </div>
-              {/* Organizer Contact accordion */}
               <div className="border-b border-[hsl(var(--border)]/60 pb-3">
                 <button type="button" onClick={() => setOpenAccordion(openAccordion === 'organizer' ? null : 'organizer')} className="w-full flex items-center justify-between font-semibold text-sm text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors">
                   <span className="uppercase tracking-wider">Organizer Contact</span>
