@@ -196,42 +196,32 @@ export function HomePage({ event }: { event: EventData }) {
 
   const quickLinks = [
     {
-      title: 'Abstracts Submission',
-      icon: FileText,
-      href: '/submit-abstract',
-      hasNew: false,
+      title: 'Tracks',
+      icon: Layers,
+      href: '/tracks',
     },
     {
-      title: 'Registration',
+      title: 'Fees',
       icon: FileEdit,
-      href: '/register',
-      hasNew: true,
+      href: '/fees',
     },
     {
-      title: 'Scientific Program',
-      icon: ListOrdered,
-      href: '/program',
-      hasNew: true,
-    },
-    {
-      title: 'Organizing Committee',
+      title: 'Committee',
       icon: Users,
       href: '/organizing-committee',
-      hasNew: false,
     },
     {
-      title: 'Call for Abstracts',
-      icon: Megaphone,
-      href: '/submit-abstract',
-      hasNew: false,
+      title: 'Venue',
+      icon: MapPin,
+      href: '/venue',
     },
     {
-      title: 'Brochure & Contact Details',
+      title: 'Brochure',
       icon: Download,
-      href: event.brochureUrl ? mediaUrl(event.brochureUrl) : '/contact',
+      href: event.brochureUrl ? mediaUrl(event.brochureUrl) : '#',
       isExternal: Boolean(event.brochureUrl),
-      hasNew: false,
     },
+  ];
   ];
 
   return (
@@ -392,7 +382,7 @@ export function HomePage({ event }: { event: EventData }) {
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 w-full max-w-6xl">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 w-full max-w-5xl">
               {quickLinks.map((item, idx) => (
                 <Link
                   key={idx}
