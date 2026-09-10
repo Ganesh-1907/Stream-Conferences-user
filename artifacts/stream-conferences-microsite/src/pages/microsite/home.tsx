@@ -162,7 +162,6 @@ function HeaderBannerCarousel({ banners, title, location }: { banners: string[];
 }
 
 export function HomePage({ event }: { event: EventData }) {
-  const banner = mediaUrl(event.bannerUrl || '');
   const startDate = event.startDate || event.eventDate;
   const fees = Array.isArray(event.fees) ? event.fees : [];
   const speakersCount = Array.isArray(event.speakers) ? event.speakers.length : 0;
@@ -226,7 +225,6 @@ export function HomePage({ event }: { event: EventData }) {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden hero-grad text-[hsl(var(--primary-foreground))] min-h-[calc(100vh-64px)] flex flex-col justify-between">
-        {banner && <img src={banner} alt={event.title} className="absolute inset-0 h-full w-full object-cover opacity-15" />}
         <div className="absolute inset-0 hero-grid-b z-[1]" />
         <div className="absolute inset-0 hero-vignette z-[2]" />
         <div className="relative z-10 container-wide flex-1 flex flex-col justify-between pt-6 pb-6 md:pt-9 md:pb-7">
