@@ -734,6 +734,13 @@ export function MicrositeLayout({ event, navItems, children }: { event: EventDat
       root.style.setProperty('--sidebar-primary', secondaryHsl);
       root.style.setProperty('--secondary', secondaryHsl);
       root.style.setProperty('--accent', accentHsl);
+
+      // Mark light/dark theme mode for hero vignette adjustment
+      if (l > 55) {
+        root.setAttribute('data-theme-mode', 'light');
+      } else {
+        root.setAttribute('data-theme-mode', 'dark');
+      }
     } else {
       root.style.removeProperty('--primary');
       root.style.removeProperty('--primary-foreground');
@@ -742,6 +749,7 @@ export function MicrositeLayout({ event, navItems, children }: { event: EventDat
       root.style.removeProperty('--sidebar-primary');
       root.style.removeProperty('--secondary');
       root.style.removeProperty('--accent');
+      root.removeAttribute('data-theme-mode');
     }
 
     return () => {
@@ -752,6 +760,7 @@ export function MicrositeLayout({ event, navItems, children }: { event: EventDat
       root.style.removeProperty('--sidebar-primary');
       root.style.removeProperty('--secondary');
       root.style.removeProperty('--accent');
+      root.removeAttribute('data-theme-mode');
     };
   }, [event?.themeColor, event?.primaryColor, event?.colorTheme]);
 

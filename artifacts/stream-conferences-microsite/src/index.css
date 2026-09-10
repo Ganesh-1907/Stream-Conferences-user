@@ -238,9 +238,11 @@
 .page-copy { max-width: 850px; font-size: clamp(16px, 2.5vw, 19px); line-height: 1.7; color: hsl(var(--muted-foreground)); margin: 24px 0 0; padding-left: 24px; border-left: 3px solid hsl(var(--primary)); font-style: italic; }
 .bg-grid { background-image: linear-gradient(currentColor / .02 1px, transparent 1px), linear-gradient(90deg, currentColor / .02 1px, transparent 1px); background-size: 32px 32px; }
 /* ===== Conference Styling ===== */
-.hero-grad { background-image: radial-gradient(ellipse 80% 60% at 20% 10%, hsl(var(--secondary) / .6), transparent 55%), radial-gradient(ellipse 70% 55% at 90% 15%, hsl(var(--primary) / .5), transparent 50%), linear-gradient(160deg, hsl(208 79% 25%) 0%, hsl(200 89% 35%) 45%, hsl(215 90% 30%) 100%); }
+.hero-grad { background-image: radial-gradient(ellipse 80% 60% at 20% 10%, hsl(var(--secondary) / .6), transparent 55%), radial-gradient(ellipse 70% 55% at 90% 15%, hsl(var(--primary) / .5), transparent 50%), linear-gradient(160deg, hsl(var(--primary) / .85) 0%, hsl(var(--secondary) / .7) 45%, hsl(var(--primary) / .95) 100%); }
+[data-theme-mode="light"] .hero-grad::after { content: ''; position: absolute; inset: 0; background: linear-gradient(160deg, hsl(222 47% 11% / .88) 0%, hsl(222 47% 15% / .82) 45%, hsl(222 47% 10% / .9) 100%); }
 .hero-grid-b { background-image: linear-gradient(to right, hsl(0 0% 100% / .1) 1px, transparent 1px), linear-gradient(to bottom, hsl(0 0% 100% / .1) 1px, transparent 1px); background-size: 54px 54px; }
-.hero-vignette { background-image: radial-gradient(ellipse 90% 70% at 50% 0%, transparent 40%, hsl(208 79% 15% / .6) 100%); }
+.hero-vignette { background-image: radial-gradient(ellipse 90% 70% at 50% 0%, transparent 40%, hsl(var(--primary) / .6) 100%); }
+[data-theme-mode="light"] .hero-vignette { background-image: radial-gradient(ellipse 90% 70% at 50% 0%, transparent 40%, hsl(222 47% 11% / .35) 100%); }
 .badge-pill { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; border: 1px solid hsl(var(--primary) / .6); background: hsl(var(--primary) / .2); color: white; padding: 7px 14px; font-family: var(--app-font-mono); text-transform: uppercase; letter-spacing: .16em; font-size: 11px; font-weight: 500; }
 .stat-card { border-radius: 20px; border: 1px solid hsl(0 0% 100% / .2); background: hsl(0 0% 100% / .1); backdrop-filter: blur(12px); padding: 18px 22px; color: white; }
 .stat-card .stat-num { font: 700 clamp(26px, 4vw, 40px)/1 'Space Grotesk', sans-serif; letter-spacing: -.03em; color: hsl(var(--primary)); }

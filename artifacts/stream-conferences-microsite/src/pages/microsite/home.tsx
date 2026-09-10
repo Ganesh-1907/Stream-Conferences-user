@@ -314,13 +314,13 @@ export function HomePage({ event }: { event: EventData }) {
       {/* Hero */}
       <section className="relative overflow-hidden hero-grad text-[hsl(var(--primary-foreground))] min-h-[calc(100vh-64px)] flex flex-col justify-between">
         {banner && <img src={banner} alt={event.title} className="absolute inset-0 h-full w-full object-cover opacity-15" />}
-        <div className="absolute inset-0 hero-grid-b" />
-        <div className="absolute inset-0 hero-vignette" />
-        <div className="relative container-wide flex-1 flex flex-col justify-between pt-6 pb-6 md:pt-9 md:pb-7">
+        <div className="absolute inset-0 hero-grid-b z-[1]" />
+        <div className="absolute inset-0 hero-vignette z-[2]" />
+        <div className="relative z-10 container-wide flex-1 flex flex-col justify-between pt-6 pb-6 md:pt-9 md:pb-7">
           <div className="grid gap-8 lg:grid-cols-[1.25fr_1fr] lg:items-center my-auto">
             <div className="min-w-0 max-w-2xl lg:max-w-3xl">
               <span className="badge-pill">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-white/70 animate-pulse" />
                 {event.eventType === 'conference' ? 'International Conference' : 'Live Webinar'}
               </span>
               <h1 className="mt-5 max-w-xl lg:max-w-2xl xl:max-w-3xl font-['Space_Grotesk'] text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.08] tracking-tight text-white">
@@ -328,22 +328,22 @@ export function HomePage({ event }: { event: EventData }) {
               </h1>
               {event.activeCohort && (
                 <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80 backdrop-blur">
-                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-white/70 animate-pulse" />
                   {event.activeCohort.isCurrent ? 'Current Cohort' : 'Cohort'} · {event.activeCohort.label || `${event.activeCohort.year} Batch ${event.activeCohort.batchNo}`}
                 </div>
               )}
               <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-base text-white/85">
                 {formatDateRange(event) && (
-                  <span className="inline-flex items-center gap-2"><CalendarDays size={16} className="text-cyan-300" />{formatDateRange(event)}</span>
+                  <span className="inline-flex items-center gap-2"><CalendarDays size={16} className="text-white/70" />{formatDateRange(event)}</span>
                 )}
                 {(event.startTime || event.endTime) && (
-                  <span className="inline-flex items-center gap-2"><Clock3 size={16} className="text-cyan-300" />{event.startTime || '—'} – {event.endTime || '—'}</span>
+                  <span className="inline-flex items-center gap-2"><Clock3 size={16} className="text-white/70" />{event.startTime || '—'} – {event.endTime || '—'}</span>
                 )}
                 {(event.venue || event.location) && (
-                  <span className="inline-flex items-center gap-2"><MapPin size={16} className="text-cyan-300" />{event.venue || event.location}</span>
+                  <span className="inline-flex items-center gap-2"><MapPin size={16} className="text-white/70" />{event.venue || event.location}</span>
                 )}
                 {event.speaker && (
-                  <span className="inline-flex items-center gap-2"><Users size={16} className="text-cyan-300" />Speaker: {event.speaker}</span>
+                  <span className="inline-flex items-center gap-2"><Users size={16} className="text-white/70" />Speaker: {event.speaker}</span>
                 )}
               </div>
               {event.theme && (
@@ -392,10 +392,10 @@ export function HomePage({ event }: { event: EventData }) {
               <div className="w-full rounded-3xl border border-white/15 bg-white/5 backdrop-blur-xl p-7 shadow-2xl">
                 <div className="flex items-center justify-between pb-4 border-b border-white/10">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
+                    <span className="flex h-2 w-2 rounded-full bg-white/70 animate-pulse" />
                     <p className="font-mono text-[11px] uppercase tracking-[.2em] text-white/70 font-semibold">Event at a glance</p>
                   </div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-500/15 border border-cyan-400/30 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cyan-300">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white/80">
                     <Sparkles size={11} /> {event.eventType === 'conference' ? 'CPD Accredited' : 'Live Interactive'}
                   </span>
                 </div>
@@ -404,7 +404,7 @@ export function HomePage({ event }: { event: EventData }) {
                   {startDate && (
                     <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
                       <p className="flex items-center gap-1.5 text-[11px] font-medium text-white/60">
-                        <CalendarDays size={13} className="text-cyan-400" /> Date
+                        <CalendarDays size={13} className="text-white/70" /> Date
                       </p>
                       <p className="mt-1 font-['Space_Grotesk'] text-base font-bold text-white leading-snug">
                         {new Date(startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -414,7 +414,7 @@ export function HomePage({ event }: { event: EventData }) {
                   {(event.venue || event.location) && (
                     <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
                       <p className="flex items-center gap-1.5 text-[11px] font-medium text-white/60">
-                        <MapPin size={13} className="text-cyan-400" /> Venue
+                        <MapPin size={13} className="text-white/70" /> Venue
                       </p>
                       <p className="mt-1 font-['Space_Grotesk'] text-base font-bold text-white leading-snug line-clamp-2">
                         {event.venue || event.location}
@@ -423,7 +423,7 @@ export function HomePage({ event }: { event: EventData }) {
                   )}
                   <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
                     <p className="flex items-center gap-1.5 text-[11px] font-medium text-white/60">
-                      <Clock3 size={13} className="text-cyan-400" /> Timing
+                      <Clock3 size={13} className="text-white/70" /> Timing
                     </p>
                     <p className="mt-1 font-['Space_Grotesk'] text-base font-bold text-white leading-snug">
                       {event.startTime && event.endTime ? `${event.startTime} – ${event.endTime}` : (event.startTime || 'Full Day Sessions')}
@@ -431,7 +431,7 @@ export function HomePage({ event }: { event: EventData }) {
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
                     <p className="flex items-center gap-1.5 text-[11px] font-medium text-white/60">
-                      <Layers size={13} className="text-cyan-400" /> {event.eventType === 'conference' ? 'Tracks' : 'Format'}
+                      <Layers size={13} className="text-white/70" /> {event.eventType === 'conference' ? 'Tracks' : 'Format'}
                     </p>
                     <p className="mt-1 font-['Space_Grotesk'] text-base font-bold text-white leading-snug">
                       {event.tracks && event.tracks.length > 0
@@ -443,8 +443,8 @@ export function HomePage({ event }: { event: EventData }) {
 
                 {/* Bottom Card Footer */}
                 <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 text-xs text-amber-300/90 font-medium">
-                    <Award size={14} className="text-amber-400 shrink-0" />
+                  <div className="flex items-center gap-2 text-xs text-white/80 font-medium">
+                    <Award size={14} className="text-white/70 shrink-0" />
                     <span>{fees.length > 0 ? `${fees.length} Registration Tiers Open` : 'Early Bird Active'}</span>
                   </div>
                   <Link
@@ -462,7 +462,7 @@ export function HomePage({ event }: { event: EventData }) {
           <div className="mt-7 pt-5 border-t border-white/12 flex flex-col items-center">
             <div className="mb-4">
               <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-white/90 backdrop-blur-md shadow-sm">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-white/70 animate-pulse" />
                 Quick Links
               </span>
             </div>
@@ -474,14 +474,14 @@ export function HomePage({ event }: { event: EventData }) {
                   href={item.href}
                   target={item.isExternal ? '_blank' : undefined}
                   rel={item.isExternal ? 'noreferrer' : undefined}
-                  className="relative flex flex-col items-center justify-center text-center p-3.5 sm:p-4 rounded-2xl text-white bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 hover:border-cyan-400/40 backdrop-blur-xl shadow-lg hover:shadow-cyan-500/10 transition-all duration-200 transform hover:-translate-y-1 group min-h-[100px] cursor-pointer"
+                  className="relative flex flex-col items-center justify-center text-center p-3.5 sm:p-4 rounded-2xl text-white bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 hover:border-white/40 backdrop-blur-xl shadow-lg transition-all duration-200 transform hover:-translate-y-1 group min-h-[100px] cursor-pointer"
                 >
                   {item.hasNew && (
                     <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8.5px] font-bold uppercase tracking-wider rounded-full shadow-sm">
                       New
                     </span>
                   )}
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-cyan-300 group-hover:bg-cyan-500/20 group-hover:text-cyan-200 group-hover:scale-110 transition-all duration-200 mb-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white/80 group-hover:bg-white/20 group-hover:text-white group-hover:scale-110 transition-all duration-200 mb-2">
                     <item.icon size={20} />
                   </div>
                   <span className="text-xs font-semibold leading-tight line-clamp-2 text-white/90 group-hover:text-white transition-colors">
