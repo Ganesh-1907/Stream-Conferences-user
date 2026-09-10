@@ -982,14 +982,16 @@ function Home() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 mt-6 pt-5 border-t border-[hsl(var(--border))]">
-                      <Link 
+                      <a 
                         href={detailsHref} 
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="flex-1 text-center py-3 px-3 rounded-full text-sm font-bold border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors"
                         data-testid={`btn-home-conf-details-${index}`}
                       >
                         Details
-                      </Link>
-                      <Link 
+                      </a>
+                      <a 
                         target="_blank"
                         rel="noopener noreferrer"
                         href={registerHref} 
@@ -997,7 +999,7 @@ function Home() {
                         data-testid={`btn-home-conf-register-${index}`}
                       >
                         Register Now
-                      </Link>
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -1082,14 +1084,16 @@ function Home() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 mt-6 pt-5 border-t border-[hsl(var(--border))]">
-                      <Link 
+                      <a 
                         href={detailsHref} 
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="flex-1 text-center py-3 px-3 rounded-full text-sm font-bold border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors"
                         data-testid={`btn-home-webinar-details-${index}`}
                       >
                         Details
-                      </Link>
-                      <Link 
+                      </a>
+                      <a 
                         target="_blank"
                         rel="noopener noreferrer"
                         href={registerHref} 
@@ -1097,7 +1101,7 @@ function Home() {
                         data-testid={`btn-home-webinar-register-${index}`}
                       >
                         Register Now
-                      </Link>
+                      </a>
                     </div>
                   </div>
                 </div>
