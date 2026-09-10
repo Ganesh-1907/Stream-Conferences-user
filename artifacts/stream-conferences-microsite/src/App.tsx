@@ -572,7 +572,7 @@ function SiteHeader() {
         ['/about', 'About Stream', 'Learn about our mission, vision and values'],
         ['/program', 'Program Overview', 'Scientific track details and conference lenses'],
         ['/speakers', 'OCM & Speakers', 'Meet our organizing committee and faculty'],
-        ['/venue', 'Venues', 'Explore the venues available for our events']
+        ['/venue', 'Venue', 'Explore the venue available for our events']
       ]
     },
     {
@@ -727,7 +727,7 @@ function SiteHeader() {
         <div className="container-wide flex h-11 items-center justify-between">
           <span className="label text-[9px] text-[hsl(var(--primary-foreground)/.65)]">{conferenceCode} · Quick access</span>
           <div className="flex items-center gap-5 text-[11px] font-bold uppercase tracking-[.12em]">
-            <Link href="/program" data-testid="link-subnav-program">Program</Link><a href="#speakers" data-testid="link-subnav-speakers">Speakers</a><Link href="/venue" data-testid="link-subnav-venue">Venues</Link>
+            <Link href="/program" data-testid="link-subnav-program">Program</Link><a href="#speakers" data-testid="link-subnav-speakers">Speakers</a><Link href="/venue" data-testid="link-subnav-venue">Venue</Link>
           </div>
         </div>
       </div>}
@@ -739,7 +739,7 @@ function Footer() {
   return <footer className="border-t border-[hsl(var(--border))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]">
     <div className="container-wide grid gap-12 py-16 md:grid-cols-[1.5fr_1fr_1fr]">
       <div><div className="flex items-center gap-3"><img src="/logo.jpg" className="h-10 w-10 rounded-[11px] object-cover" alt="SC" /><span className="display text-lg font-bold">Stream Conferences</span></div><p className="mt-5 max-w-sm text-sm leading-7 text-[hsl(var(--primary-foreground)/.68)]">Connecting minds, advancing science. A high-credibility global platform for research, clinical practice, and industry.</p><a href="https://streamconferences.com" className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[hsl(var(--accent))]" data-testid="link-parent-brand">An event by Stream Conferences <ArrowUpRight size={15} /></a></div>
-      <div><p className="label text-[hsl(var(--accent))]">Explore</p><div className="mt-5 grid gap-3 text-sm text-[hsl(var(--primary-foreground)/.72)]"><Link href="/about" data-testid="link-footer-about">About Stream Conferences</Link><Link href="/program" data-testid="link-footer-program">Program</Link><Link href="/speakers" data-testid="link-footer-speakers">OCM & Speakers</Link><Link href="/gallery" data-testid="link-footer-gallery">Gallery</Link><Link href="/blog" data-testid="link-footer-blog">Blog</Link><Link href="/venue" data-testid="link-footer-venue">Venues</Link><Link href="/brochure" data-testid="link-footer-brochure">Brochure</Link></div></div>
+      <div><p className="label text-[hsl(var(--accent))]">Explore</p><div className="mt-5 grid gap-3 text-sm text-[hsl(var(--primary-foreground)/.72)]"><Link href="/about" data-testid="link-footer-about">About Stream Conferences</Link><Link href="/program" data-testid="link-footer-program">Program</Link><Link href="/speakers" data-testid="link-footer-speakers">OCM & Speakers</Link><Link href="/gallery" data-testid="link-footer-gallery">Gallery</Link><Link href="/blog" data-testid="link-footer-blog">Blog</Link><Link href="/venue" data-testid="link-footer-venue">Venue</Link><Link href="/brochure" data-testid="link-footer-brochure">Brochure</Link></div></div>
       <div><p className="label text-[hsl(var(--accent))]">Delegate desk</p><div className="mt-5 grid gap-3 text-sm text-[hsl(var(--primary-foreground)/.72)]"><a href="mailto:info@streamconferences.com" data-testid="link-footer-email">info@streamconferences.com</a><a href="mailto:abstracts@streamconferences.com" data-testid="link-footer-abstracts">abstracts@streamconferences.com</a><Link href="/contact" data-testid="link-footer-contact">Contact the secretariat</Link></div></div>
     </div>
     <div className="container-wide flex flex-col justify-between gap-3 border-t border-[hsl(var(--primary-foreground)/.15)] py-5 text-[11px] text-[hsl(var(--primary-foreground)/.55)] sm:flex-row"><span>© 2027 Stream Conferences. All rights reserved.</span><span>ICMLHS 2027 · Boston, USA</span></div>
