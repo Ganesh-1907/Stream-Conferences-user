@@ -436,20 +436,15 @@ export function HomePage({ event }: { event: EventData }) {
           {/* Right Column: Logo and Side-by-Side Action Buttons (Height matches banner) */}
           <div className="flex flex-col items-center justify-center text-center shrink-0">
             {/* Circular Logo */}
-            <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-60 md:h-60 rounded-full border-4 border-[#0f4c81]/30 bg-white shadow-xl flex items-center justify-center p-4 overflow-hidden group shrink-0">
-              {event.logoUrl ? (
+            {event.logoUrl && (
+              <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-60 md:h-60 rounded-full border-4 border-[#0f4c81]/30 bg-white shadow-xl flex items-center justify-center p-4 overflow-hidden group shrink-0">
                 <img
                   src={mediaUrl(event.logoUrl)}
                   alt={event.title}
                   className="w-full h-full object-contain rounded-full group-hover:scale-105 transition-transform duration-300"
                 />
-              ) : (
-                <div className="w-full h-full rounded-full bg-gradient-to-br from-[#0f4c81] to-[#0d9488] flex flex-col items-center justify-center text-white p-5 text-center">
-                  <Award size={48} />
-                  <span className="text-xs font-bold mt-2 line-clamp-2 uppercase tracking-tight">{event.title}</span>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Quick Action Navigation Buttons - Side by Side */}
             <div className="flex flex-row items-center justify-center gap-3 w-full mt-5 flex-wrap sm:flex-nowrap">
