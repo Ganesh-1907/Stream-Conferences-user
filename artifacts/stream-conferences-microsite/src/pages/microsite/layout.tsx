@@ -246,7 +246,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
       <div className="container-wide flex items-center justify-between gap-4 py-3">
         <Link href="/" className="flex items-center gap-3 min-w-0">
           <img src="/logo.jpg" alt="Stream Conferences" className="h-10 w-10 rounded-xl object-cover shadow-lg" />
-          <span className="truncate font-['Space_Grotesk'] font-bold tracking-tight text-sm md:text-base">{event?.title || 'Event'}</span>
+          <span className="truncate font-['Space_Grotesk'] font-bold tracking-tight text-sm md:text-base">Stream Conferences</span>
         </Link>
 
         <nav className="hidden lg:flex items-center gap-1">
@@ -616,7 +616,7 @@ function MicrositeFooter({ event, navItems }: { event: EventData; navItems: NavI
           <div>
             <div className="flex items-center gap-3">
               <img src="/logo.jpg" alt="Stream Conferences" className="h-10 w-10 rounded-xl object-cover" />
-              <h3 className="font-['Space_Grotesk'] text-lg font-bold">{event?.title}</h3>
+              <h3 className="font-['Space_Grotesk'] text-lg font-bold">Stream Conferences</h3>
             </div>
             {event?.organizerContact?.name && <p className="mt-3 text-base text-white/70">{event.organizerContact.name}</p>}
             {event?.organizerContact?.address && <p className="mt-1 text-base text-white/70">{event.organizerContact.address}</p>}
