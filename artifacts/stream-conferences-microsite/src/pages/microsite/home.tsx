@@ -173,78 +173,13 @@ export function HomePage({ event }: { event: EventData }) {
   const [selectedSpeaker, setSelectedSpeaker] = useState<any | null>(null);
 
   const featuredSpeakers = useMemo(() => {
-    const list = Array.isArray(event.speakers) && event.speakers.length > 0 ? [...event.speakers] : [];
-    if (list.length === 0) {
-      return [
-        {
-          name: 'Dr. Sarah Chen',
-          degree: 'Ph.D.',
-          designation: 'Director of Genomics Research',
-          organization: 'Harvard Medical School',
-          topic: 'Next-Generation Gene Sequencing & Therapeutics',
-          bio: 'Pioneering researcher in functional genomics and precision medicine applications.',
-          isKeynote: true,
-        },
-        {
-          name: 'Prof. Marcus Vance',
-          degree: 'M.D., Ph.D.',
-          designation: 'Chair of Cellular Immunology',
-          organization: 'Johns Hopkins University',
-          topic: 'Targeted Immunotherapies in Oncology',
-          bio: 'Leading clinician-scientist specializing in novel cellular immunology and CAR-T platforms.',
-          isKeynote: true,
-        },
-        {
-          name: 'Dr. Elena Rostova',
-          degree: 'Ph.D.',
-          designation: 'Head of Computational Biology',
-          organization: 'Bioinformatics Global Institute',
-          topic: 'AI and Machine Learning in Structural Biology',
-          bio: 'Expert in generative deep learning frameworks for molecular dynamics and protein folding.',
-          isKeynote: false,
-        },
-        {
-          name: 'Dr. Kwame Mensah',
-          degree: 'M.D.',
-          designation: 'Professor of Public Health',
-          organization: 'Oxford Population Health',
-          topic: 'Global Health Systems & Clinical Epidemiology',
-          bio: 'Specialist in multi-center international trials and preventative clinical epidemiology.',
-          isKeynote: false,
-        },
-      ];
-    }
-    // Prioritize keynote speakers first so key speakers are covered
+    const list = Array.isArray(event.speakers) ? [...event.speakers] : [];
     list.sort((a, b) => (b.isKeynote ? 1 : 0) - (a.isKeynote ? 1 : 0));
     return list.slice(0, 4);
   }, [event.speakers]);
 
   const faqs = useMemo(() => {
-    if (Array.isArray(event.faqs) && event.faqs.length > 0) {
-      return [...event.faqs].sort((a, b) => (a.order || 0) - (b.order || 0));
-    }
-    return [
-      {
-        question: 'How do I register for the conference?',
-        answer: 'You can register online through our Registration page by selecting your attendee category (Presenter, Listener, Student, or Exhibitor) and completing the registration details.',
-      },
-      {
-        question: 'Can I submit an abstract before completing registration?',
-        answer: 'Yes, you can submit your abstract first through the Abstract Submission portal. After peer review and acceptance by the scientific committee, you will be invited to complete your registration.',
-      },
-      {
-        question: 'Will I receive a certificate of attendance or presentation?',
-        answer: 'Yes, all registered participants and oral/poster presenters receive an official Certificate of Participation / Presentation at the conclusion of the event.',
-      },
-      {
-        question: 'Is virtual / online participation available?',
-        answer: 'Yes, our conferences offer hybrid participation options with live streaming, interactive Q&A, and virtual presentation opportunities for remote delegates.',
-      },
-      {
-        question: 'How do I obtain an official invitation letter for visa purposes?',
-        answer: 'Official invitation letters for visa applications are provided to confirmed, registered attendees upon request. Please contact the organizing committee with your details.',
-      },
-    ];
+    return Array.isArray(event.faqs) ? [...event.faqs].sort((a, b) => (a.order || 0) - (b.order || 0)) : [];
   }, [event.faqs]);
 
   const headerBanners = useMemo(() => {
@@ -255,16 +190,6 @@ export function HomePage({ event }: { event: EventData }) {
     if (event.bannerUrl && !event.bannerUrl.endsWith('.pdf')) {
       const bUrl = mediaUrl(event.bannerUrl);
       if (!list.includes(bUrl)) list.push(bUrl);
-    }
-    const fallbacks = [
-      mediaUrl('/uploads/amsterdam_banner.png'),
-      'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80',
-    ];
-    for (const fb of fallbacks) {
-      if (list.length < 3 && !list.includes(fb)) {
-        list.push(fb);
-      }
     }
     return list;
   }, [event.headerBanners, event.bannerUrl]);
