@@ -222,7 +222,6 @@ export function HomePage({ event }: { event: EventData }) {
       isExternal: Boolean(event.brochureUrl),
     },
   ];
-  ];
 
   return (
     <>
