@@ -24,6 +24,7 @@ import {
   Microscope,
   Moon,
   Network,
+  Palette,
   Phone,
   Search,
   Send,
@@ -561,6 +562,20 @@ function SiteHeader() {
   const [location] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dark, setDark] = useState(() => typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
+  const colorThemes = [
+    { id: 'conference-blue', label: 'Conference Blue', swatch: '#2563a8', primary: '213 63% 40%', secondary: '199 89% 48%', accent: '201 96% 40%' },
+    { id: 'royal-navy', label: 'Royal Navy', swatch: '#1b365d', primary: '216 55% 23%', secondary: '199 75% 40%', accent: '201 80% 45%' },
+    { id: 'ocean-teal', label: 'Ocean Teal', swatch: '#147d82', primary: '183 72% 29%', secondary: '172 62% 40%', accent: '174 72% 45%' },
+    { id: 'emerald', label: 'Emerald', swatch: '#16734b', primary: '153 64% 27%', secondary: '142 55% 38%', accent: '158 68% 42%' },
+    { id: 'ruby-red', label: 'Ruby Red', swatch: '#9f263d', primary: '348 62% 38%', secondary: '4 72% 48%', accent: '348 78% 50%' },
+    { id: 'deep-violet', label: 'Deep Violet', swatch: '#54328c', primary: '262 48% 37%', secondary: '280 58% 48%', accent: '270 72% 55%' },
+    { id: 'charcoal', label: 'Charcoal', swatch: '#343b46', primary: '216 16% 24%', secondary: '215 22% 38%', accent: '210 78% 52%' },
+  ] as const;
+  const [colorTheme, setColorTheme] = useState(() => {
+    if (typeof window === 'undefined') return 'royal-navy';
+    return window.localStorage.getItem('stream-color-theme') || 'royal-navy';
+  });
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [subnav, setSubnav] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
@@ -612,11 +627,25 @@ function SiteHeader() {
     window.localStorage.setItem('stream-theme', dark ? 'dark' : 'light');
   }, [dark]);
   useEffect(() => {
+    const selected = colorThemes.find((theme) => theme.id === colorTheme) || colorThemes[1];
+    const root = document.documentElement;
+    root.style.setProperty('--primary', selected.primary);
+    root.style.setProperty('--ring', selected.primary);
+    root.style.setProperty('--secondary', selected.secondary);
+    root.style.setProperty('--accent', selected.accent);
+    root.style.setProperty('--sidebar', selected.primary);
+    root.style.setProperty('--sidebar-primary', selected.secondary);
+    window.localStorage.setItem('stream-color-theme', selected.id);
+  }, [colorTheme]);
+  useEffect(() => {
     setMenuOpen(false);
     setOpenDropdown(null);
   }, [location]);
   useEffect(() => {
-    const handleGlobalClick = () => setOpenDropdown(null);
+    const handleGlobalClick = () => {
+      setOpenDropdown(null);
+      setColorPickerOpen(false);
+    };
     window.addEventListener('click', handleGlobalClick);
     return () => window.removeEventListener('click', handleGlobalClick);
   }, []);
@@ -700,6 +729,46 @@ function SiteHeader() {
             })}
           </nav>
           <div className="flex items-center gap-2">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setColorPickerOpen((value) => !value);
+                }}
+                className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]"
+                aria-label="Choose color theme"
+                aria-expanded={colorPickerOpen}
+                data-testid="button-color-theme"
+              >
+                <Palette size={17} />
+              </button>
+              {colorPickerOpen && (
+                <div
+                  className="absolute right-0 top-12 z-50 w-56 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 shadow-2xl"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Color theme</p>
+                  <div className="grid gap-1">
+                    {colorThemes.map((theme) => (
+                      <button
+                        key={theme.id}
+                        type="button"
+                        onClick={() => {
+                          setColorTheme(theme.id);
+                          setColorPickerOpen(false);
+                        }}
+                        className={`flex items-center gap-3 rounded-xl px-2.5 py-2 text-left text-xs font-semibold transition-colors hover:bg-[hsl(var(--muted))] ${colorTheme === theme.id ? 'bg-[hsl(var(--muted))]' : ''}`}
+                      >
+                        <span className="h-4 w-4 shrink-0 rounded-full border border-black/10" style={{ backgroundColor: theme.swatch }} />
+                        <span>{theme.label}</span>
+                        {colorTheme === theme.id && <Check size={14} className="ml-auto text-[hsl(var(--primary))]" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
             <button type="button" onClick={toggleTheme} className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]" aria-label={dark ? 'Use light theme' : 'Use dark theme'} data-testid="button-theme-toggle">{dark ? <Sun size={17} /> : <Moon size={17} />}</button>
             <button type="button" onClick={() => setMenuOpen((value) => !value)} className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] lg:hidden" aria-label={menuOpen ? 'Close menu' : 'Open menu'} data-testid="button-mobile-menu">{menuOpen ? <X size={19} /> : <Menu size={19} />}</button>
           </div>
