@@ -421,6 +421,7 @@ export function HomePage({ event }: { event: EventData }) {
 
 
       {/* Interactive Banner Carousel, Logo, CTAs & Quick Action Navigation (Matching Reference Design) */}
+      {(headerBanners.length > 0 || event.logoUrl) && (
       <section className="container-wide mt-12 md:mt-20 py-10 md:py-14 border-b border-[hsl(var(--border))]">
         {/* Centered 2-Column Unit with Balanced Margins & Matched Heights */}
         <div className="max-w-[1440px] w-full mx-auto flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-10">
@@ -469,6 +470,7 @@ export function HomePage({ event }: { event: EventData }) {
           </div>
         </div>
       </section>
+      )}
 
       {/* Featured Speakers Section (Before FAQs) */}
       {featuredSpeakers.length > 0 && (
@@ -647,6 +649,7 @@ export function HomePage({ event }: { event: EventData }) {
       )}
 
       {/* Frequently Asked Questions Section */}
+      {faqs.length > 0 && (
       <section className="container-wide py-16 md:py-24">
         <div className="mb-12 text-center max-w-2xl mx-auto">
           <span className="section-eyebrow justify-center">FAQ</span>
@@ -684,6 +687,7 @@ export function HomePage({ event }: { event: EventData }) {
           ))}
         </div>
       </section>
+      )}
 
       {/* Speaker Details Modal */}
       <Dialog open={Boolean(selectedSpeaker)} onOpenChange={(open) => !open && setSelectedSpeaker(null)}>
