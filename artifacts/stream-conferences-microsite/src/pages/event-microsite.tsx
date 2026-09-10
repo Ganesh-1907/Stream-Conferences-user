@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Route, Switch, Router as WouterRouter } from 'wouter';
+import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import { MicrositeLayout, buildNavItems, type EventData } from './microsite/layout';
 import { HomePage } from './microsite/home';
 import { AboutPage } from './microsite/about';
@@ -23,6 +23,14 @@ import { ThankYouPage } from './microsite/thank-you';
 import { OrganizingCommitteePage } from './microsite/organizing-committee';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
+
+function ScrollToTop() {
+  const [location] = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+  return null;
+}
 
 function EventNotFound({ subdomain }: { subdomain: string }) {
   return (
@@ -130,6 +138,7 @@ export function EventMicrosite({ subdomain }: { subdomain: string }) {
 
   return (
     <WouterRouter base={base}>
+      <ScrollToTop />
       <MicrositeLayout event={displayEvent} navItems={navItems}>
         <Switch>
           <Route path="/" component={() => <HomePage event={displayEvent} />} />

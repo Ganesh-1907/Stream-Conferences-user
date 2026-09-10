@@ -3244,8 +3244,16 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
   return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
 }
 
+function ScrollToTop() {
+  const [location] = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+  return null;
+}
+
 function Router() {
-  return <RoutedErrorBoundary><Switch><Route path="/" component={Home} /><Route path="/about" component={AboutPage} /><Route path="/submit-abstract" component={AbstractSubmissionPage} /><Route path="/program" component={ProgramPage} /><Route path="/speakers" component={SpeakersPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/blog" component={BlogPage} /><Route path="/blog/:slug" component={BlogDetailPage} /><Route path="/conferences" component={ConferencesPage} /><Route path="/conference/:slug" component={() => <EventDetailsPage type="conference" />} /><Route path="/webinars" component={WebinarsPage} /><Route path="/webinar/:slug" component={() => <EventDetailsPage type="webinar" />} /><Route path="/brochure" component={BrochurePage} /><Route path="/venue" component={VenuePage} /><Route path="/sponsors" component={SponsorsPage} /><Route path="/media-partners" component={MediaPartnersPage} /><Route path="/collaborators" component={CollaboratorsPage} /><Route path="/exhibitors" component={ExhibitorsPage} /><Route path="/mentors/:username" component={MentorDetailsPage} /><Route path="/register" component={RegisterPage} /><Route path="/thank-you" component={ThankYouPage} /><Route path="/terms" component={TermsPage} /><Route path="/faq" component={FAQPage} /><Route path="/guidelines" component={GuidelinesPage} /><Route path="/contact" component={ContactPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
+  return <RoutedErrorBoundary><ScrollToTop /><Switch><Route path="/" component={Home} /><Route path="/about" component={AboutPage} /><Route path="/submit-abstract" component={AbstractSubmissionPage} /><Route path="/program" component={ProgramPage} /><Route path="/speakers" component={SpeakersPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/blog" component={BlogPage} /><Route path="/blog/:slug" component={BlogDetailPage} /><Route path="/conferences" component={ConferencesPage} /><Route path="/conference/:slug" component={() => <EventDetailsPage type="conference" />} /><Route path="/webinars" component={WebinarsPage} /><Route path="/webinar/:slug" component={() => <EventDetailsPage type="webinar" />} /><Route path="/brochure" component={BrochurePage} /><Route path="/venue" component={VenuePage} /><Route path="/sponsors" component={SponsorsPage} /><Route path="/media-partners" component={MediaPartnersPage} /><Route path="/collaborators" component={CollaboratorsPage} /><Route path="/exhibitors" component={ExhibitorsPage} /><Route path="/mentors/:username" component={MentorDetailsPage} /><Route path="/register" component={RegisterPage} /><Route path="/thank-you" component={ThankYouPage} /><Route path="/terms" component={TermsPage} /><Route path="/faq" component={FAQPage} /><Route path="/guidelines" component={GuidelinesPage} /><Route path="/contact" component={ContactPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
 }
 
 function App() {
