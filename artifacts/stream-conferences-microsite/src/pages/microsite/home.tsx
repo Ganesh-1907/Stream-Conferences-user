@@ -218,8 +218,7 @@ export function HomePage({ event }: { event: EventData }) {
     {
       title: 'Brochure',
       icon: Download,
-      href: event.brochureUrl ? mediaUrl(event.brochureUrl) : '#',
-      isExternal: Boolean(event.brochureUrl),
+      href: '/brochure',
     },
   ];
 
@@ -294,11 +293,9 @@ export function HomePage({ event }: { event: EventData }) {
                 <Link href="/submit-abstract" className="btn-main rounded-xl border border-white/30 bg-white/5 px-7 py-4 text-sm text-white hover:bg-white/10">
                   Submit Abstract <FileText size={17} />
                 </Link>
-                {event.brochureUrl && (
-                  <a href={mediaUrl(event.brochureUrl)} target="_blank" rel="noreferrer" className="btn-main rounded-xl border border-white/30 bg-white/5 px-7 py-4 text-sm text-white hover:bg-white/10">
-                    <Download size={17} /> Brochure
-                  </a>
-                )}
+                <Link href="/brochure" className="btn-main rounded-xl border border-white/30 bg-white/5 px-7 py-4 text-sm text-white hover:bg-white/10">
+                  <Download size={17} /> Brochure
+                </Link>
               </div>
             </div>
 
