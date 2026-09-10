@@ -55,6 +55,18 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
 const ROOT_DOMAIN = import.meta.env.VITE_ROOT_DOMAIN || '';
 const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
 
+// Build the public microsite URL for an event based on its subdomain.
+const subdomainUrl = (item: any, path = ''): string => {
+  const sub = item?.subdomain;
+  if (!sub) return '';
+  const root = ROOT_DOMAIN.toLowerCase();
+  if (!root || root === 'localhost') {
+    return `${window.location.origin}/?subdomain=${encodeURIComponent(sub)}${path ? `#${path}` : ''}`;
+  }
+  const protocol = window.location.protocol === 'https:' ? 'https' : 'https';
+  return `${protocol}://${sub}.${root}${path}`;
+};
+
 function detectSubdomain(hostname: string): string | null {
   try {
     const querySub = new URLSearchParams(window.location.search).get('subdomain');
@@ -325,15 +337,15 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
                 })()}
               </div>
               <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-                <Link href={`/${e.type === 'Conference' ? 'conference' : 'webinar'}/${encodeURIComponent(e.eventId || e.slug || e.id)}`} className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--border))] px-3.5 py-2 text-xs font-bold hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors" aria-label={`View details for ${e.title}`}>
+                <a href={subdomainUrl(e) || `/${e.type === 'Conference' ? 'conference' : 'webinar'}/${encodeURIComponent(e.eventId || e.slug || e.id)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--border))] px-3.5 py-2 text-xs font-bold hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors" aria-label={`View details for ${e.title}`}>
                   Details
-                </Link>
-                <Link href={`/submit-abstract?event=${encodeURIComponent(e.eventId || e.slug || e.id)}`} className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--border))] px-3.5 py-2 text-xs font-bold hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors" aria-label={`Submit abstract for ${e.title}`}>
+                </a>
+                <a href={subdomainUrl(e, '/submit-abstract') || `/submit-abstract?event=${encodeURIComponent(e.eventId || e.slug || e.id)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--border))] px-3.5 py-2 text-xs font-bold hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors" aria-label={`Submit abstract for ${e.title}`}>
                   Submit Abstract
-                </Link>
-                <Link target="_blank" rel="noopener noreferrer" href={`/register?event=${encodeURIComponent(e.eventId || e.slug || e.id)}`} className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3.5 py-2 text-xs font-bold hover:opacity-90 transition-opacity" aria-label={`Register for ${e.title}`}>
+                </a>
+                <a target="_blank" rel="noopener noreferrer" href={subdomainUrl(e, '/register') || `/register?event=${encodeURIComponent(e.eventId || e.slug || e.id)}`} className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3.5 py-2 text-xs font-bold hover:opacity-90 transition-opacity" aria-label={`Register for ${e.title}`}>
                   Register <ArrowRight size={13} />
-                </Link>
+                </a>
               </div>
             </article>
           ))
@@ -918,8 +930,8 @@ function Home() {
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {displayConferences.map((item, index) => {
-              const registerHref = `/register?event=${encodeURIComponent(item.eventId || item.slug || item._id)}`;
-              const detailsHref = `/conference/${encodeURIComponent(item.eventId || item.slug || item._id)}`;
+              const registerHref = subdomainUrl(item, '/register');
+              const detailsHref = subdomainUrl(item) || `/conference/${encodeURIComponent(item.eventId || item.slug || item._id)}`;
               return (
                 <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-home-conference-${index}`}>
                   <div className="relative aspect-[16/9] w-full bg-[hsl(var(--muted)/.25)] border-b border-[hsl(var(--border))] overflow-hidden">
@@ -1012,8 +1024,8 @@ function Home() {
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {displayWebinars.map((item, index) => {
-              const registerHref = `/register?event=${encodeURIComponent(item.eventId || item.slug || item._id)}`;
-              const detailsHref = `/webinar/${encodeURIComponent(item.eventId || item.slug || item._id)}`;
+              const registerHref = subdomainUrl(item, '/register');
+              const detailsHref = subdomainUrl(item) || `/webinar/${encodeURIComponent(item.eventId || item.slug || item._id)}`;
               return (
                 <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-home-webinar-${index}`}>
                   <div className="relative aspect-[16/9] w-full bg-[hsl(var(--muted)/.25)] border-b border-[hsl(var(--border))] overflow-hidden">
@@ -2226,7 +2238,7 @@ function EventDetailsPage({ type }: { type: 'conference' | 'webinar' }) {
   const banner = mediaUrl(item.bannerUrl || '');
   const logo = mediaUrl(item.logoUrl || '');
   const brochure = mediaUrl(item.brochureUrl || '');
-  const registerHref = `/register?event=${encodeURIComponent(item.eventId || item.slug || item._id)}`;
+  const registerHref = subdomainUrl(item, '/register') || `/register?event=${encodeURIComponent(item.eventId || item.slug || item._id)}`;
   const fees: { type: string; dateLabel: string; usd: number; gbp: number; eur: number }[] = Array.isArray(item.fees) ? item.fees : [];
 
   return (
@@ -2447,7 +2459,7 @@ function EventDetailsPage({ type }: { type: 'conference' | 'webinar' }) {
                 <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[hsl(var(--accent))]" />Register to secure your place</li>
                 <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[hsl(var(--accent))]" />Reach out for any questions</li>
               </ul>
-              <Link href={`/register?event=${encodeURIComponent(item.slug || item._id)}`} className="btn-main btn-primary mt-5 w-full justify-center">Register Now <ArrowUpRight size={16} /></Link>
+              <a target="_blank" rel="noopener noreferrer" href={subdomainUrl(item, '/register') || `/register?event=${encodeURIComponent(item.slug || item._id)}`} className="btn-main btn-primary mt-5 w-full justify-center">Register Now <ArrowUpRight size={16} /></a>
             </div>
           </div>
         </div>
@@ -3253,7 +3265,7 @@ function ScrollToTop() {
 }
 
 function Router() {
-  return <RoutedErrorBoundary><ScrollToTop /><Switch><Route path="/" component={Home} /><Route path="/about" component={AboutPage} /><Route path="/submit-abstract" component={AbstractSubmissionPage} /><Route path="/program" component={ProgramPage} /><Route path="/speakers" component={SpeakersPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/blog" component={BlogPage} /><Route path="/blog/:slug" component={BlogDetailPage} /><Route path="/conferences" component={ConferencesPage} /><Route path="/conference/:slug" component={() => <EventDetailsPage type="conference" />} /><Route path="/webinars" component={WebinarsPage} /><Route path="/webinar/:slug" component={() => <EventDetailsPage type="webinar" />} /><Route path="/brochure" component={BrochurePage} /><Route path="/venue" component={VenuePage} /><Route path="/sponsors" component={SponsorsPage} /><Route path="/media-partners" component={MediaPartnersPage} /><Route path="/collaborators" component={CollaboratorsPage} /><Route path="/exhibitors" component={ExhibitorsPage} /><Route path="/mentors/:username" component={MentorDetailsPage} /><Route path="/register" component={RegisterPage} /><Route path="/thank-you" component={ThankYouPage} /><Route path="/terms" component={TermsPage} /><Route path="/faq" component={FAQPage} /><Route path="/guidelines" component={GuidelinesPage} /><Route path="/contact" component={ContactPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
+  return <RoutedErrorBoundary><ScrollToTop /><Switch><Route path="/" component={Home} /><Route path="/about" component={AboutPage} /><Route path="/submit-abstract" component={AbstractSubmissionPage} /><Route path="/program" component={ProgramPage} /><Route path="/speakers" component={SpeakersPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/blog" component={BlogPage} /><Route path="/blog/:slug" component={BlogDetailPage} /><Route path="/conferences" component={ConferencesPage} /><Route path="/webinars" component={WebinarsPage} /><Route path="/brochure" component={BrochurePage} /><Route path="/venue" component={VenuePage} /><Route path="/sponsors" component={SponsorsPage} /><Route path="/media-partners" component={MediaPartnersPage} /><Route path="/collaborators" component={CollaboratorsPage} /><Route path="/exhibitors" component={ExhibitorsPage} /><Route path="/mentors/:username" component={MentorDetailsPage} /><Route path="/thank-you" component={ThankYouPage} /><Route path="/terms" component={TermsPage} /><Route path="/faq" component={FAQPage} /><Route path="/guidelines" component={GuidelinesPage} /><Route path="/contact" component={ContactPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
 }
 
 function App() {
