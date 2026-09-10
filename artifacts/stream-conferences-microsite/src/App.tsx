@@ -928,16 +928,16 @@ function Home() {
               All Conferences <ArrowUpRight size={16} />
             </Link>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {displayConferences.map((item, index) => {
               const registerHref = subdomainUrl(item, '/register');
               const detailsHref = subdomainUrl(item) || `/conference/${encodeURIComponent(item.eventId || item.slug || item._id)}`;
               return (
                 <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-home-conference-${index}`}>
                   <div className="relative aspect-[16/9] w-full bg-[hsl(var(--muted)/.25)] border-b border-[hsl(var(--border))] overflow-hidden">
-                    {item.bannerUrl || item.logoUrl ? (
+                    {item.logoUrl ? (
                       <img 
-                        src={mediaUrl(item.bannerUrl || item.logoUrl)} 
+                        src={mediaUrl(item.logoUrl)} 
                         alt={`${item.title} banner`} 
                         className="h-full w-full object-cover" 
                       />
@@ -1024,16 +1024,16 @@ function Home() {
               All Webinars <ArrowUpRight size={16} />
             </Link>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {displayWebinars.map((item, index) => {
               const registerHref = subdomainUrl(item, '/register');
               const detailsHref = subdomainUrl(item) || `/webinar/${encodeURIComponent(item.eventId || item.slug || item._id)}`;
               return (
                 <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-home-webinar-${index}`}>
                   <div className="relative aspect-[16/9] w-full bg-[hsl(var(--muted)/.25)] border-b border-[hsl(var(--border))] overflow-hidden">
-                    {item.bannerUrl || item.logoUrl ? (
+                    {item.logoUrl ? (
                       <img 
-                        src={mediaUrl(item.bannerUrl || item.logoUrl)} 
+                        src={mediaUrl(item.logoUrl)} 
                         alt={`${item.title} banner`} 
                         className="h-full w-full object-cover" 
                       />

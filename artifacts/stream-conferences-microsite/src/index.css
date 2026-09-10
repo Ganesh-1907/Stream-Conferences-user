@@ -298,6 +298,9 @@
 .timeline-item::before { content: ''; position: absolute; left: 0; top: 8px; width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary))); }
 .timeline-item::after { content: ''; position: absolute; left: 4px; top: 22px; width: 2px; height: calc(100% - 14px); background: hsl(var(--border)); }
 .timeline-item:last-child::after { display: none; }
+@media (min-width: 1024px) {
+  .grid:has(> [data-testid^="gallery-item-"]) { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+}
 @media (max-width: 767px) {
   .container-wide { width: min(100% - 32px, 1600px); }
   .partner-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
