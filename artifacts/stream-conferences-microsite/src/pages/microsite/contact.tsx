@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link } from 'wouter';
 import { Mail, Phone, Globe, MapPin, Check, ExternalLink, Building, Send } from 'lucide-react';
 import type { EventData } from './layout';
+import { getNameInitials } from '@/lib/utils';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
 
@@ -91,7 +92,7 @@ export function ContactPage({ event }: { event: EventData }) {
             {contact?.name && (
               <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-[hsl(var(--background))] border border-[hsl(var(--border)/0.7)]">
                 <div className="w-11 h-11 rounded-xl bg-[hsl(var(--primary)/0.12)] text-[hsl(var(--primary))] flex items-center justify-center shrink-0 font-bold text-sm">
-                  {contact.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
+                  {getNameInitials(contact.name, 'OC')}
                 </div>
                 <div className="min-w-0">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Organizer</p>

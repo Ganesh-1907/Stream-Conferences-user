@@ -130,22 +130,37 @@ export function buildNavItems(event: EventData): NavItem[] {
 function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavItem[] }) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { dark, toggle } = useTheme();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 60) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const isActive = (path: string) => location === path;
 
+  const isHomeTop = location === '/' && !scrolled;
+
   const navLinkCls = (path: string) => {
-    const base = 'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ';
+    const base = 'flex items-center gap-2 px-3 py-2 text-sm font-medium transition-all ';
     return isActive(path)
-      ? base + 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-semibold shadow-xs'
-      : base + 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]';
+      ? base + 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-bold shadow-md rounded-full px-4'
+      : base + 'text-white/80 hover:text-white hover:bg-white/10 rounded-lg';
   };
 
   const mobileLinkCls = (path: string) => {
-    const base = 'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ';
+    const base = 'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ';
     return isActive(path)
-      ? base + 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-semibold shadow-xs'
-      : base + 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]';
+      ? base + 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-bold shadow-md'
+      : base + 'text-white/80 hover:text-white hover:bg-white/10';
   };
 
   // Program dropdown items: Itinerary (/program), Speakers, Tracks, Committee, FAQ, Terms
@@ -242,11 +257,15 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
   const isMoreActive = moreItems.some((item) => isActive(item.path));
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/.88)] backdrop-blur-lg">
+    <header className={`sticky top-0 z-40 border-b transition-all duration-300 text-white ${
+      isHomeTop
+        ? 'hero-slant-bg border-white/10'
+        : 'bg-[#0b0f19]/95 border-white/10 backdrop-blur-xl shadow-2xl'
+    }`}>
       <div className="container-wide flex items-center justify-between gap-4 py-3">
         <Link href="/" className="flex items-center gap-3 min-w-0">
-          <img src="/logo.jpg" alt="Stream Conferences" className="h-10 w-10 rounded-xl object-cover shadow-lg" />
-          <span className="truncate font-['Space_Grotesk'] font-bold tracking-tight text-sm md:text-base">Stream Conferences</span>
+          <img src="/logo.jpg" alt="Stream Conferences" className="h-10 w-10 rounded-xl object-cover shadow-lg border border-white/20" />
+          <span className="truncate font-['Space_Grotesk'] font-bold tracking-tight text-sm md:text-base text-white">Stream Conferences</span>
         </Link>
 
         <nav className="hidden lg:flex items-center gap-1">
@@ -264,8 +283,8 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
               type="button"
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                 isProgramActive
-                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-semibold shadow-xs'
-                  : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-bold shadow-md rounded-full px-4'
+                  : 'text-white/80 hover:text-white hover:bg-white/10'
               }`}
             >
               <Presentation size={16} />
@@ -273,7 +292,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
               <ChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-200" />
             </button>
             <div className="absolute left-0 top-full pt-1.5 hidden group-hover:block z-50 w-52">
-              <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] shadow-xl py-1 backdrop-blur-lg">
+              <div className="rounded-xl border border-white/15 bg-[#0f172a] text-white shadow-2xl py-1 backdrop-blur-xl">
                 {programItems.map((item) => (
                   <Link
                     key={item.id}
@@ -281,7 +300,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
                     className={`flex items-center gap-2.5 px-4 py-2 text-sm transition-colors ${
                       isActive(item.path)
                         ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-semibold'
-                        : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+                        : 'text-white/80 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     {item.icon}
@@ -303,15 +322,15 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
                 type="button"
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                   isMoreActive
-                    ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-semibold shadow-xs'
-                    : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+                    ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-bold shadow-md rounded-full px-4'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
                 }`}
               >
                 <span>More</span>
                 <ChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-200" />
               </button>
               <div className="absolute right-0 top-full pt-1.5 hidden group-hover:block z-50 w-52">
-                <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] shadow-xl py-1 backdrop-blur-lg">
+                <div className="rounded-xl border border-white/15 bg-[#0f172a] text-white shadow-2xl py-1 backdrop-blur-xl">
                   {moreItems.map((item) => (
                     item.isExternal ? (
                       <a
@@ -319,7 +338,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
                         href={item.path}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2.5 px-4 py-2 text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
+                        className="flex items-center gap-2.5 px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-colors"
                       >
                         {item.icon}
                         <span>{item.label}</span>
@@ -331,7 +350,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
                         className={`flex items-center gap-2.5 px-4 py-2 text-sm transition-colors ${
                           isActive(item.path)
                             ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-semibold'
-                            : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]'
+                            : 'text-white/80 hover:text-white hover:bg-white/10'
                         }`}
                       >
                         {item.icon}

@@ -1,6 +1,7 @@
 import { type FormEvent, type ReactNode, useEffect, useMemo, useRef, useState, createContext, useContext } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { getNameInitials } from '@/lib/utils';
 import {
   ArrowDownRight,
   ArrowLeft,
@@ -2614,7 +2615,7 @@ function EventDetailsPage({ type }: { type: 'conference' | 'webinar' }) {
             
             <div>
               <SectionTitle eyebrow="Registration" title="Participation Fees." />
-              <div className="mt-6 mx-auto max-w-[60%] space-y-4">
+              <div className="mt-6 w-full space-y-6">
                 {(() => {
                   const feeGrouped = new Map<string, any[]>();
                   for (const f of fees) {
@@ -2623,31 +2624,27 @@ function EventDetailsPage({ type }: { type: 'conference' | 'webinar' }) {
                     feeGrouped.get(key)!.push(f);
                   }
                   return Array.from(feeGrouped.entries()).map(([type, items]) => (
-                    <div key={type}>
-                      <h4 className="font-bold text-sm mb-2 text-[hsl(var(--foreground))]">{type}</h4>
-                      <div className="overflow-hidden rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-                        <table className="w-full text-left text-sm border-separate border-spacing-0" style={{ tableLayout: 'fixed' }}>
-                          <colgroup>
-                            <col style={{ width: '40%' }} />
-                            <col style={{ width: '20%' }} />
-                            <col style={{ width: '20%' }} />
-                            <col style={{ width: '20%' }} />
-                          </colgroup>
-                          <thead className="bg-[hsl(var(--muted)/.5)] text-[hsl(var(--muted-foreground))]">
+                    <div key={type} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm">
+                      <div className="px-6 py-3.5 bg-[#f0f4f9] dark:bg-slate-900/60 border-b border-[hsl(var(--border))]">
+                        <h4 className="font-['Space_Grotesk'] font-bold text-sm text-[hsl(var(--foreground))] uppercase tracking-wider">{type}</h4>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm border-collapse">
+                          <thead className="bg-[hsl(var(--muted)/.4)] text-[hsl(var(--foreground))] font-bold text-xs uppercase tracking-wider border-b border-[hsl(var(--border))]">
                             <tr>
-                              <th className="px-6 py-3 font-bold uppercase tracking-wider text-[11px]">Heading</th>
-                              <th className="px-6 py-3 font-bold uppercase tracking-wider text-[11px] text-right">EUR</th>
-                              <th className="px-6 py-3 font-bold uppercase tracking-wider text-[11px] text-right">USD</th>
-                              <th className="px-6 py-3 font-bold uppercase tracking-wider text-[11px] text-right">GBP</th>
+                              <th className="px-6 py-3.5 w-[40%]">HEADING</th>
+                              <th className="px-6 py-3.5 text-center w-[20%]">EUR (€)</th>
+                              <th className="px-6 py-3.5 text-center w-[20%]">USD ($)</th>
+                              <th className="px-6 py-3.5 text-center w-[20%]">GBP (£)</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-[hsl(var(--border))]">
                             {items.map((f: any, i: number) => (
-                              <tr key={i} className="hover:bg-[hsl(var(--muted)/.2)]">
-                                <td className="px-6 py-3 font-bold">{f.dateLabel || 'Standard'}</td>
-                                <td className="px-6 py-3 text-right font-bold">€{Number(f.eur).toLocaleString()}</td>
-                                <td className="px-6 py-3 text-right font-bold">${Number(f.usd).toLocaleString()}</td>
-                                <td className="px-6 py-3 text-right font-bold">£{Number(f.gbp).toLocaleString()}</td>
+                              <tr key={i} className="hover:bg-[hsl(var(--muted)/.3)] transition-colors">
+                                <td className="px-6 py-3.5 font-semibold text-[hsl(var(--foreground))]">{f.dateLabel || 'Standard'}</td>
+                                <td className="px-6 py-3.5 text-center font-mono font-bold text-[hsl(var(--foreground))]">€{Number(f.eur || 0).toLocaleString()}</td>
+                                <td className="px-6 py-3.5 text-center font-mono font-bold text-[hsl(var(--foreground))]">${Number(f.usd || 0).toLocaleString()}</td>
+                                <td className="px-6 py-3.5 text-center font-mono font-bold text-[hsl(var(--foreground))]">£{Number(f.gbp || 0).toLocaleString()}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -2847,7 +2844,7 @@ function BlogDetailPage() {
 
   const authorName = insight.announcedBy || 'Stream Conferences';
   const published = insight.createdAt ? new Date(insight.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : '';
-  const authorInitials = authorName.trim().split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
+  const authorInitials = getNameInitials(authorName, 'SC');
 
   return (
     <Layout>

@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { getNameInitials } from '@/lib/utils';
 
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
 const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
@@ -65,7 +66,7 @@ export function SpeakersPage({ event }: { event: EventData }) {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-3xl font-['Space_Grotesk'] shadow-inner">
-              {(speaker.name || 'S').charAt(0).toUpperCase()}
+              {getNameInitials(speaker.name, 'S')}
             </div>
           )}
           {isKeynote && (
@@ -223,7 +224,7 @@ export function SpeakersPage({ event }: { event: EventData }) {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-2xl font-['Space_Grotesk']">
-                    {(selectedSpeaker.name || 'S').charAt(0).toUpperCase()}
+                    {getNameInitials(selectedSpeaker.name, 'S')}
                   </div>
                 )}
               </div>

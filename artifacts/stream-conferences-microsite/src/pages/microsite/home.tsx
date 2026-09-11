@@ -4,7 +4,7 @@ import {
   CalendarDays, Clock3, MapPin, Download, Users, ArrowUpRight, ArrowRight, FileText,
   Timer, Award, ChevronLeft, ChevronRight, ChevronsRight, ChevronDown,
   Calendar, Megaphone, FileEdit, ListOrdered, Sparkles, Layers,
-  GraduationCap, Building2, Presentation, ExternalLink, Linkedin, Twitter, Globe
+  GraduationCap, Building2, Presentation, ExternalLink, Linkedin, Twitter, Globe, Check
 } from 'lucide-react';
 import type { EventData } from './layout';
 import {
@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { getNameInitials } from '@/lib/utils';
 
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
 const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
@@ -91,22 +92,6 @@ function HeaderBannerCarousel({ banners, title, location }: { banners: string[];
               alt={`${title} banner ${idx + 1}`}
               className="w-full h-full object-cover"
             />
-            {/* Subtle Gradient Overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
-
-            {/* Top Right Location Caption (Matching screenshot) */}
-            {location && (
-              <div className="absolute top-3 right-4 px-3 py-1 rounded-md bg-black/40 backdrop-blur-sm text-white text-xs md:text-sm font-semibold tracking-wide">
-                {location}
-              </div>
-            )}
-
-            {/* Bottom Left Title Caption (Matching screenshot) */}
-            {title && (
-              <div className="absolute bottom-3 left-4 px-3 py-1 rounded-md bg-black/50 backdrop-blur-sm text-white text-xs md:text-sm font-bold uppercase tracking-wider line-clamp-1 max-w-[80%]">
-                {title}
-              </div>
-            )}
           </div>
         ))}
 
@@ -137,32 +122,33 @@ function HeaderBannerCarousel({ banners, title, location }: { banners: string[];
             </button>
           </>
         )}
-      </div>
 
-      {/* Pagination Dots (Matching screenshot) */}
-      {banners.length > 1 && (
-        <div className="flex items-center gap-2 mt-3">
-          {banners.map((_, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => setCurrent(idx)}
-              className={`rounded-full transition-all duration-300 ${
-                idx === current
-                  ? 'w-3 h-3 bg-[#65a30d]'
-                  : 'w-2.5 h-2.5 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400'
-              }`}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
-          ))}
-        </div>
-      )}
+        {/* Pagination Dots INSIDE Carousel (Matching user request) */}
+        {banners.length > 1 && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20">
+            {banners.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setCurrent(idx)}
+                className={`rounded-full transition-all duration-300 ${
+                  idx === current
+                    ? 'w-3 h-3 bg-[#65a30d]'
+                    : 'w-2.5 h-2.5 bg-white/50 hover:bg-white'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 export function HomePage({ event }: { event: EventData }) {
   const startDate = event.startDate || event.eventDate;
+  const cd = useCountdown(startDate);
   const fees = Array.isArray(event.fees) ? event.fees : [];
   const speakersCount = Array.isArray(event.speakers) ? event.speakers.length : 0;
   const programDays = Array.isArray(event.program) ? event.program.length : 0;
@@ -208,6 +194,17 @@ export function HomePage({ event }: { event: EventData }) {
       href: '/tracks',
     },
     {
+      title: 'Speakers',
+      icon: Users,
+      href: '/speakers',
+      hasNew: true,
+    },
+    {
+      title: 'Venue',
+      icon: MapPin,
+      href: '/venue',
+    },
+    {
       title: 'Fees',
       icon: FileEdit,
       href: '/fees',
@@ -216,11 +213,6 @@ export function HomePage({ event }: { event: EventData }) {
       title: 'Committee',
       icon: Users,
       href: '/organizing-committee',
-    },
-    {
-      title: 'Venue',
-      icon: MapPin,
-      href: '/venue',
     },
     {
       title: 'Brochure',
@@ -233,170 +225,253 @@ export function HomePage({ event }: { event: EventData }) {
 
   return (
     <>
-      {/* Event Banner & Hero Header (Configurable Event Microsite Hero) */}
-      <section className="relative w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))] py-8 md:py-12 border-b border-[hsl(var(--border))]">
-        <div className="container-wide space-y-8">
-          {/* Header Banners Carousel (Dynamic from Backend) */}
-          {headerBanners.length > 0 && (
-            <HeaderBannerCarousel
-              banners={headerBanners}
-              title={event.title}
-              location={event.venue || event.location || ''}
-            />
-          )}
+      {/* Full-Bleed Edge-to-Edge Dynamic Theme Hero Section with Ambient Glow & Grid Lines (Matching Selected Admin Theme) */}
+      <section className="relative w-full hero-slant-bg text-white py-6 md:py-8 border-b border-white/10 overflow-hidden flex flex-col justify-between min-h-[calc(100vh-64px)]">
+        {/* Glowing Grid Lines Overlay Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0f_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0f_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none" />
 
-          {/* Event Content Header Card */}
-          <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 sm:p-10 shadow-xl space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              {/* Type Badge & Cohort */}
+        {/* Ambient Lighting Glow Spots */}
+        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-white/15 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-10 right-10 w-[450px] h-[450px] bg-amber-400/20 rounded-full blur-[130px] pointer-events-none" />
+        <div className="absolute -bottom-20 left-1/3 w-[600px] h-[600px] bg-white/10 rounded-full blur-[140px] pointer-events-none" />
+
+        <div className="container-wide relative z-10 space-y-7 my-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
+            {/* Left Column: Info, Countdown & Action CTAs */}
+            <div className="lg:col-span-7 space-y-4">
+              {/* Type Badge */}
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[hsl(var(--primary)/.15)] text-[hsl(var(--primary))] text-xs font-bold uppercase tracking-wider">
-                  <span className="h-2 w-2 rounded-full bg-[hsl(var(--secondary))] animate-pulse" />
+                <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 text-white text-xs sm:text-sm font-bold uppercase tracking-wider backdrop-blur-md border border-white/30 shadow-md">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                   {event.eventType === 'conference' ? 'Annual Scientific Summit' : 'Live Webinar Series'}
                 </span>
+              </div>
+
+              {/* Main Title & Cohort */}
+              <div className="space-y-2">
+                <h1 className="display text-3xl sm:text-5xl md:text-6xl font-black leading-tight text-white tracking-tight drop-shadow-md">
+                  {event.title}
+                </h1>
                 {event.activeCohort && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] text-xs font-semibold">
-                    {event.activeCohort.isCurrent ? 'Current Cohort' : 'Cohort'} · {event.activeCohort.label || `${event.activeCohort.year} Batch ${event.activeCohort.batchNo}`}
-                  </span>
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 text-white text-xs sm:text-sm font-semibold backdrop-blur-md border border-white/25 shadow-sm">
+                    <span>{event.activeCohort.isCurrent ? 'Current Cohort' : 'Cohort'}</span>
+                    <span>·</span>
+                    <span>{event.activeCohort.label || `${event.activeCohort.year} Batch ${event.activeCohort.batchNo}`}</span>
+                  </div>
                 )}
               </div>
 
-              {/* Countdown Timer */}
-              {(() => {
-                const cd = useCountdown(startDate);
-                if (!cd) return null;
-                return (
-                  <div className="flex items-center gap-3">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                      <Timer size={14} className="text-[hsl(var(--secondary))]" />
-                      {cd.expired ? 'Event Live' : 'Happening In:'}
-                    </span>
-                    {!cd.expired && (
-                      <div className="flex gap-1.5">
-                        {[
-                          { v: cd.days, l: 'D' },
-                          { v: cd.hours, l: 'H' },
-                          { v: cd.mins, l: 'M' },
-                          { v: cd.secs, l: 'S' },
-                        ].map((s) => (
-                          <div key={s.l} className="flex flex-col items-center rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] px-2.5 py-1 min-w-[42px]">
-                            <span className="text-sm font-bold tabular-nums text-[hsl(var(--foreground))] leading-tight">{String(s.v).padStart(2, '0')}</span>
-                            <span className="text-[9px] uppercase font-mono text-[hsl(var(--muted-foreground))]">{s.l}</span>
-                          </div>
-                        ))}
+              {/* Meta Info Line */}
+              <div className="flex flex-wrap items-center gap-3 text-sm sm:text-base md:text-lg font-bold text-white">
+                {formatDateRange(event) && <span>{formatDateRange(event)}</span>}
+                {(event.startTime || event.endTime) && (
+                  <>
+                    <span>·</span>
+                    <span>{event.startTime || '—'} – {event.endTime || '—'}</span>
+                  </>
+                )}
+                {(event.venue || event.location) && (
+                  <>
+                    <span>·</span>
+                    <span>{event.venue || event.location}</span>
+                  </>
+                )}
+              </div>
+
+              {/* Countdown Timer Row */}
+              {cd && !cd.expired && (
+                <div className="space-y-2 pt-1">
+                  <span className="text-xs sm:text-sm font-mono uppercase tracking-wider text-white/90 block font-bold">Conference Starts In</span>
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    {[
+                      { v: cd.days, l: 'D' },
+                      { v: cd.hours, l: 'H' },
+                      { v: cd.mins, l: 'M' },
+                      { v: cd.secs, l: 'S' },
+                    ].map((s) => (
+                      <div key={s.l} className="flex items-baseline gap-1.5 px-4 py-2 rounded-xl bg-black/40 border border-white/30 text-white backdrop-blur-md font-mono shadow-lg">
+                        <span className="text-xl sm:text-2xl md:text-3xl font-extrabold">{s.v}</span>
+                        <span className="text-xs font-bold opacity-80 uppercase">{s.l}</span>
                       </div>
-                    )}
+                    ))}
                   </div>
+                </div>
+              )}
+
+              {/* Action CTAs */}
+              <div className="flex flex-wrap items-center gap-3.5 pt-2">
+                <Link
+                  href="/register"
+                  className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-white text-[hsl(var(--primary))] font-extrabold text-sm sm:text-base uppercase tracking-wider shadow-2xl hover:bg-white/90 hover:scale-105 transition-all transform cursor-pointer border border-white/40"
+                >
+                  <span>REGISTER NOW</span>
+                  <ArrowRight size={18} />
+                </Link>
+                <Link
+                  href="/submit-abstract"
+                  className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-white/15 hover:bg-white/25 text-white font-bold text-sm sm:text-base uppercase tracking-wider backdrop-blur-md border border-white/35 transition-all cursor-pointer shadow-lg"
+                >
+                  <span>SUBMIT ABSTRACT</span>
+                  <ArrowUpRight size={18} />
+                </Link>
+              </div>
+            </div>
+
+            {/* Right Column: Glassmorphism Event Overview Box */}
+            <div className="lg:col-span-5">
+              <div className="rounded-3xl border border-white/30 bg-white/15 backdrop-blur-xl p-5 sm:p-6 text-white space-y-4 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-36 h-36 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+
+                <div className="flex items-center justify-between border-b border-white/20 pb-3 relative z-10">
+                  <span className="text-base font-bold uppercase tracking-wider text-white">Event Overview</span>
+                  <span className="px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-emerald-500/30 text-emerald-200 border border-emerald-400/40 shadow-sm">
+                    Registrations Open
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 relative z-10">
+                  <div className="bg-white/10 rounded-2xl p-3 sm:p-3.5 border border-white/20 shadow-sm flex flex-col justify-center">
+                    <span className="text-xs uppercase tracking-wider text-white/90 block mb-0.5 font-bold">Date</span>
+                    <p className="text-sm sm:text-base font-black text-white leading-snug break-words">{formatDateRange(event) || 'TBA'}</p>
+                  </div>
+                  <div className="bg-white/10 rounded-2xl p-3 sm:p-3.5 border border-white/20 shadow-sm flex flex-col justify-center">
+                    <span className="text-xs uppercase tracking-wider text-white/90 block mb-0.5 font-bold">Location</span>
+                    <p className="text-sm sm:text-base font-black text-white leading-snug break-words capitalize">{event.venue || event.location || 'TBA'}</p>
+                  </div>
+                  <div className="bg-white/10 rounded-2xl p-3 sm:p-3.5 border border-white/20 shadow-sm flex flex-col justify-center">
+                    <span className="text-xs uppercase tracking-wider text-white/90 block mb-0.5 font-bold">Format</span>
+                    <p className="text-sm sm:text-base font-black text-white leading-snug">Hybrid Summit</p>
+                  </div>
+                  <div className="bg-white/10 rounded-2xl p-3 sm:p-3.5 border border-white/20 shadow-sm flex flex-col justify-center">
+                    <span className="text-xs uppercase tracking-wider text-white/90 block mb-0.5 font-bold">Proceedings</span>
+                    <p className="text-sm sm:text-base font-black text-white leading-snug">DOI / ISBN</p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-2 border-t border-white/20 text-sm sm:text-base font-bold text-white relative z-10">
+                  <div className="flex items-center gap-2.5">
+                    <Check size={18} className="text-emerald-400 shrink-0 stroke-[3]" />
+                    <span>Peer-reviewed scientific proceedings</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <Check size={18} className="text-emerald-400 shrink-0 stroke-[3]" />
+                    <span>Accepted abstracts receive permanent DOI assignment</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <Check size={18} className="text-emerald-400 shrink-0 stroke-[3]" />
+                    <span>Global delegation & keynote technical forums</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-white/20 flex items-center justify-between relative z-10">
+                  <Link href="/fees" className="text-sm sm:text-base font-extrabold text-white hover:underline inline-flex items-center gap-1.5">
+                    <span>View Fee Structure</span>
+                    <ChevronsRight size={16} />
+                  </Link>
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/15 border border-white/25">
+                    Peer-Reviewed
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Registrations Ticker Bar & Rectangular Glass Quick Nav Tab Cards */}
+          <div className="pt-6 border-t border-white/20 flex flex-col items-center gap-4">
+            <div className="inline-flex items-center gap-2 px-5 py-1.5 rounded-full bg-emerald-500/25 border border-emerald-400/40 text-emerald-200 text-xs sm:text-sm font-mono font-extrabold tracking-widest uppercase backdrop-blur-md shadow-md">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-ping" />
+              <span>REGISTRATIONS OPEN</span>
+            </div>
+
+            {/* Rectangular Glass Tab Cards Row */}
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-6xl">
+              {quickLinks.map((ql) => {
+                const IconComponent = ql.icon;
+                return (
+                  <Link
+                    key={ql.title}
+                    href={ql.href}
+                    className="relative group w-28 sm:w-32 md:w-36 py-3.5 px-3 flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 backdrop-blur-xl transition-all transform hover:-translate-y-1 cursor-pointer shadow-xl text-center"
+                  >
+                    {ql.hasNew && (
+                      <span className="absolute -top-2 right-2 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-400 text-black uppercase shadow-md border border-amber-300">
+                        NEW
+                      </span>
+                    )}
+                    <IconComponent size={24} className="text-white group-hover:scale-110 transition-transform" />
+                    <span className="text-sm font-extrabold text-white tracking-wide">{ql.title}</span>
+                  </Link>
                 );
-              })()}
-            </div>
-
-            {/* Main Title & Theme */}
-            <div className="space-y-4">
-              <h1 className="display text-3xl sm:text-5xl font-black leading-tight text-[hsl(var(--foreground))]">
-                {event.title}
-              </h1>
-              {(event.theme || event.description) && (
-                <p className="text-base sm:text-lg leading-relaxed text-[hsl(var(--muted-foreground))] max-w-3xl">
-                  {event.theme || event.description}
-                </p>
-              )}
-            </div>
-
-            {/* Event Details Meta Pill Bar */}
-            <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm font-semibold text-[hsl(var(--foreground))] pt-2 border-t border-[hsl(var(--border))]">
-              {formatDateRange(event) && (
-                <span className="inline-flex items-center gap-2 bg-[hsl(var(--muted)/.5)] px-3.5 py-2 rounded-xl border border-[hsl(var(--border))]">
-                  <CalendarDays size={16} className="text-[hsl(var(--secondary))]" />
-                  {formatDateRange(event)}
-                </span>
-              )}
-              {(event.startTime || event.endTime) && (
-                <span className="inline-flex items-center gap-2 bg-[hsl(var(--muted)/.5)] px-3.5 py-2 rounded-xl border border-[hsl(var(--border))]">
-                  <Clock3 size={16} className="text-[hsl(var(--secondary))]" />
-                  {event.startTime || '—'} – {event.endTime || '—'}
-                </span>
-              )}
-              {(event.venue || event.location) && (
-                <span className="inline-flex items-center gap-2 bg-[hsl(var(--muted)/.5)] px-3.5 py-2 rounded-xl border border-[hsl(var(--border))]">
-                  <MapPin size={16} className="text-[hsl(var(--secondary))]" />
-                  {event.venue || event.location}
-                </span>
-              )}
-            </div>
-
-            {/* Action CTAs */}
-            <div className="flex flex-wrap items-center gap-4 pt-2">
-              <Link
-                href="/register"
-                className="btn-main btn-primary px-8 py-3.5 rounded-full font-bold text-xs uppercase tracking-wider"
-              >
-                <span>REGISTER NOW</span>
-                <ArrowRight size={16} />
-              </Link>
-              <Link
-                href="/submit-abstract"
-                className="btn-main btn-quiet px-7 py-3.5 rounded-full font-bold text-xs uppercase tracking-wider border border-[hsl(var(--border))]"
-              >
-                <span>Submit Abstract</span>
-                <ArrowUpRight size={16} />
-              </Link>
+              })}
             </div>
           </div>
         </div>
       </section>
 
 
-      {/* Interactive Banner Carousel, Logo, CTAs & Quick Action Navigation (Matching Reference Design) */}
+      {/* Interactive Banner Carousel, Logo & Action Navigation Section */}
       {(headerBanners.length > 0 || event.logoUrl) && (
-      <section className="container-wide mt-12 md:mt-20 py-10 md:py-14 border-b border-[hsl(var(--border))]">
-        {/* Centered 2-Column Unit with Balanced Margins & Matched Heights */}
-        <div className="max-w-[1440px] w-full mx-auto flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-10">
-          {/* Left Column: Banner Carousel (1500x500 aspect ratio, refined to 1060px width x 353px height) */}
-          <div className="w-full lg:flex-1 max-w-[1060px]">
-            <HeaderBannerCarousel
-              banners={headerBanners}
-              title={event.title}
-              location={event.venue || event.location || ''}
-            />
-          </div>
-
-          {/* Right Column: Logo and Side-by-Side Action Buttons (Height matches banner) */}
-          <div className="flex flex-col items-center justify-center text-center shrink-0">
-            {/* Circular Logo */}
-            {event.logoUrl && (
-              <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-60 md:h-60 rounded-full border-4 border-[#0f4c81]/30 bg-white shadow-xl flex items-center justify-center p-4 overflow-hidden group shrink-0">
-                <img
-                  src={mediaUrl(event.logoUrl)}
-                  alt={event.title}
-                  className="w-full h-full object-contain rounded-full group-hover:scale-105 transition-transform duration-300"
+        <section className="container-wide py-10 md:py-14 border-b border-[hsl(var(--border))]">
+          {/* Centered 2-Column Unit with Balanced Left/Right Spacing */}
+          <div className="max-w-[1440px] w-full mx-auto flex flex-col lg:flex-row items-stretch justify-center gap-6 lg:gap-8">
+            {/* Left Column: Banner Carousel (Aspect 1500:500) */}
+            {headerBanners.length > 0 && (
+              <div className="w-full lg:flex-1 max-w-[1060px] flex flex-col justify-center">
+                <HeaderBannerCarousel
+                  banners={headerBanners}
+                  title={event.title}
+                  location={event.venue || event.location || ''}
                 />
               </div>
             )}
 
-            {/* Quick Action Navigation Buttons - Side by Side */}
-            <div className="flex flex-row items-center justify-center gap-3 w-full mt-5 flex-wrap sm:flex-nowrap">
-              <Link
-                href="/submit-abstract"
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[#0f4c81] hover:bg-[#0c3c66] text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 border-2 border-[#155e75]/40 cursor-pointer whitespace-nowrap"
-              >
-                <ChevronsRight size={18} className="text-[#38bdf8]" />
-                <span>SUBMIT ABSTRACT</span>
-              </Link>
+            {/* Right Column: Glassmorphic Container matching Banner Height */}
+            <div className="w-full lg:w-[380px] shrink-0 rounded-2xl md:rounded-3xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-5 shadow-xl flex flex-col items-center justify-between space-y-4">
+              {/* Header Badge */}
+              <div className="w-full flex items-center justify-center">
+                <span className="px-3.5 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-widest bg-[hsl(var(--primary)/0.12)] text-[hsl(var(--primary))] border border-[hsl(var(--primary)/0.25)] shadow-sm">
+                  Official Event Portal
+                </span>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => createCalendarReminder(event)}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[#262626] hover:bg-black text-white font-medium text-xs shadow hover:shadow-md transition-all cursor-pointer whitespace-nowrap"
-                title="Add to Calendar"
-              >
-                <Calendar size={14} className="text-white/80" />
-                <span>Reminder to Join !!</span>
-              </button>
+              {/* Conference-Specific Circular Logo (No text clipping) */}
+              {event.logoUrl ? (
+                <div className="relative w-40 h-40 sm:w-44 sm:h-44 rounded-full ring-4 ring-[hsl(var(--primary)/0.35)] bg-white shadow-2xl flex items-center justify-center p-4 overflow-hidden group shrink-0 transition-all duration-300 hover:scale-105">
+                  <img
+                    src={mediaUrl(event.logoUrl)}
+                    alt={event.title}
+                    className="w-full h-full object-contain max-h-full"
+                  />
+                </div>
+              ) : (
+                <div className="relative w-40 h-40 sm:w-44 sm:h-44 rounded-full ring-4 ring-[hsl(var(--primary)/0.35)] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] shadow-2xl flex items-center justify-center p-4 shrink-0 text-white text-3xl font-extrabold font-['Space_Grotesk']">
+                  {getNameInitials(event.title, 'SC')}
+                </div>
+              )}
+
+              {/* Action Buttons - Side by Side Below Logo */}
+              <div className="flex flex-row items-center justify-center gap-2.5 w-full flex-wrap sm:flex-nowrap pt-1">
+                <Link
+                  href="/submit-abstract"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 font-extrabold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 border border-white/20 cursor-pointer whitespace-nowrap"
+                >
+                  <ChevronsRight size={16} />
+                  <span>SUBMIT ABSTRACT</span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => createCalendarReminder(event)}
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-slate-800 dark:bg-black hover:bg-slate-900 text-white font-bold text-xs shadow hover:shadow-md transition-all border border-slate-700 cursor-pointer whitespace-nowrap"
+                  title="Add to Calendar"
+                >
+                  <Calendar size={14} className="text-emerald-400" />
+                  <span>Reminder to Join !!</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
       )}
 
       {/* Featured Speakers Section (Before FAQs) */}
@@ -455,7 +530,7 @@ export function HomePage({ event }: { event: EventData }) {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-3xl font-['Space_Grotesk'] shadow-inner">
-                      {(speaker.name || 'S').charAt(0).toUpperCase()}
+                      {getNameInitials(speaker.name, 'S')}
                     </div>
                   )}
                   {speaker.isKeynote && (
@@ -630,7 +705,7 @@ export function HomePage({ event }: { event: EventData }) {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-2xl font-['Space_Grotesk']">
-                    {(selectedSpeaker.name || 'S').charAt(0).toUpperCase()}
+                    {getNameInitials(selectedSpeaker.name, 'S')}
                   </div>
                 )}
               </div>

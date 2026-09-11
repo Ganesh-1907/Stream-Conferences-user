@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { getNameInitials } from '@/lib/utils';
 
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
 const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
@@ -68,7 +69,7 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-3xl font-['Space_Grotesk'] shadow-inner">
-              {(member.name || 'M').charAt(0).toUpperCase()}
+              {getNameInitials(member.name, 'M')}
             </div>
           )}
           {isKey && (
@@ -193,7 +194,7 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-2xl font-['Space_Grotesk']">
-                    {(selectedMember.name || 'M').charAt(0).toUpperCase()}
+                    {getNameInitials(selectedMember.name, 'M')}
                   </div>
                 )}
               </div>
