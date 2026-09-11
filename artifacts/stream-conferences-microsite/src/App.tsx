@@ -577,7 +577,6 @@ function SiteHeader() {
     return window.localStorage.getItem('stream-color-theme') || 'royal-navy';
   });
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
-  const [subnav, setSubnav] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const menuGroups = [
@@ -620,7 +619,6 @@ function SiteHeader() {
 
   useEffect(() => {
     const onScroll = () => {
-      setSubnav(window.scrollY > 500);
       setScrolled(window.scrollY > 60);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -844,14 +842,6 @@ function SiteHeader() {
           </nav>
         </div>}
       </header>
-      {subnav && <div className="sticky top-[74px] z-30 hidden border-b border-[hsl(var(--border))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-md md:block">
-        <div className="container-wide flex h-11 items-center justify-between">
-          <span className="label text-[9px] text-[hsl(var(--primary-foreground)/.65)]">{conferenceCode} · Quick access</span>
-          <div className="flex items-center gap-5 text-[11px] font-bold uppercase tracking-[.12em]">
-            <Link href="/program" data-testid="link-subnav-program">Program</Link><a href="#speakers" data-testid="link-subnav-speakers">Speakers</a><Link href="/venue" data-testid="link-subnav-venue">Venue</Link>
-          </div>
-        </div>
-      </div>}
     </>
   );
 }
@@ -1001,10 +991,27 @@ function GallerySlider() {
   );
 }
 
+const heroImages = [
+  '/hero-1.jpg',
+  '/hero-2.jpg',
+  '/hero-3.jpg',
+  'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1600&q=80',
+];
+
 function Home() {
   const { conferences, webinars, insightsList, mentors, mediaPartners } = useContext(APIContext);
   const [email, setEmail] = useState('');
   const [joined, setJoined] = useState(false);
+  const [heroImgIndex, setHeroImgIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHeroImgIndex((prev) => (prev + 1) % heroImages.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
 
   const displayConferences = useMemo(() => {
     const upcoming = conferences.filter((c: any) => {
@@ -1030,19 +1037,43 @@ function Home() {
     <main>
       {/* Curved S-Wave Hero Section (Matching Reference Design) */}
       <section className="relative w-full min-h-[90vh] lg:min-h-screen overflow-hidden bg-slate-950 text-white flex flex-col justify-center">
-        {/* Right Side Background Image Layer (Full Screen Cover) */}
+        {/* Right Side Background Image Layer (Auto Rotating Carousel) */}
         <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-slate-900">
-          <img
-            src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=2000&q=85"
-            alt="Audience gathered at a conference presentation"
-            className="w-full h-full object-cover object-center filter brightness-[0.92] contrast-[1.05]"
-            onError={(e) => {
-              (e.target as HTMLElement).style.display = 'none';
-            }}
-          />
+          {heroImages.map((srcUrl, i) => (
+            <div
+              key={srcUrl}
+              className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+                i === heroImgIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+              }`}
+            >
+              <img
+                src={srcUrl}
+                alt={`Conference presentation ${i + 1}`}
+                className="w-full h-full object-cover object-center filter brightness-[0.92] contrast-[1.05]"
+                onError={() => {
+                  setHeroImgIndex((prev) => (prev + 1) % heroImages.length);
+                }}
+              />
+            </div>
+          ))}
           {/* Edge blend gradient for small screens */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/80 to-transparent lg:hidden" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+          <div className="absolute inset-0 z-20 bg-gradient-to-r from-slate-950/90 via-slate-950/80 to-transparent lg:hidden" />
+          <div className="absolute inset-0 z-20 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+
+          {/* Slide Indicators */}
+          <div className="hidden lg:flex absolute bottom-8 right-8 z-30 items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/20">
+            {heroImages.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setHeroImgIndex(idx)}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  idx === heroImgIndex ? 'w-6 bg-[hsl(var(--accent))]' : 'w-2 bg-white/40 hover:bg-white/70'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Dual Curved Wave Dividers Overlay (Matching Reference Image) */}
@@ -1091,16 +1122,11 @@ function Home() {
         {/* Left Side Content Container */}
         <div className="relative z-20 w-full lg:w-[58%] min-h-[90vh] lg:min-h-screen px-6 sm:px-12 lg:px-16 pt-28 sm:pt-32 lg:pt-36 pb-12 lg:pb-16 flex flex-col justify-between">
           <div className="my-auto max-w-2xl">
-            {/* Badges */}
+            {/* Website Badge */}
             <div className="flex flex-wrap items-center gap-2 mb-6">
-              <span className="px-3.5 py-1.5 rounded-full border border-white/30 bg-white/15 backdrop-blur-md text-xs font-mono font-bold uppercase tracking-widest text-white shadow-sm">
-                Annual Scientific Summit
-              </span>
-              <span className="px-2.5 py-1 rounded-full border border-white/20 bg-black/20 text-xs font-mono font-semibold text-white/80">
-                SC / 27
-              </span>
-              <span className="px-3 py-1 rounded-full border border-white/20 bg-black/20 text-xs font-mono font-medium text-white/75">
-                An event by Stream Conferences
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/30 bg-white/15 backdrop-blur-md text-xs font-bold uppercase tracking-wider text-white shadow-sm">
+                <Globe2 size={13} className="text-[hsl(var(--accent))]" />
+                International Scientific & Medical Summits
               </span>
             </div>
 
