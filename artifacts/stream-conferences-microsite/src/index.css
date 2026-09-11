@@ -3,6 +3,11 @@
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
 
+/* Use one typography family consistently across the main site and microsites. */
+*, *::before, *::after {
+  font-family: 'Times New Roman', Times, serif !important;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
