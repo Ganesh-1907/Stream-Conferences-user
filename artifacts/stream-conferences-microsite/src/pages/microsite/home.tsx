@@ -193,7 +193,15 @@ export function HomePage({ event }: { event: EventData }) {
     return list;
   }, [event.headerBanners, event.bannerUrl]);
 
-  const quickLinks = [
+  interface QuickLinkItem {
+    title: string;
+    icon: any;
+    href: string;
+    isExternal?: boolean;
+    hasNew?: boolean;
+  }
+
+  const quickLinks: QuickLinkItem[] = [
     {
       title: 'Tracks',
       icon: Layers,
@@ -221,183 +229,178 @@ export function HomePage({ event }: { event: EventData }) {
     },
   ];
 
+  const heroImage = headerBanners[0] || (event.bannerUrl && !event.bannerUrl.endsWith('.pdf') ? mediaUrl(event.bannerUrl) : '') || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop';
+
   return (
     <>
-      {/* Hero */}
-      <section className="relative overflow-hidden hero-grad text-[hsl(var(--primary-foreground))] min-h-[calc(100vh-64px)] flex flex-col justify-between">
-        <div className="absolute inset-0 hero-grid-b z-[1]" />
-        <div className="absolute inset-0 hero-vignette z-[2]" />
-        <div className="relative z-10 container-wide flex-1 flex flex-col justify-between pt-6 pb-6 md:pt-9 md:pb-7">
-          <div className="grid gap-8 lg:grid-cols-[1.25fr_1fr] lg:items-center my-auto">
-            <div className="min-w-0 max-w-2xl lg:max-w-3xl">
-              <span className="badge-pill">
-                <span className="h-1.5 w-1.5 rounded-full bg-white/70 animate-pulse" />
-                {event.eventType === 'conference' ? 'International Conference' : 'Live Webinar'}
+      {/* Diagonal Split Hero Section (Build Your Vision Reference Design) */}
+      <section className="relative w-full overflow-hidden bg-slate-950 dark:bg-[hsl(222,47%,5%)] text-white min-h-[calc(100vh-64px)] flex flex-col justify-center">
+        {/* Right Side Photo Layer */}
+        <div className="absolute inset-y-0 right-0 w-full lg:w-[65%] z-0 overflow-hidden">
+          <img
+            src={heroImage}
+            alt={event.title}
+            className="w-full h-full object-cover object-center filter brightness-[0.92] contrast-[1.05]"
+          />
+          {/* Subtle gradient vignette to blend edges */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-slate-950/40 lg:hidden" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+
+          {/* Floating Keynote / Field Note Card on the Right Image */}
+          <div className="hidden lg:flex absolute right-12 bottom-16 z-20 max-w-sm rounded-3xl border border-white/20 bg-slate-900/70 backdrop-blur-xl p-6 shadow-2xl flex-col gap-3 transform hover:scale-[1.02] transition-transform">
+            <div className="flex items-center justify-between">
+              <span className="px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[10px] font-mono uppercase tracking-widest text-emerald-300 font-bold">
+                FIELD NOTE / 001
               </span>
-              <h1 className="mt-5 max-w-xl lg:max-w-2xl xl:max-w-3xl font-['Space_Grotesk'] text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.08] tracking-tight text-white">
-                {event.title}
-              </h1>
-              {event.activeCohort && (
-                <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80 backdrop-blur">
-                  <span className="h-1.5 w-1.5 rounded-full bg-white/70 animate-pulse" />
-                  {event.activeCohort.isCurrent ? 'Current Cohort' : 'Cohort'} · {event.activeCohort.label || `${event.activeCohort.year} Batch ${event.activeCohort.batchNo}`}
-                </div>
-              )}
-              <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-base text-white/85">
-                {formatDateRange(event) && (
-                  <span className="inline-flex items-center gap-2"><CalendarDays size={16} className="text-white/70" />{formatDateRange(event)}</span>
-                )}
-                {(event.startTime || event.endTime) && (
-                  <span className="inline-flex items-center gap-2"><Clock3 size={16} className="text-white/70" />{event.startTime || '—'} – {event.endTime || '—'}</span>
-                )}
-                {(event.venue || event.location) && (
-                  <span className="inline-flex items-center gap-2"><MapPin size={16} className="text-white/70" />{event.venue || event.location}</span>
-                )}
-                {event.speaker && (
-                  <span className="inline-flex items-center gap-2"><Users size={16} className="text-white/70" />Speaker: {event.speaker}</span>
-                )}
-              </div>
-              {event.theme && (
-                <p className="mt-6 max-w-2xl text-base leading-7 text-white/75 line-clamp-3">{event.theme}</p>
-              )}
-              {(() => {
-                const cd = useCountdown(startDate);
-                if (!cd) return null;
-                return (
-                  <div className="mt-8 flex flex-wrap items-center gap-5">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-white/60"><Timer size={15} />{cd.expired ? 'Event is live!' : 'Happening in'}</span>
-                    {!cd.expired && (
-                      <div className="flex gap-3">
-                        {[
-                          { v: cd.days, l: 'Days' },
-                          { v: cd.hours, l: 'Hrs' },
-                          { v: cd.mins, l: 'Min' },
-                          { v: cd.secs, l: 'Sec' },
-                        ].map((s) => (
-                          <div key={s.l} className="flex flex-col items-center rounded-xl border border-white/15 bg-white/5 backdrop-blur px-4 py-2 min-w-[60px]">
-                            <span className="text-2xl font-bold tabular-nums text-white">{String(s.v).padStart(2, '0')}</span>
-                            <span className="text-[10px] uppercase tracking-wider text-white/50">{s.l}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-              <div className="mt-9 flex flex-wrap gap-4">
-                <Link href="/register" className="btn-main btn-grad rounded-xl px-7 py-4 text-sm">
-                  Register Now <ArrowUpRight size={17} />
-                </Link>
-                <Link href="/submit-abstract" className="btn-main rounded-xl border border-white/30 bg-white/5 px-7 py-4 text-sm text-white hover:bg-white/10">
-                  Submit Abstract <FileText size={17} />
-                </Link>
-                <Link href="/brochure" className="btn-main rounded-xl border border-white/30 bg-white/5 px-7 py-4 text-sm text-white hover:bg-white/10">
-                  <Download size={17} /> Brochure
-                </Link>
-              </div>
+              <Sparkles size={16} className="text-emerald-400" />
+            </div>
+            <p className="text-sm font-semibold text-white/95 leading-snug italic">
+              "Research becomes real when disciplines stop working in parallel."
+            </p>
+            <div className="flex items-center justify-between text-[11px] text-white/70 font-mono pt-2 border-t border-white/10">
+              <span>{event.activeCohort?.label || 'ICMLHS 2027'}</span>
+              <span>{event.venue || event.location || 'Boston / USA'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Left Side Slanted Diagonal Container */}
+        <div className="relative z-10 w-full lg:w-[62%] min-h-[calc(100vh-64px)] clip-diagonal-slant hero-slant-bg px-6 sm:px-12 lg:px-16 py-10 lg:py-16 flex flex-col justify-between shadow-2xl">
+          <div className="my-auto max-w-2xl">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/30 bg-white/15 backdrop-blur-md text-xs font-mono font-bold uppercase tracking-widest text-white shadow-sm mb-6">
+              <span className="h-2 w-2 rounded-full bg-emerald-300 animate-pulse" />
+              {event.eventType === 'conference' ? 'Annual Scientific Summit' : 'Live Webinar Series'}
             </div>
 
-            <div className="hidden lg:block">
-              <div className="w-full rounded-3xl border border-white/15 bg-white/5 backdrop-blur-xl p-7 shadow-2xl">
-                <div className="flex items-center justify-between pb-4 border-b border-white/10">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-2 w-2 rounded-full bg-white/70 animate-pulse" />
-                    <p className="font-mono text-[11px] uppercase tracking-[.2em] text-white/70 font-semibold">Event at a glance</p>
-                  </div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white/80">
-                    <Sparkles size={11} /> {event.eventType === 'conference' ? 'CPD Accredited' : 'Live Interactive'}
-                  </span>
-                </div>
+            {/* Main Headline */}
+            <h1 className="font-['Space_Grotesk'] text-3xl sm:text-5xl lg:text-6xl font-black uppercase leading-[1.05] tracking-tight text-white drop-shadow-md">
+              {event.title}
+            </h1>
 
-                <div className="mt-5 grid grid-cols-2 gap-3.5">
-                  {startDate && (
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
-                      <p className="flex items-center gap-1.5 text-[11px] font-medium text-white/60">
-                        <CalendarDays size={13} className="text-white/70" /> Date
-                      </p>
-                      <p className="mt-1 font-['Space_Grotesk'] text-base font-bold text-white leading-snug">
-                        {new Date(startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </p>
-                    </div>
-                  )}
-                  {(event.venue || event.location) && (
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
-                      <p className="flex items-center gap-1.5 text-[11px] font-medium text-white/60">
-                        <MapPin size={13} className="text-white/70" /> Venue
-                      </p>
-                      <p className="mt-1 font-['Space_Grotesk'] text-base font-bold text-white leading-snug line-clamp-2">
-                        {event.venue || event.location}
-                      </p>
-                    </div>
-                  )}
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
-                    <p className="flex items-center gap-1.5 text-[11px] font-medium text-white/60">
-                      <Clock3 size={13} className="text-white/70" /> Timing
-                    </p>
-                    <p className="mt-1 font-['Space_Grotesk'] text-base font-bold text-white leading-snug">
-                      {event.startTime && event.endTime ? `${event.startTime} – ${event.endTime}` : (event.startTime || 'Full Day Sessions')}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
-                    <p className="flex items-center gap-1.5 text-[11px] font-medium text-white/60">
-                      <Layers size={13} className="text-white/70" /> {event.eventType === 'conference' ? 'Tracks' : 'Format'}
-                    </p>
-                    <p className="mt-1 font-['Space_Grotesk'] text-base font-bold text-white leading-snug">
-                      {event.tracks && event.tracks.length > 0
-                        ? `${event.tracks.length} Scientific Tracks`
-                        : (programDays ? `${programDays} Days Program` : 'Multi-Track Sessions')}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Bottom Card Footer */}
-                <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 text-xs text-white/80 font-medium">
-                    <Award size={14} className="text-white/70 shrink-0" />
-                    <span>{fees.length > 0 ? `${fees.length} Registration Tiers Open` : 'Early Bird Active'}</span>
-                  </div>
-                  <Link
-                    href="/fees"
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-white/90 hover:text-white underline underline-offset-4 decoration-white/40 hover:decoration-white transition-colors"
-                  >
-                    View Pricing <ArrowUpRight size={13} />
-                  </Link>
-                </div>
+            {/* Event Cohort Tag */}
+            {event.activeCohort && (
+              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-3.5 py-1.5 text-xs font-semibold text-white/90 backdrop-blur">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse" />
+                {event.activeCohort.isCurrent ? 'Current Cohort' : 'Cohort'} · {event.activeCohort.label || `${event.activeCohort.year} Batch ${event.activeCohort.batchNo}`}
               </div>
+            )}
+
+            {/* Subtitle / Theme Description */}
+            <p className="mt-5 text-sm sm:text-base lg:text-lg leading-relaxed text-white/90 font-medium max-w-xl">
+              {event.theme || event.description || 'We specialize in advancing scientific discoveries and creating high-impact global conferences.'}
+            </p>
+
+            {/* Meta Row: Date, Timing, Location */}
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs sm:text-sm font-semibold text-white/95">
+              {formatDateRange(event) && (
+                <span className="inline-flex items-center gap-2 bg-black/20 px-3 py-1.5 rounded-lg border border-white/15">
+                  <CalendarDays size={16} className="text-emerald-300" />
+                  {formatDateRange(event)}
+                </span>
+              )}
+              {(event.startTime || event.endTime) && (
+                <span className="inline-flex items-center gap-2 bg-black/20 px-3 py-1.5 rounded-lg border border-white/15">
+                  <Clock3 size={16} className="text-emerald-300" />
+                  {event.startTime || '—'} – {event.endTime || '—'}
+                </span>
+              )}
+              {(event.venue || event.location) && (
+                <span className="inline-flex items-center gap-2 bg-black/20 px-3 py-1.5 rounded-lg border border-white/15">
+                  <MapPin size={16} className="text-emerald-300" />
+                  {event.venue || event.location}
+                </span>
+              )}
+            </div>
+
+            {/* Countdown Timer */}
+            {(() => {
+              const cd = useCountdown(startDate);
+              if (!cd) return null;
+              return (
+                <div className="mt-6 flex flex-wrap items-center gap-4">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-widest text-white/80">
+                    <Timer size={14} className="text-emerald-300" />
+                    {cd.expired ? 'Event is Live!' : 'Happening In:'}
+                  </span>
+                  {!cd.expired && (
+                    <div className="flex gap-2">
+                      {[
+                        { v: cd.days, l: 'Days' },
+                        { v: cd.hours, l: 'Hrs' },
+                        { v: cd.mins, l: 'Mins' },
+                        { v: cd.secs, l: 'Secs' },
+                      ].map((s) => (
+                        <div key={s.l} className="flex flex-col items-center rounded-xl border border-white/20 bg-black/25 backdrop-blur px-3 py-1.5 min-w-[52px]">
+                          <span className="text-lg font-bold tabular-nums text-white leading-tight">{String(s.v).padStart(2, '0')}</span>
+                          <span className="text-[9px] uppercase font-mono tracking-wider text-white/70">{s.l}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Action Buttons (Matching Build Your Vision reference style) */}
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-slate-950 hover:bg-black text-white font-extrabold text-xs uppercase tracking-wider shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-0.5 border border-white/20 cursor-pointer"
+              >
+                <span>REGISTER NOW</span>
+                <ArrowRight size={16} className="text-emerald-400" />
+              </Link>
+              <Link
+                href="/submit-abstract"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs uppercase tracking-wider backdrop-blur-md transition-all cursor-pointer border border-white/25"
+              >
+                <span>Submit Abstract</span>
+                <ArrowUpRight size={16} />
+              </Link>
+              <Link
+                href="/brochure"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-transparent hover:bg-white/10 text-white font-semibold text-xs transition-all cursor-pointer"
+              >
+                <Download size={15} />
+                <span>Brochure</span>
+              </Link>
             </div>
           </div>
 
-          {/* Quick Links Section (Integrated into Hero) */}
-          <div className="mt-7 pt-5 border-t border-white/12 flex flex-col items-center">
-            <div className="mb-4">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-white/90 backdrop-blur-md shadow-sm">
-                <span className="h-1.5 w-1.5 rounded-full bg-white/70 animate-pulse" />
-                Quick Links
-              </span>
+          {/* Bottom Slanted Quick Stats Counter Grid (Build Your Vision Reference Design) */}
+          <div className="mt-8 pt-6 border-t border-white/20 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl">
+            <div>
+              <p className="font-['Space_Grotesk'] text-2xl sm:text-3xl font-black text-white leading-none">
+                {speakersCount > 0 ? `${speakersCount}+` : '20+'}
+              </p>
+              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-white/80 mt-1">
+                KEYNOTE SPEAKERS
+              </p>
             </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 w-full max-w-5xl">
-              {quickLinks.map((item, idx) => (
-                <Link
-                  key={idx}
-                  href={item.href}
-                  target={item.isExternal ? '_blank' : undefined}
-                  rel={item.isExternal ? 'noreferrer' : undefined}
-                  className="relative flex flex-col items-center justify-center text-center p-3.5 sm:p-4 rounded-2xl text-white bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 hover:border-white/40 backdrop-blur-xl shadow-lg transition-all duration-200 transform hover:-translate-y-1 group min-h-[100px] cursor-pointer"
-                >
-                  {item.hasNew && (
-                    <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8.5px] font-bold uppercase tracking-wider rounded-full shadow-sm">
-                      New
-                    </span>
-                  )}
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white/80 group-hover:bg-white/20 group-hover:text-white group-hover:scale-110 transition-all duration-200 mb-2">
-                    <item.icon size={20} />
-                  </div>
-                  <span className="text-xs font-semibold leading-tight line-clamp-2 text-white/90 group-hover:text-white transition-colors">
-                    {item.title}
-                  </span>
-                </Link>
-              ))}
+            <div>
+              <p className="font-['Space_Grotesk'] text-2xl sm:text-3xl font-black text-white leading-none">
+                {event.tracks?.length ? `${event.tracks.length}+` : '15+'}
+              </p>
+              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-white/80 mt-1">
+                SCIENTIFIC TRACKS
+              </p>
+            </div>
+            <div>
+              <p className="font-['Space_Grotesk'] text-2xl sm:text-3xl font-black text-white leading-none">
+                {programDays ? `${programDays * 10}+` : '30+'}
+              </p>
+              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-white/80 mt-1">
+                LIVE SESSIONS
+              </p>
+            </div>
+            <div>
+              <p className="font-['Space_Grotesk'] text-2xl sm:text-3xl font-black text-white leading-none">
+                {fees.length ? `${fees.length}+` : '15+'}
+              </p>
+              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-white/80 mt-1">
+                REGISTRATION TIERS
+              </p>
             </div>
           </div>
         </div>

@@ -561,6 +561,7 @@ function APIProvider({ children }: { children: ReactNode }) {
 function SiteHeader() {
   const [location] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [dark, setDark] = useState(() => typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
   const colorThemes = [
     { id: 'conference-blue', label: 'Conference Blue', swatch: '#2563a8', primary: '213 63% 40%', secondary: '199 89% 48%', accent: '201 96% 40%' },
@@ -618,7 +619,10 @@ function SiteHeader() {
   ];
 
   useEffect(() => {
-    const onScroll = () => setSubnav(window.scrollY > 500);
+    const onScroll = () => {
+      setSubnav(window.scrollY > 500);
+      setScrolled(window.scrollY > 60);
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -653,23 +657,40 @@ function SiteHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[hsl(var(--border)/.8)] bg-[hsl(var(--background)/.92)] backdrop-blur-xl">
-        <div className="container-wide flex h-[74px] items-center justify-between gap-6">
+      <header className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ${
+        scrolled
+          ? 'bg-slate-950/90 backdrop-blur-xl border-b border-white/10 shadow-2xl py-2.5'
+          : 'bg-transparent border-none py-4'
+      }`}>
+        <div className="container-wide flex h-[74px] items-center justify-between gap-4">
+          {/* Brand / Logo */}
           <Link href="/" className="group flex shrink-0 items-center gap-3" data-testid="link-home-logo">
-            <img src="/logo.jpg" className="h-10 w-10 rounded-[11px] object-cover shadow-lg shadow-[hsl(var(--primary)/.16)]" alt="SC" />
-            <span className="leading-tight">
-              <span className="display block text-[15px] font-bold tracking-[-.02em]">Stream<span className="text-[hsl(var(--secondary))]">Conferences</span></span>
-              <span className="label block mt-1 text-[9px] text-[hsl(var(--muted-foreground))]">An event by Stream Conferences</span>
+            <img src="/logo.jpg" className="h-10 w-10 rounded-[12px] object-cover shadow-lg border border-white/30" alt="SC" />
+            <span className="display block text-[16px] font-bold tracking-[-.02em] text-white leading-none">
+              Stream<span className="text-[hsl(var(--accent))]">Conferences</span>
             </span>
           </Link>
-          <nav className="hidden items-center gap-6 lg:flex" aria-label="Primary">
-            <Link href="/" className={`text-[13.5px] font-semibold transition-colors hover:text-[hsl(var(--secondary))] ${location === '/' ? 'text-[hsl(var(--secondary))]' : ''}`} data-testid="link-nav-home">Home</Link>
+
+          {/* Center Floating Pill Menu (Matching Reference Image) */}
+          <nav className="hidden lg:flex items-center gap-1.5 bg-white/95 dark:bg-slate-900/90 backdrop-blur-xl px-3 py-1.5 rounded-full shadow-2xl border border-white/40 text-slate-800 dark:text-white" aria-label="Primary">
+            <Link
+              href="/"
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+                location === '/'
+                  ? 'bg-[hsl(var(--primary))] text-white shadow-sm'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-[hsl(var(--primary))]'
+              }`}
+              data-testid="link-nav-home"
+            >
+              Home
+            </Link>
             {menuGroups.map((group) => {
               const isOpen = openDropdown === group.id;
+              const isGroupActive = isOpen || group.items.some(([href]) => location === href);
               return (
                 <div
                   key={group.id}
-                  className="relative py-4"
+                  className="relative"
                   onMouseEnter={() => setOpenDropdown(group.id)}
                   onMouseLeave={() => setOpenDropdown(null)}
                 >
@@ -679,12 +700,16 @@ function SiteHeader() {
                       e.stopPropagation();
                       setOpenDropdown(isOpen ? null : group.id);
                     }}
-                    className={`flex items-center gap-1 text-[13.5px] font-semibold transition-colors hover:text-[hsl(var(--secondary))] ${isOpen || group.items.some(([href]) => location === href) ? 'text-[hsl(var(--secondary))]' : ''}`}
+                    className={`flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                      isGroupActive
+                        ? 'bg-[hsl(var(--primary)/0.15)] text-[hsl(var(--primary))] font-bold'
+                        : 'text-slate-700 dark:text-slate-200 hover:text-[hsl(var(--primary))]'
+                    }`}
                     aria-expanded={isOpen}
                     data-testid={`button-nav-group-${group.id}`}
                   >
-                    {group.label}
-                    <ChevronDown size={14} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                    <span>{group.label}</span>
+                    <ChevronDown size={13} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {isOpen && (
                     <div
@@ -696,7 +721,7 @@ function SiteHeader() {
                       data-testid={`dropdown-nav-group-${group.id}`}
                     >
                       <div
-                        className={`grid gap-1.5 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 shadow-2xl shadow-[hsl(var(--primary)/.13)] ${
+                        className={`grid gap-1.5 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 shadow-2xl ${
                           group.id === 'conference-info' ? 'grid-cols-1' :
                           group.id === 'media-support' ? 'grid-cols-2' :
                           'grid-cols-1'
@@ -728,6 +753,8 @@ function SiteHeader() {
               );
             })}
           </nav>
+
+          {/* Right Header Action Buttons */}
           <div className="flex items-center gap-2">
             <div className="relative">
               <button
@@ -736,12 +763,12 @@ function SiteHeader() {
                   event.stopPropagation();
                   setColorPickerOpen((value) => !value);
                 }}
-                className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]"
+                className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white backdrop-blur transition-all"
                 aria-label="Choose color theme"
                 aria-expanded={colorPickerOpen}
                 data-testid="button-color-theme"
               >
-                <Palette size={17} />
+                <Palette size={16} />
               </button>
               {colorPickerOpen && (
                 <div
@@ -769,8 +796,33 @@ function SiteHeader() {
                 </div>
               )}
             </div>
-            <button type="button" onClick={toggleTheme} className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]" aria-label={dark ? 'Use light theme' : 'Use dark theme'} data-testid="button-theme-toggle">{dark ? <Sun size={17} /> : <Moon size={17} />}</button>
-            <button type="button" onClick={() => setMenuOpen((value) => !value)} className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] lg:hidden" aria-label={menuOpen ? 'Close menu' : 'Open menu'} data-testid="button-mobile-menu">{menuOpen ? <X size={19} /> : <Menu size={19} />}</button>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white backdrop-blur transition-all"
+              aria-label={dark ? 'Use light theme' : 'Use dark theme'}
+              data-testid="button-theme-toggle"
+            >
+              {dark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+
+            {/* Primary Action Button (Matching Build Your Vision "Start Project" style) */}
+            <Link
+              href="/conferences"
+              className="hidden sm:inline-flex items-center justify-center px-5 py-2 rounded-full bg-[hsl(var(--primary))] hover:brightness-110 text-white font-bold text-xs shadow-lg transition-transform hover:-translate-y-0.5 cursor-pointer whitespace-nowrap"
+            >
+              Explore Events
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => setMenuOpen((value) => !value)}
+              className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-white/10 text-white lg:hidden"
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              data-testid="button-mobile-menu"
+            >
+              {menuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
           </div>
         </div>
         {menuOpen && <div className="border-t border-[hsl(var(--border))] bg-[hsl(var(--background))] p-4 lg:hidden max-h-[80vh] overflow-y-auto">
@@ -876,20 +928,20 @@ function TestimonialCarousel() {
   const [active, setActive] = useState(0);
   const testimonial = testimonials[active];
   const move = (direction: number) => setActive((current) => (current + direction + testimonials.length) % testimonials.length);
-  return <section className="section-pad bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]" aria-label="Delegate testimonials">
+  return <section className="section-pad bg-[hsl(var(--card))] text-[hsl(var(--foreground))] border-y border-[hsl(var(--border))]" aria-label="Delegate testimonials">
     <div className="container-wide grid gap-10 lg:grid-cols-[.65fr_1.35fr] lg:items-end">
-      <div><p className="label text-[hsl(var(--accent))]">From the delegate community</p><h2 className="display mt-5 max-w-md text-4xl font-bold leading-[1.03] tracking-[-.05em] md:text-6xl">A room people remember.</h2><p className="mt-6 max-w-md text-base leading-7 text-[hsl(var(--primary-foreground)/.65)]">The conference experience is designed to stay useful long after the final session.</p></div>
-      <div className="relative rounded-[22px] border border-[hsl(var(--primary-foreground)/.18)] bg-[hsl(var(--primary-foreground)/.06)] p-7 md:p-10">
-        <span className="display text-6xl leading-none text-[hsl(var(--accent))]">“</span>
-        <blockquote className="display mt-3 max-w-3xl text-2xl font-semibold leading-tight tracking-[-.03em] md:text-4xl">“{testimonial.quote}”</blockquote>
-        <div className="mt-8 flex flex-col gap-5 border-t border-[hsl(var(--primary-foreground)/.15)] pt-5 sm:flex-row sm:items-end sm:justify-between">
-          <div><p className="font-bold">{testimonial.name}</p><p className="mt-1 text-sm text-[hsl(var(--primary-foreground)/.62)]">{testimonial.role}</p><p className="mt-1 label text-[9px] text-[hsl(var(--accent))]">{testimonial.location}</p></div>
+      <div><p className="label text-[hsl(var(--secondary))]">From the delegate community</p><h2 className="display mt-5 max-w-md text-4xl font-bold leading-[1.03] tracking-[-.05em] md:text-6xl text-[hsl(var(--foreground))]">A room people remember.</h2><p className="mt-6 max-w-md text-base leading-7 text-[hsl(var(--muted-foreground))]">The conference experience is designed to stay useful long after the final session.</p></div>
+      <div className="relative rounded-[22px] border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.35)] p-7 md:p-10 shadow-lg">
+        <span className="display text-6xl leading-none text-[hsl(var(--secondary))]">“</span>
+        <blockquote className="display mt-3 max-w-3xl text-2xl font-semibold leading-tight tracking-[-.03em] md:text-4xl text-[hsl(var(--foreground))]">“{testimonial.quote}”</blockquote>
+        <div className="mt-8 flex flex-col gap-5 border-t border-[hsl(var(--border))] pt-5 sm:flex-row sm:items-end sm:justify-between">
+          <div><p className="font-bold text-[hsl(var(--foreground))]">{testimonial.name}</p><p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{testimonial.role}</p><p className="mt-1 label text-[9px] text-[hsl(var(--secondary))]">{testimonial.location}</p></div>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => move(-1)} className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--primary-foreground)/.28)] hover:border-[hsl(var(--accent))]" aria-label="Previous testimonial" data-testid="button-testimonial-previous"><ChevronLeft size={17} /></button>
-            <button type="button" onClick={() => move(1)} className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--primary-foreground)/.28)] hover:border-[hsl(var(--accent))]" aria-label="Next testimonial" data-testid="button-testimonial-next"><ChevronRight size={17} /></button>
+            <button type="button" onClick={() => move(-1)} className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] text-[hsl(var(--foreground))] hover:text-[hsl(var(--secondary))] transition-colors" aria-label="Previous testimonial" data-testid="button-testimonial-previous"><ChevronLeft size={17} /></button>
+            <button type="button" onClick={() => move(1)} className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] text-[hsl(var(--foreground))] hover:text-[hsl(var(--secondary))] transition-colors" aria-label="Next testimonial" data-testid="button-testimonial-next"><ChevronRight size={17} /></button>
           </div>
         </div>
-        <div className="mt-6 flex gap-2" role="tablist" aria-label="Choose testimonial">{testimonials.map((item, index) => <button key={item.name} type="button" onClick={() => setActive(index)} className={`h-1.5 rounded-full transition-all ${index === active ? 'w-10 bg-[hsl(var(--accent))]' : 'w-5 bg-[hsl(var(--primary-foreground)/.3)]'}`} aria-label={`Show testimonial ${index + 1}`} aria-selected={index === active} role="tab" data-testid={`button-testimonial-dot-${index}`} />)}</div>
+        <div className="mt-6 flex gap-2" role="tablist" aria-label="Choose testimonial">{testimonials.map((item, index) => <button key={item.name} type="button" onClick={() => setActive(index)} className={`h-1.5 rounded-full transition-all ${index === active ? 'w-10 bg-[hsl(var(--secondary))]' : 'w-5 bg-[hsl(var(--muted-foreground)/.3)]'}`} aria-label={`Show testimonial ${index + 1}`} aria-selected={index === active} role="tab" data-testid={`button-testimonial-dot-${index}`} />)}</div>
       </div>
     </div>
   </section>;
@@ -904,9 +956,9 @@ function GallerySlider() {
   }, []);
 
   return (
-    <section className="section-pad border-y border-[hsl(var(--border))] bg-[hsl(var(--muted)/.2)]" aria-label="Inside the exchange">
+    <section className="py-12 border-y border-[hsl(var(--border))] bg-[hsl(var(--muted)/.2)]" aria-label="Inside the exchange">
       <div className="container-wide">
-        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end mb-10">
+        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end mb-8">
           <SectionTitle 
             eyebrow="Inside the exchange" 
             title="Ideas are better in the room." 
@@ -916,27 +968,27 @@ function GallerySlider() {
             View full gallery <ArrowRight size={16} />
           </Link>
         </div>
-        <div className="reveal relative overflow-hidden rounded-[22px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 shadow-xl">
+        <div className="reveal relative max-w-4xl mx-auto overflow-hidden rounded-[20px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-2 shadow-xl">
           <div 
-            className="relative aspect-[16/9] md:aspect-[21/9] lg:aspect-[3/1] w-full overflow-hidden rounded-[16px] transition-all duration-700 ease-in-out"
+            className="relative aspect-[16/9] md:aspect-[2.5/1] lg:aspect-[3.2/1] max-h-[360px] w-full overflow-hidden rounded-[14px] transition-all duration-700 ease-in-out"
             style={{ 
               backgroundImage: `linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.3) 60%, rgba(15, 23, 42, 0.1) 100%), url(${galleryImages[active]})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center'
             }}
           >
-            <div className="absolute inset-x-6 bottom-6 flex flex-col justify-end text-white">
-              <span className="label text-[hsl(var(--accent))] text-[10px] mb-2">0{active + 1} / 0{galleryItems.length}</span>
-              <h3 className="display text-2xl font-bold leading-tight md:text-3xl text-white">{galleryItems[active][0]}</h3>
-              <p className="mt-2 text-sm text-slate-200 max-w-md">{galleryItems[active][1]}</p>
+            <div className="absolute inset-x-5 bottom-5 flex flex-col justify-end text-white">
+              <span className="label text-[hsl(var(--accent))] text-[9px] mb-1.5">0{active + 1} / 0{galleryItems.length}</span>
+              <h3 className="display text-xl md:text-2xl font-bold leading-tight text-white">{galleryItems[active][0]}</h3>
+              <p className="mt-1 text-xs md:text-sm text-slate-200 max-w-md">{galleryItems[active][1]}</p>
             </div>
-            <div className="absolute right-6 top-6 flex gap-2">
+            <div className="absolute right-5 top-5 flex gap-1.5">
               {galleryItems.map((_, i) => (
                 <button 
                   key={i} 
                   type="button"
                   onClick={() => setActive(i)} 
-                  className={`h-2 rounded-full transition-all duration-300 ${active === i ? 'w-8 bg-[hsl(var(--accent))]' : 'w-2 bg-white/40 hover:bg-white/60'}`}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${active === i ? 'w-6 bg-[hsl(var(--accent))]' : 'w-1.5 bg-white/40 hover:bg-white/60'}`}
                   aria-label={`Show slide ${i + 1}`}
                   data-testid={`button-slider-dot-${i}`}
                 />
@@ -950,7 +1002,7 @@ function GallerySlider() {
 }
 
 function Home() {
-  const { conferences, webinars, insightsList, mentors } = useContext(APIContext);
+  const { conferences, webinars, insightsList, mentors, mediaPartners } = useContext(APIContext);
   const [email, setEmail] = useState('');
   const [joined, setJoined] = useState(false);
 
@@ -976,11 +1028,147 @@ function Home() {
 
   return <Layout>
     <main>
-      <section className="relative overflow-hidden bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]">
-        <div className="hero-grid absolute inset-0 opacity-75" />
-        <div className="container-wide relative grid min-h-[680px] items-center gap-12 pb-16 pt-20 md:grid-cols-[1fr_1fr] md:pb-24 md:pt-28">
-          <div className="reveal"><img src="/logo.jpg" className="h-20 w-20 rounded-2xl object-cover mb-8 border border-[hsl(var(--primary-foreground)/.15)] shadow-xl" alt="Stream Conferences Logo" /><div className="flex items-center gap-3"><span className="label rounded-full border border-[hsl(var(--accent)/.55)] px-3 py-1.5 text-[hsl(var(--accent))]">Annual Scientific Summit</span><span className="label text-[hsl(var(--primary-foreground)/.5)]">SC / 27</span></div><h1 className="display mt-7 max-w-4xl text-balance text-5xl font-bold leading-[.94] tracking-[-.07em] md:text-8xl">The science of <span className="text-[hsl(var(--accent))]">moving forward.</span></h1><p className="mt-7 max-w-2xl text-lg leading-8 text-[hsl(var(--primary-foreground)/.68)]">The International Conference on Medical, Life & Health Sciences brings the people who discover, test, build, and deliver better futures into one serious global conversation.</p><div className="mt-9 flex flex-wrap gap-3"><Link href="/conferences" className="btn-main border border-[hsl(var(--primary-foreground)/.28)] text-[hsl(var(--primary-foreground))] hover:border-[hsl(var(--accent))]" data-testid="link-hero-conferences">Events Calendar <ArrowRight size={16} /></Link></div></div>
-          <div className="reveal reveal-delay-2 relative"><div className="float-mark relative ml-auto max-w-[500px] w-full overflow-hidden rounded-[22px] border border-[hsl(var(--primary-foreground)/.2)] bg-[hsl(var(--primary-foreground)/.07)] p-3 backdrop-blur-sm"><div className="relative aspect-[4/5] overflow-hidden rounded-[16px]"><img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=900&q=85" alt="Audience gathered at a conference presentation" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--primary)/.95)] via-[hsl(var(--primary)/.15)] to-transparent" /><div className="absolute inset-x-5 top-5 flex items-center justify-between"><span className="label rounded-full bg-[hsl(var(--primary)/.72)] px-3 py-1.5 text-[9px] text-[hsl(var(--accent))]">Field note / 001</span><Microscope size={19} className="text-[hsl(var(--accent))]" /></div><div className="absolute inset-x-5 bottom-5"><p className="display text-2xl font-bold leading-tight">“Research becomes real when disciplines stop working in parallel.”</p><div className="mt-5 flex items-center justify-between text-xs text-[hsl(var(--primary-foreground)/.68)]"><span>ICMLHS 2027</span><span>Boston / USA</span></div></div></div></div></div>
+      {/* Curved S-Wave Hero Section (Matching Reference Design) */}
+      <section className="relative w-full min-h-[90vh] lg:min-h-screen overflow-hidden bg-slate-950 text-white flex flex-col justify-center">
+        {/* Right Side Background Image Layer (Full Screen Cover) */}
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-slate-900">
+          <img
+            src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=2000&q=85"
+            alt="Audience gathered at a conference presentation"
+            className="w-full h-full object-cover object-center filter brightness-[0.92] contrast-[1.05]"
+            onError={(e) => {
+              (e.target as HTMLElement).style.display = 'none';
+            }}
+          />
+          {/* Edge blend gradient for small screens */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/80 to-transparent lg:hidden" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+        </div>
+
+        {/* Dual Curved Wave Dividers Overlay (Matching Reference Image) */}
+        <div className="hidden lg:block absolute inset-0 z-10 pointer-events-none w-full h-full">
+          <svg
+            viewBox="0 0 1440 900"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full h-full"
+            preserveAspectRatio="none"
+          >
+            {/* Left Solid Theme Background with Curved Wave Edge */}
+            <path
+              d="M 0 0 L 880 0 C 780 180 680 380 580 540 C 470 720 390 830 300 900 L 0 900 Z"
+              fill="hsl(var(--primary))"
+            />
+            
+            {/* Additional Dark Overlay Gradient over Primary Fill for Rich Depth */}
+            <path
+              d="M 0 0 L 880 0 C 780 180 680 380 580 540 C 470 720 390 830 300 900 L 0 900 Z"
+              fill="url(#hero-wave-gradient)"
+              opacity="0.25"
+            />
+
+            {/* Primary Theme Wave Ribbon Edge */}
+            <path
+              d="M 880 0 C 780 180 680 380 580 540 C 470 720 390 830 300 900 L 380 900 C 470 830 550 720 650 540 C 750 380 850 180 950 0 Z"
+              fill="hsl(var(--primary))"
+            />
+
+            {/* Secondary Accent Ribbon Band (Gold/Yellow Ribbon in Reference Image) */}
+            <path
+              d="M 950 0 C 850 180 750 380 650 540 C 550 720 470 830 380 900 L 460 900 C 550 830 630 720 730 540 C 830 380 930 180 1030 0 Z"
+              fill="hsl(var(--secondary))"
+            />
+
+            <defs>
+              <linearGradient id="hero-wave-gradient" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#000000" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#000000" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
+        {/* Left Side Content Container */}
+        <div className="relative z-20 w-full lg:w-[58%] min-h-[90vh] lg:min-h-screen px-6 sm:px-12 lg:px-16 pt-28 sm:pt-32 lg:pt-36 pb-12 lg:pb-16 flex flex-col justify-between">
+          <div className="my-auto max-w-2xl">
+            {/* Badges */}
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              <span className="px-3.5 py-1.5 rounded-full border border-white/30 bg-white/15 backdrop-blur-md text-xs font-mono font-bold uppercase tracking-widest text-white shadow-sm">
+                Annual Scientific Summit
+              </span>
+              <span className="px-2.5 py-1 rounded-full border border-white/20 bg-black/20 text-xs font-mono font-semibold text-white/80">
+                SC / 27
+              </span>
+              <span className="px-3 py-1 rounded-full border border-white/20 bg-black/20 text-xs font-mono font-medium text-white/75">
+                An event by Stream Conferences
+              </span>
+            </div>
+
+            {/* Main Headline */}
+            <h1 className="font-['Space_Grotesk'] text-4xl sm:text-6xl lg:text-7xl font-black uppercase leading-[1.05] tracking-tight text-white">
+              THE SCIENCE OF MOVING FORWARD.
+            </h1>
+
+            {/* Description Paragraph */}
+            <p className="mt-6 text-sm sm:text-base lg:text-lg leading-relaxed text-white/90 font-medium max-w-xl">
+              The International Conference on Medical, Life & Health Sciences brings the people who discover, test, build, and deliver better futures into one serious global conversation.
+            </p>
+
+            {/* Action Buttons (Matching reference pill style) */}
+            <div className="mt-9 flex flex-wrap items-center gap-4">
+              <Link
+                href="/conferences"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-slate-950 hover:bg-black text-white font-extrabold text-xs uppercase tracking-wider shadow-2xl transition-all transform hover:-translate-y-0.5 border border-white/20 cursor-pointer"
+                data-testid="link-hero-conferences"
+              >
+                <span>EVENTS CALENDAR</span>
+                <ArrowRight size={17} className="text-[hsl(var(--accent))]" />
+              </Link>
+              <Link
+                href="/webinars"
+                className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-white/15 hover:bg-white/25 text-white font-bold text-xs uppercase tracking-wider backdrop-blur-md transition-all cursor-pointer border border-white/25"
+              >
+                <span>Live Webinars</span>
+                <ArrowUpRight size={17} />
+              </Link>
+            </div>
+          </div>
+
+          {/* Bottom Quick Stats Counter Grid */}
+          <div className="mt-10 pt-6 border-t border-white/20 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl">
+            <div>
+              <p className="font-['Space_Grotesk'] text-2xl sm:text-3xl font-black text-white leading-none">
+                {conferences.length > 0 ? `${conferences.length}+` : '20+'}
+              </p>
+              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-white/80 mt-1">
+                CONFERENCES
+              </p>
+            </div>
+            <div>
+              <p className="font-['Space_Grotesk'] text-2xl sm:text-3xl font-black text-white leading-none">
+                {webinars.length > 0 ? `${webinars.length}+` : '15+'}
+              </p>
+              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-white/80 mt-1">
+                LIVE WEBINARS
+              </p>
+            </div>
+            <div>
+              <p className="font-['Space_Grotesk'] text-2xl sm:text-3xl font-black text-white leading-none">
+                {mentors.length > 0 ? `${mentors.length}+` : '30+'}
+              </p>
+              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-white/80 mt-1">
+                GLOBAL MENTORS
+              </p>
+            </div>
+            <div>
+              <p className="font-['Space_Grotesk'] text-2xl sm:text-3xl font-black text-white leading-none">
+                {insightsList.length > 0 ? `${insightsList.length}+` : '15+'}
+              </p>
+              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-white/80 mt-1">
+                PUBLICATIONS
+              </p>
+            </div>
+          </div>
         </div>
       </section>
       
@@ -1078,8 +1266,6 @@ function Home() {
         </div>
       </section>
 
-      <Ticker />
-      
       {/* Upcoming Webinars Section */}
       <section className="section-pad bg-[hsl(var(--muted)/.35)]" id="upcoming-events-webinars">
         <div className="container-wide">
@@ -1183,12 +1369,42 @@ function Home() {
       <section className="section-pad" id="speakers"><div className="container-wide"><div className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><SectionTitle eyebrow="People to follow" title="The room is part of the research." body="A deliberately mixed faculty of clinical authorities, technical pioneers, and emerging scholars." /><Link href="/speakers" className="btn-main btn-quiet shrink-0" data-testid="link-home-speakers">Meet the speakers <ArrowUpRight size={16} /></Link></div><div className="mt-12 grid gap-4 md:grid-cols-3 lg:grid-cols-5">{mentors.slice(0, 5).map((mentor, i) => <SpeakerCard key={mentor.username} person={mentor} index={i + 1} />)}</div></div></section>
       <TestimonialCarousel />
       <GallerySlider />
-      <section className="border-y border-[hsl(var(--border))] bg-[hsl(var(--primary))] py-16 text-[hsl(var(--primary-foreground))]"><div className="container-wide flex flex-col items-start justify-between gap-10 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--accent))]">Media partners</p><p className="display mt-4 text-2xl font-bold">Amplifying work that deserves to travel.</p></div><div className="grid grid-cols-2 gap-x-10 gap-y-5 text-sm font-bold text-[hsl(var(--primary-foreground)/.55)] sm:grid-cols-4"><span>JOURNAL OF TRANSLATIONAL MEDICINE</span><span>SCIENCEWIRE</span><span>HEALTH / REVIEW</span><span>TECHNICA</span></div></div></section>
+      <section className="border-y border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] py-12 text-[hsl(var(--foreground))]">
+        <div className="container-wide flex flex-col justify-between gap-8 md:flex-row md:items-center">
+          <div className="shrink-0 max-w-sm">
+            <p className="label text-[hsl(var(--secondary))]">Media partners</p>
+            <p className="display mt-2 text-2xl font-bold text-[hsl(var(--foreground))]">Amplifying work that deserves to travel.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6 flex-1 justify-start md:justify-end">
+            {mediaPartners && mediaPartners.length > 0 ? (
+              mediaPartners.map((partner: any, idx: number) => (
+                <Link key={partner._id || partner.id || idx} href="/media-partners" className="card-lift flex items-center gap-3 bg-[hsl(var(--card))] px-4 py-3 rounded-2xl border border-[hsl(var(--border))] shadow-sm transition-all hover:border-[hsl(var(--secondary))] group">
+                  {partner.logo ? (
+                    <img src={mediaUrl(partner.logo)} alt={partner.name} className="h-9 w-9 object-contain rounded-lg shrink-0 border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] p-0.5" />
+                  ) : (
+                    <div className="h-9 w-9 rounded-lg bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--secondary))] shrink-0 border border-[hsl(var(--border))]">
+                      <Building2 size={18} />
+                    </div>
+                  )}
+                  <span className="text-xs font-bold text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--secondary))] transition-colors leading-tight">{partner.name}</span>
+                </Link>
+              ))
+            ) : (
+              <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-xs font-bold text-[hsl(var(--muted-foreground))] sm:grid-cols-4 uppercase tracking-wider">
+                <span>JOURNAL OF TRANSLATIONAL MEDICINE</span>
+                <span>SCIENCEWIRE</span>
+                <span>HEALTH / REVIEW</span>
+                <span>TECHNICA</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
       {insightsList.length > 0 && (
         <section className="section-pad"><div className="container-wide grid gap-10 md:grid-cols-[.7fr_1.3fr]"><div><SectionTitle eyebrow="From the Stream Conferences blog" title="Notes for the in-between." /><Link href="/blog" className="btn-main btn-quiet mt-8" data-testid="link-home-insights">Read the blog <ArrowRight size={16} /></Link></div><div className="grid gap-4 sm:grid-cols-3">{insightsList.slice(0, 3).map((insight, index) => <div key={insight.id || insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full"><div className="p-5 flex-1"><div className="aspect-video w-full rounded-lg overflow-hidden mb-4 bg-[hsl(var(--muted)/.25)] flex items-center justify-center relative">{insight.bannerUrl ? <img src={insight.bannerUrl} alt={insight.title} className="h-full w-full object-cover" /> : <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center"><BookOpen className="text-[hsl(var(--primary-foreground))] opacity-65" size={32} /></div>}</div><span className="label text-[hsl(var(--accent))] text-[9px]">{insight.label}</span><h3 className="display mt-3 text-lg font-bold leading-tight line-clamp-2">{insight.title}</h3><p className="mt-2 text-xs leading-5 text-[hsl(var(--muted-foreground))] line-clamp-3">{insight.copy}</p></div><div className="px-5 pb-5 pt-0"><Link href={`/blog/${encodeURIComponent(insight.id)}`} className="inline-flex items-center gap-1 text-xs font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition" data-testid={`link-home-blog-${index}`}>Read field note <ArrowRight size={13} /></Link></div></div>)}</div></div></section>
       )}
       <section className="border-t border-[hsl(var(--border))] bg-[hsl(var(--muted)/.38)] py-10"><div className="container-wide flex flex-col justify-between gap-5 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--secondary))]">Stay close to the conversation</p><p className="mt-2 text-sm font-semibold">Follow <span className="text-[hsl(var(--secondary))]">#ICMLHS2027</span> across the summit.</p></div><div className="flex gap-2"><a href="https://www.linkedin.com" className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))]" aria-label="LinkedIn" data-testid="link-social-linkedin"><Linkedin size={17} /></a><a href="https://x.com" className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))]" aria-label="X" data-testid="link-social-x"><X size={17} /></a><a href="https://www.youtube.com" className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))]" aria-label="YouTube" data-testid="link-social-youtube"><Youtube size={17} /></a></div></div></section>
-      <section className="bg-[hsl(var(--accent))] py-10 text-[hsl(var(--accent-foreground))]"><div className="container-wide flex flex-col justify-between gap-6 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--accent-foreground)/.65)]">Delegate secretariat</p><p className="display mt-2 text-2xl font-bold">Have a question before you arrive?</p><div className="mt-3 flex flex-wrap gap-4 text-sm"><a href="mailto:info@streamconferences.com" className="flex items-center gap-2 font-semibold" data-testid="link-home-email"><Mail size={16} /> info@streamconferences.com</a><span className="flex items-center gap-2"><Phone size={16} /> +1 (617) 555-0199</span></div></div><Link href="/contact" className="btn-main border border-[hsl(var(--accent-foreground)/.35)]" data-testid="link-home-contact">Contact us <ArrowUpRight size={16} /></Link></div></section>
+      <section className="bg-[hsl(var(--primary))] py-12 text-[hsl(var(--primary-foreground))] border-t border-[hsl(var(--primary-foreground)/.15)]"><div className="container-wide flex flex-col justify-between gap-6 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--accent))]">Delegate secretariat</p><p className="display mt-2 text-2xl font-bold text-[hsl(var(--primary-foreground))]">Have a question before you arrive?</p><div className="mt-3 flex flex-wrap gap-4 text-sm text-[hsl(var(--primary-foreground)/.85)]"><a href="mailto:info@streamconferences.com" className="flex items-center gap-2 font-semibold hover:text-[hsl(var(--accent))]" data-testid="link-home-email"><Mail size={16} /> info@streamconferences.com</a><span className="flex items-center gap-2"><Phone size={16} /> +1 (617) 555-0199</span></div></div><Link href="/contact" className="btn-main bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:brightness-110 shadow-lg border-0" data-testid="link-home-contact">Contact us <ArrowUpRight size={16} /></Link></div></section>
     </main>
   </Layout>;
 }

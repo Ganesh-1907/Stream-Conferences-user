@@ -71,31 +71,31 @@
 }
 
 .dark {
-  --background: 224 71% 4%;
-  --foreground: 213 31% 91%;
-  --border: 216 34% 17%;
-  --input: 216 34% 17%;
-  --ring: 208 85% 52%;
-  --card: 224 71% 4%;
-  --card-foreground: 213 31% 91%;
-  --card-border: 216 34% 17%;
-  --primary: 208 85% 52%;
+  --background: 222 47% 6%;
+  --foreground: 210 40% 98%;
+  --border: 217 33% 18%;
+  --input: 217 33% 18%;
+  --ring: 187 85% 45%;
+  --card: 222 47% 8%;
+  --card-foreground: 210 40% 98%;
+  --card-border: 217 33% 18%;
+  --primary: 187 85% 45%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 199 89% 48%;
+  --secondary: 172 75% 40%;
   --secondary-foreground: 0 0% 100%;
-  --muted: 223 47% 11%;
-  --muted-foreground: 215 20% 65%;
-  --accent: 199 89% 52%;
+  --muted: 217 33% 12%;
+  --muted-foreground: 215 20% 70%;
+  --accent: 174 72% 48%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 63% 31%;
   --destructive-foreground: 210 40% 98%;
-  --sidebar: 224 71% 4%;
-  --sidebar-foreground: 213 31% 91%;
-  --sidebar-border: 216 34% 17%;
-  --sidebar-primary: 208 85% 52%;
+  --sidebar: 222 47% 6%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-border: 217 33% 18%;
+  --sidebar-primary: 187 85% 45%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 216 34% 17%;
-  --sidebar-accent-foreground: 213 31% 91%;
+  --sidebar-accent: 217 33% 18%;
+  --sidebar-accent-foreground: 210 40% 98%;
 }
 
 @layer base {
@@ -237,13 +237,21 @@
 .page-title { font: 700 clamp(32px, 5.5vw, 56px)/1.08 'Space Grotesk', sans-serif; letter-spacing: -.04em; max-width: 950px; margin: 0; color: hsl(var(--foreground)); }
 .page-copy { max-width: 850px; font-size: clamp(16px, 2.5vw, 19px); line-height: 1.7; color: hsl(var(--muted-foreground)); margin: 24px 0 0; padding-left: 24px; border-left: 3px solid hsl(var(--primary)); font-style: italic; }
 .bg-grid { background-image: linear-gradient(currentColor / .02 1px, transparent 1px), linear-gradient(90deg, currentColor / .02 1px, transparent 1px); background-size: 32px 32px; }
-/* ===== Conference Styling ===== */
-.hero-grad { background-image: radial-gradient(ellipse 80% 60% at 20% 10%, hsl(var(--secondary) / .6), transparent 55%), radial-gradient(ellipse 70% 55% at 90% 15%, hsl(var(--primary) / .5), transparent 50%), linear-gradient(160deg, hsl(var(--primary) / .85) 0%, hsl(var(--secondary) / .7) 45%, hsl(var(--primary) / .95) 100%); }
-[data-theme-mode="light"] .hero-grad::after { content: ''; position: absolute; inset: 0; background: linear-gradient(160deg, hsl(222 47% 11% / .88) 0%, hsl(222 47% 15% / .82) 45%, hsl(222 47% 10% / .9) 100%); }
-.hero-grid-b { background-image: linear-gradient(to right, hsl(0 0% 100% / .1) 1px, transparent 1px), linear-gradient(to bottom, hsl(0 0% 100% / .1) 1px, transparent 1px); background-size: 54px 54px; }
-.hero-vignette { background-image: radial-gradient(ellipse 90% 70% at 50% 0%, transparent 40%, hsl(var(--primary) / .6) 100%); }
-[data-theme-mode="light"] .hero-vignette { background-image: radial-gradient(ellipse 90% 70% at 50% 0%, transparent 40%, hsl(222 47% 11% / .35) 100%); }
-.badge-pill { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; border: 1px solid hsl(var(--primary) / .6); background: hsl(var(--primary) / .2); color: white; padding: 7px 14px; font-family: var(--app-font-mono); text-transform: uppercase; letter-spacing: .16em; font-size: 11px; font-weight: 500; }
+/* ===== Dynamic Hero Split & Theme Styling ===== */
+.hero-slant-bg {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 50%, hsl(var(--accent)) 100%);
+  transition: background 0.4s ease;
+}
+.dark .hero-slant-bg {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.92) 0%, hsl(var(--secondary) / 0.85) 50%, hsl(var(--accent) / 0.88) 100%);
+}
+@media (min-width: 1024px) {
+  .clip-diagonal-slant {
+    clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+  }
+}
+.hero-grad { background-image: radial-gradient(ellipse 80% 60% at 20% 10%, hsl(var(--secondary) / .4), transparent 55%), linear-gradient(160deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%); }
+.badge-pill { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.15); color: white; padding: 6px 14px; font-family: var(--app-font-mono); text-transform: uppercase; letter-spacing: .14em; font-size: 11px; font-weight: 600; backdrop-filter: blur(8px); }
 .stat-card { border-radius: 20px; border: 1px solid hsl(0 0% 100% / .2); background: hsl(0 0% 100% / .1); backdrop-filter: blur(12px); padding: 18px 22px; color: white; }
 .stat-card .stat-num { font: 700 clamp(26px, 4vw, 40px)/1 'Space Grotesk', sans-serif; letter-spacing: -.03em; color: hsl(var(--primary)); }
 .stat-card .stat-label { font-family: var(--app-font-mono); text-transform: uppercase; letter-spacing: .14em; font-size: 10px; color: hsl(0 0% 100% / .8); margin-top: 6px; }
