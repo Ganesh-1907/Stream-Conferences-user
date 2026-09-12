@@ -135,7 +135,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 60) {
+      if (window.scrollY > 300) {
         setScrolled(true);
       } else {
         setScrolled(false);
@@ -150,17 +150,17 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
   const isHomeTop = location === '/' && !scrolled;
 
   const navLinkCls = (path: string) => {
-    const base = 'flex items-center gap-2 px-3 py-2 text-sm font-medium transition-all ';
+    const base = 'flex items-center gap-2 px-3.5 py-2 text-base sm:text-lg font-bold transition-all ';
     return isActive(path)
-      ? base + 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-bold shadow-md rounded-full px-4'
-      : base + 'text-white/80 hover:text-white hover:bg-white/10 rounded-lg';
+      ? base + 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-black shadow-lg rounded-full px-5 py-2.5'
+      : base + 'text-white/90 hover:text-white hover:bg-white/15 rounded-xl drop-shadow-sm';
   };
 
   const mobileLinkCls = (path: string) => {
-    const base = 'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ';
+    const base = 'w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-base font-bold transition-all ';
     return isActive(path)
-      ? base + 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-bold shadow-md'
-      : base + 'text-white/80 hover:text-white hover:bg-white/10';
+      ? base + 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-black shadow-md'
+      : base + 'text-white/90 hover:text-white hover:bg-white/15';
   };
 
   // Program dropdown items: Itinerary (/program), Speakers, Tracks, Committee, FAQ, Terms
@@ -169,42 +169,42 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
       id: 'itinerary',
       label: 'Itinerary',
       path: (event.program && event.program.length > 0) ? '/program' : (event.itinerary && event.itinerary.length > 0 ? '/itinerary' : '/program'),
-      icon: <CalendarDays size={16} />,
+      icon: <CalendarDays size={18} />,
       show: true,
     },
     {
       id: 'speakers',
       label: 'Speakers',
       path: '/speakers',
-      icon: <Users size={16} />,
+      icon: <Users size={18} />,
       show: true,
     },
     {
       id: 'tracks',
       label: 'Tracks',
       path: '/tracks',
-      icon: <Layers size={16} />,
+      icon: <Layers size={18} />,
       show: true,
     },
     {
       id: 'organizing-committee',
       label: 'Committee',
       path: '/organizing-committee',
-      icon: <Users size={16} />,
+      icon: <Users size={18} />,
       show: true,
     },
     {
       id: 'faq',
       label: 'FAQ',
       path: '/faq',
-      icon: <HelpCircle size={16} />,
+      icon: <HelpCircle size={18} />,
       show: true,
     },
     {
       id: 'terms',
       label: 'Terms',
       path: '/terms',
-      icon: <FileCheck size={16} />,
+      icon: <FileCheck size={18} />,
       show: true,
     },
   ];
@@ -215,28 +215,28 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
       id: 'sponsors',
       label: 'Sponsors/Exhibitors',
       path: '/sponsors',
-      icon: <Award size={16} />,
+      icon: <Award size={18} />,
       show: true,
     },
     {
       id: 'venue',
       label: 'Venue',
       path: '/venue',
-      icon: <MapPin size={16} />,
+      icon: <MapPin size={18} />,
       show: true,
     },
     {
       id: 'guidelines',
       label: 'Guidelines',
       path: '/guidelines',
-      icon: <BookOpen size={16} />,
+      icon: <BookOpen size={18} />,
       show: true,
     },
     {
       id: 'contact',
       label: 'Contact',
       path: '/contact',
-      icon: <MessageSquare size={16} />,
+      icon: <MessageSquare size={18} />,
       show: true,
     },
   ];
@@ -247,7 +247,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
       id: 'scientific-program',
       label: 'Scientific Program',
       path: `${SERVER_ORIGIN}${event.scientificProgramUrl}`,
-      icon: <Download size={16} />,
+      icon: <Download size={18} />,
       show: true,
       isExternal: true,
     });
@@ -257,50 +257,65 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
   const isMoreActive = moreItems.some((item) => isActive(item.path));
 
   return (
-    <header className={`sticky top-0 z-40 border-b transition-all duration-300 text-white ${
+    <header className={`sticky top-0 z-40 transition-all duration-300 text-white ${
       isHomeTop
-        ? 'hero-slant-bg border-white/10'
-        : 'bg-[#0b0f19]/95 border-white/10 backdrop-blur-xl shadow-2xl'
+        ? 'bg-transparent border-b-0 shadow-none'
+        : 'bg-[#0b0f19]/95 border-b border-white/10 backdrop-blur-xl shadow-2xl'
     }`}>
       <div className="container-wide flex items-center justify-between gap-4 py-3">
         <Link href="/" className="flex items-center gap-3 min-w-0">
-          <img src="/logo.jpg" alt="Stream Conferences" className="h-10 w-10 rounded-xl object-cover shadow-lg border border-white/20" />
-          <span className="truncate font-['Space_Grotesk'] font-bold tracking-tight text-sm md:text-base text-white">Stream Conferences</span>
+          {isHomeTop ? (
+            <>
+              <img src="/logo.jpg" alt="Stream Conferences" className="h-11 w-11 rounded-xl object-cover shadow-lg border border-white/20 shrink-0" />
+              <span className="truncate font-['Space_Grotesk'] font-black tracking-tight text-base md:text-xl text-white">Stream Conferences</span>
+            </>
+          ) : (
+            <>
+              {event?.logoUrl ? (
+                <img src={mediaUrl(event.logoUrl)} alt={event?.title || "Conference Logo"} className="h-11 w-11 rounded-xl object-contain bg-white/10 p-1 border border-white/20 shrink-0" />
+              ) : (
+                <img src="/logo.jpg" alt="Conference Logo" className="h-11 w-11 rounded-xl object-cover shadow-lg border border-white/20 shrink-0" />
+              )}
+              <span className="truncate font-['Space_Grotesk'] font-black tracking-tight text-base md:text-xl text-white max-w-[280px] sm:max-w-xs md:max-w-md" title={event?.title}>
+                {event?.title || 'Stream Conferences'}
+              </span>
+            </>
+          )}
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-1.5">
           <Link href="/" className={navLinkCls('/')}>
-            <Globe size={16} />Home
+            <Globe size={18} />Home
           </Link>
 
           <Link href="/about" className={navLinkCls('/about')}>
-            <Layers size={16} />About
+            <Layers size={18} />About
           </Link>
 
           {/* Program Dropdown (Itinerary, Speakers, Tracks, Committee, FAQ, Terms) */}
           <div className="relative group">
             <button
               type="button"
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-base sm:text-lg font-bold transition-colors cursor-pointer ${
                 isProgramActive
-                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-bold shadow-md rounded-full px-4'
-                  : 'text-white/80 hover:text-white hover:bg-white/10'
+                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-black shadow-lg rounded-full px-5 py-2.5'
+                  : 'text-white/90 hover:text-white hover:bg-white/15 drop-shadow-sm'
               }`}
             >
-              <Presentation size={16} />
+              <Presentation size={18} />
               <span>Program</span>
-              <ChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-200" />
+              <ChevronDown size={16} className="group-hover:rotate-180 transition-transform duration-200" />
             </button>
-            <div className="absolute left-0 top-full pt-1.5 hidden group-hover:block z-50 w-52">
-              <div className="rounded-xl border border-white/15 bg-[#0f172a] text-white shadow-2xl py-1 backdrop-blur-xl">
+            <div className="absolute left-0 top-full pt-1.5 hidden group-hover:block z-50 w-56">
+              <div className="rounded-2xl border border-white/20 bg-[#0f172a] text-white shadow-2xl py-1.5 backdrop-blur-xl">
                 {programItems.map((item) => (
                   <Link
                     key={item.id}
                     href={item.path}
-                    className={`flex items-center gap-2.5 px-4 py-2 text-sm transition-colors ${
+                    className={`flex items-center gap-3 px-4 py-2.5 text-base font-bold transition-colors ${
                       isActive(item.path)
-                        ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-semibold'
-                        : 'text-white/80 hover:text-white hover:bg-white/10'
+                        ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-extrabold'
+                        : 'text-white/90 hover:text-white hover:bg-white/15'
                     }`}
                   >
                     {item.icon}
@@ -312,7 +327,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
           </div>
 
           <Link href="/fees" className={navLinkCls('/fees')}>
-            <FileText size={16} />Fees
+            <FileText size={18} />Fees
           </Link>
 
           {/* More Dropdown (Sponsors/Exhibitors, Venue, Guidelines, Contact) */}
@@ -320,17 +335,17 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
             <div className="relative group">
               <button
                 type="button"
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-base sm:text-lg font-bold transition-colors cursor-pointer ${
                   isMoreActive
-                    ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-bold shadow-md rounded-full px-4'
-                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                    ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-black shadow-lg rounded-full px-5 py-2.5'
+                    : 'text-white/90 hover:text-white hover:bg-white/15 drop-shadow-sm'
                 }`}
               >
                 <span>More</span>
-                <ChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-200" />
+                <ChevronDown size={16} className="group-hover:rotate-180 transition-transform duration-200" />
               </button>
-              <div className="absolute right-0 top-full pt-1.5 hidden group-hover:block z-50 w-52">
-                <div className="rounded-xl border border-white/15 bg-[#0f172a] text-white shadow-2xl py-1 backdrop-blur-xl">
+              <div className="absolute right-0 top-full pt-1.5 hidden group-hover:block z-50 w-56">
+                <div className="rounded-2xl border border-white/20 bg-[#0f172a] text-white shadow-2xl py-1.5 backdrop-blur-xl">
                   {moreItems.map((item) => (
                     item.isExternal ? (
                       <a
@@ -338,7 +353,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
                         href={item.path}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2.5 px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-base font-bold text-white/90 hover:text-white hover:bg-white/15 transition-colors"
                       >
                         {item.icon}
                         <span>{item.label}</span>
@@ -347,10 +362,10 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
                       <Link
                         key={item.id}
                         href={item.path}
-                        className={`flex items-center gap-2.5 px-4 py-2 text-sm transition-colors ${
+                        className={`flex items-center gap-3 px-4 py-2.5 text-base font-bold transition-colors ${
                           isActive(item.path)
-                            ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-semibold'
-                            : 'text-white/80 hover:text-white hover:bg-white/10'
+                            ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-extrabold'
+                            : 'text-white/90 hover:text-white hover:bg-white/15'
                         }`}
                       >
                         {item.icon}
@@ -364,24 +379,43 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
           )}
         </nav>
 
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="hidden lg:flex items-center gap-1">
             <Link href="/brochure" className={navLinkCls('/brochure')}>
-              <Download size={16} />Brochure
+              <Download size={18} />Brochure
             </Link>
             <Link href="/submit-abstract" className={navLinkCls('/submit-abstract')}>
-              <FileText size={16} />Submit Abstract
+              <FileText size={18} />Submit Abstract
             </Link>
             <Link href="/register" className={navLinkCls('/register')}>
-              <FileText size={16} />Register
+              <FileText size={18} />Register
             </Link>
-            <div className="w-px h-6 bg-[hsl(var(--border))] mx-1.5" />
+            <div className="w-px h-6 bg-white/20 mx-2" />
           </div>
-          <button type="button" onClick={toggle} aria-label="Toggle theme" className="p-2 rounded-lg hover:bg-[hsl(var(--muted))] transition-colors text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">
-            {dark ? <Sun size={18} /> : <Moon size={18} />}
+
+          {/* Explicit Light/Dark Theme Toggle Capsule Pill */}
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label="Toggle dark/light theme"
+            title={dark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 text-white font-extrabold text-xs sm:text-sm shadow-md backdrop-blur-md transition-all cursor-pointer active:scale-95"
+          >
+            {dark ? (
+              <>
+                <Sun size={18} className="text-amber-300" />
+                <span>Light</span>
+              </>
+            ) : (
+              <>
+                <Moon size={18} className="text-slate-100" />
+                <span>Dark</span>
+              </>
+            )}
           </button>
-          <button type="button" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden p-2 rounded-lg hover:bg-[hsl(var(--muted))] transition-colors">
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+
+          <button type="button" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden p-2 rounded-xl hover:bg-white/20 transition-colors text-white">
+            {mobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
           </button>
         </div>
       </div>
@@ -634,8 +668,12 @@ function MicrositeFooter({ event, navItems }: { event: EventData; navItems: NavI
         <div className="grid gap-10 md:grid-cols-3">
           <div>
             <div className="flex items-center gap-3">
-              <img src="/logo.jpg" alt="Stream Conferences" className="h-10 w-10 rounded-xl object-cover" />
-              <h3 className="font-['Space_Grotesk'] text-lg font-bold">Stream Conferences</h3>
+              {event?.logoUrl ? (
+                <img src={mediaUrl(event.logoUrl)} alt={event?.title || "Conference Logo"} className="h-10 w-10 rounded-xl object-contain bg-white/10 p-1 border border-white/20 shrink-0" />
+              ) : (
+                <img src="/logo.jpg" alt="Conference Logo" className="h-10 w-10 rounded-xl object-cover shrink-0" />
+              )}
+              <h3 className="font-['Space_Grotesk'] text-lg font-bold line-clamp-2">{event?.title || 'Stream Conferences'}</h3>
             </div>
             {event?.organizerContact?.name && <p className="mt-3 text-base text-white/70">{event.organizerContact.name}</p>}
             {event?.organizerContact?.address && <p className="mt-1 text-base text-white/70">{event.organizerContact.address}</p>}
@@ -786,7 +824,7 @@ export function MicrositeLayout({ event, navItems, children }: { event: EventDat
   return (
     <div className="min-h-[100dvh] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] flex flex-col">
       <MicrositeHeader event={event} navItems={navItems} />
-      <main className="flex-1">{children}</main>
+      <main className={`flex-1 ${location === '/' ? '-mt-[66px]' : ''}`}>{children}</main>
       {!hideContactFooter && <PersistentContactFooter event={event} />}
       <PreviousCohortsStrip event={event} />
       <MicrositeFooter event={event} navItems={navItems} />

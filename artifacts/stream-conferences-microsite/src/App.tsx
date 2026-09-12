@@ -657,24 +657,26 @@ function SiteHeader() {
   return (
     <>
       <header className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ${
-        scrolled
-          ? 'bg-slate-950/90 backdrop-blur-xl border-b border-white/10 shadow-2xl py-2.5'
-          : 'bg-transparent border-none py-4'
+        location === '/'
+          ? scrolled
+            ? 'bg-slate-950/95 backdrop-blur-xl border-b border-slate-800 shadow-2xl py-2.5'
+            : 'bg-transparent border-none py-4'
+          : 'bg-slate-950/95 backdrop-blur-xl border-b border-slate-800 shadow-xl py-3'
       }`}>
-        <div className="container-wide flex h-[74px] items-center justify-between gap-4">
+        <div className="container-wide flex h-[76px] items-center justify-between gap-4">
           {/* Brand / Logo */}
-          <Link href="/" className="group flex shrink-0 items-center gap-3" data-testid="link-home-logo">
-            <img src="/logo.jpg" className="h-10 w-10 rounded-[12px] object-cover shadow-lg border border-white/30" alt="SC" />
-            <span className="display block text-[16px] font-bold tracking-[-.02em] text-white leading-none">
+          <Link href="/" className="group flex shrink-0 items-center gap-3.5" data-testid="link-home-logo">
+            <img src="/logo.jpg" className="h-12 w-12 rounded-[14px] object-cover shadow-lg border border-white/30" alt="SC" />
+            <span className="display block text-[24px] sm:text-[26px] font-black tracking-[-.02em] text-white leading-none">
               Stream<span className="text-[hsl(var(--accent))]">Conferences</span>
             </span>
           </Link>
 
           {/* Center Floating Pill Menu (Matching Reference Image) */}
-          <nav className="hidden lg:flex items-center gap-1.5 bg-white/95 dark:bg-slate-900/90 backdrop-blur-xl px-3 py-1.5 rounded-full shadow-2xl border border-white/40 text-slate-800 dark:text-white" aria-label="Primary">
+          <nav className="hidden lg:flex items-center gap-2 bg-white/95 dark:bg-slate-900/90 backdrop-blur-xl px-4 py-2 rounded-full shadow-2xl border border-white/40 text-slate-800 dark:text-white" aria-label="Primary">
             <Link
               href="/"
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
                 location === '/'
                   ? 'bg-[hsl(var(--primary))] text-white shadow-sm'
                   : 'text-slate-700 dark:text-slate-200 hover:text-[hsl(var(--primary))]'
@@ -699,7 +701,7 @@ function SiteHeader() {
                       e.stopPropagation();
                       setOpenDropdown(isOpen ? null : group.id);
                     }}
-                    className={`flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer ${
                       isGroupActive
                         ? 'bg-[hsl(var(--primary)/0.15)] text-[hsl(var(--primary))] font-bold'
                         : 'text-slate-700 dark:text-slate-200 hover:text-[hsl(var(--primary))]'
@@ -708,41 +710,34 @@ function SiteHeader() {
                     data-testid={`button-nav-group-${group.id}`}
                   >
                     <span>{group.label}</span>
-                    <ChevronDown size={13} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown size={15} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {isOpen && (
                     <div
-                      className={`absolute top-full left-1/2 -translate-x-1/2 pt-2 transition-all duration-200 z-50 ${
-                        group.id === 'conference-info' ? 'w-[280px]' :
-                        group.id === 'media-support' ? 'w-[520px]' :
-                        'w-[280px]'
+                      className={`absolute top-full left-1/2 -translate-x-1/2 pt-2.5 transition-all duration-200 z-50 ${
+                        group.id === 'conference-info' ? 'w-[240px]' :
+                        group.id === 'media-support' ? 'w-[440px]' :
+                        'w-[240px]'
                       }`}
                       data-testid={`dropdown-nav-group-${group.id}`}
                     >
                       <div
-                        className={`grid gap-1.5 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 shadow-2xl ${
+                        className={`grid gap-1 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 shadow-2xl ${
                           group.id === 'conference-info' ? 'grid-cols-1' :
                           group.id === 'media-support' ? 'grid-cols-2' :
                           'grid-cols-1'
                         }`}
                       >
-                        {group.items.map(([href, label, desc]) => (
+                        {group.items.map(([href, label]) => (
                           <Link
                             key={href}
                             href={href}
                             onClick={() => setOpenDropdown(null)}
-                            className={`group/item flex flex-col gap-1 rounded-xl p-2.5 transition-colors hover:bg-[hsl(var(--muted)/.65)] ${location === href ? 'bg-[hsl(var(--muted)/.45)] text-[hsl(var(--secondary))]' : ''}`}
+                            className={`group/item flex items-center justify-between rounded-xl px-3.5 py-2.5 transition-colors hover:bg-[hsl(var(--muted)/.75)] ${location === href ? 'bg-[hsl(var(--muted)/.5)] text-[hsl(var(--secondary))]' : ''}`}
                             data-testid={`link-nav-item-${label.toLowerCase().replaceAll(' ', '-')}`}
                           >
-                            <div className="flex items-center justify-between text-[13px] font-bold text-[hsl(var(--foreground))] transition-colors group-hover/item:text-[hsl(var(--secondary))]">
-                              <span className={location === href ? 'text-[hsl(var(--secondary))]' : ''}>{label}</span>
-                              <ChevronRight size={13} className="opacity-0 -translate-x-1 transition-all group-hover/item:opacity-100 group-hover/item:translate-x-0" />
-                            </div>
-                            {desc && (
-                              <span className="text-[11px] leading-snug text-[hsl(var(--muted-foreground))]">
-                                {desc}
-                              </span>
-                            )}
+                            <span className={`text-[14px] font-bold text-[hsl(var(--foreground))] transition-colors group-hover/item:text-[hsl(var(--secondary))] ${location === href ? 'text-[hsl(var(--secondary))]' : ''}`}>{label}</span>
+                            <ChevronRight size={15} className="opacity-0 -translate-x-1 transition-all group-hover/item:opacity-100 group-hover/item:translate-x-0" />
                           </Link>
                         ))}
                       </div>
@@ -771,26 +766,32 @@ function SiteHeader() {
               </button>
               {colorPickerOpen && (
                 <div
-                  className="absolute right-0 top-12 z-50 w-56 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 shadow-2xl"
+                  className="absolute right-0 top-12 z-50 w-48 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 shadow-2xl"
                   onClick={(event) => event.stopPropagation()}
                 >
-                  <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Color theme</p>
-                  <div className="grid gap-1">
-                    {colorThemes.map((theme) => (
-                      <button
-                        key={theme.id}
-                        type="button"
-                        onClick={() => {
-                          setColorTheme(theme.id);
-                          setColorPickerOpen(false);
-                        }}
-                        className={`flex items-center gap-3 rounded-xl px-2.5 py-2 text-left text-xs font-semibold transition-colors hover:bg-[hsl(var(--muted))] ${colorTheme === theme.id ? 'bg-[hsl(var(--muted))]' : ''}`}
-                      >
-                        <span className="h-4 w-4 shrink-0 rounded-full border border-black/10" style={{ backgroundColor: theme.swatch }} />
-                        <span>{theme.label}</span>
-                        {colorTheme === theme.id && <Check size={14} className="ml-auto text-[hsl(var(--primary))]" />}
-                      </button>
-                    ))}
+                  <p className="pb-2.5 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] text-center">COLOR THEME</p>
+                  <div className="grid grid-cols-4 gap-3 place-items-center">
+                    {colorThemes.map((theme) => {
+                      const isSelected = colorTheme === theme.id;
+                      return (
+                        <button
+                          key={theme.id}
+                          type="button"
+                          title={theme.label}
+                          aria-label={theme.label}
+                          onClick={() => {
+                            setColorTheme(theme.id);
+                            setColorPickerOpen(false);
+                          }}
+                          className={`relative grid h-8 w-8 shrink-0 place-items-center rounded-full border border-black/10 transition-transform hover:scale-110 focus:outline-none ${
+                            isSelected ? 'ring-2 ring-[hsl(var(--primary))] ring-offset-2 ring-offset-[hsl(var(--card))] scale-105' : 'hover:opacity-90'
+                          }`}
+                          style={{ backgroundColor: theme.swatch }}
+                        >
+                          {isSelected && <Check size={14} className="text-white drop-shadow-xs stroke-[3]" />}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -808,7 +809,7 @@ function SiteHeader() {
             {/* Primary Action Button (Matching Build Your Vision "Start Project" style) */}
             <Link
               href="/conferences"
-              className="hidden sm:inline-flex items-center justify-center px-5 py-2 rounded-full bg-[hsl(var(--primary))] hover:brightness-110 text-white font-bold text-xs shadow-lg transition-transform hover:-translate-y-0.5 cursor-pointer whitespace-nowrap"
+              className="hidden sm:inline-flex items-center justify-center px-5 py-2 rounded-full bg-[hsl(var(--primary))] hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider shadow-lg transition-transform hover:-translate-y-0.5 cursor-pointer whitespace-nowrap"
             >
               Explore Events
             </Link>
@@ -884,13 +885,27 @@ function Reveal({ children, className = '' }: { children: ReactNode; className?:
 }
 
 function SectionTitle({ eyebrow, title, body, light = false }: { eyebrow: string; title: string; body?: string; light?: boolean }) {
-  return <div className={light ? 'text-[hsl(var(--primary-foreground))]' : ''}><p className={`label ${light ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--secondary))]'}`}>{eyebrow}</p><h2 className="display mt-4 max-w-4xl text-3xl font-bold leading-[1.08] tracking-[-.045em] md:text-5xl">{title}</h2>{body && <p className={`mt-5 max-w-2xl text-base leading-7 ${light ? 'text-[hsl(var(--primary-foreground)/.7)]' : 'text-[hsl(var(--muted-foreground))]'}`}>{body}</p>}</div>;
+  return (
+    <div className={light ? 'text-[hsl(var(--primary-foreground))]' : ''}>
+      <p className={`text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] ${light ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--secondary))]'}`}>
+        {eyebrow}
+      </p>
+      <h2 className="display mt-3.5 max-w-4xl text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-[-.045em]">
+        {title}
+      </h2>
+      {body && (
+        <p className={`mt-4 max-w-3xl text-base sm:text-lg md:text-xl font-medium leading-relaxed ${light ? 'text-[hsl(var(--primary-foreground)/.85)]' : 'text-[hsl(var(--muted-foreground))]'}`}>
+          {body}
+        </p>
+      )}
+    </div>
+  );
 }
 
 function PageHero({ eyebrow, title, body }: { eyebrow: string; title: string; body: string; bgImage?: string }) {
   return (
     <section className="page-intro bg-grid">
-      <div className="container-wide pt-12 pb-10 md:pt-16 md:pb-12 lg:pt-20 lg:pb-16 reveal">
+      <div className="container-wide pt-28 pb-12 sm:pt-32 md:pt-36 md:pb-16 lg:pt-40 lg:pb-20 reveal">
         <div>
           <div className="label text-[hsl(var(--accent))]">{eyebrow}</div>
           <h1 className="page-title mt-5">{title}</h1>
@@ -959,19 +974,19 @@ function GallerySlider() {
             View full gallery <ArrowRight size={16} />
           </Link>
         </div>
-        <div className="reveal relative max-w-4xl mx-auto overflow-hidden rounded-[20px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-2 shadow-xl">
+        <div className="reveal relative max-w-5xl mx-auto overflow-hidden rounded-[20px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-2.5 shadow-xl">
           <div 
-            className="relative aspect-[16/9] md:aspect-[2.5/1] lg:aspect-[3.2/1] max-h-[360px] w-full overflow-hidden rounded-[14px] transition-all duration-700 ease-in-out"
+            className="relative h-[320px] sm:h-[360px] md:h-[400px] lg:h-[420px] w-full overflow-hidden rounded-[14px] transition-all duration-700 ease-in-out"
             style={{ 
               backgroundImage: `linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.3) 60%, rgba(15, 23, 42, 0.1) 100%), url(${galleryImages[active]})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center'
             }}
           >
-            <div className="absolute inset-x-5 bottom-5 flex flex-col justify-end text-white">
-              <span className="label text-[hsl(var(--accent))] text-[9px] mb-1.5">0{active + 1} / 0{galleryItems.length}</span>
-              <h3 className="display text-xl md:text-2xl font-bold leading-tight text-white">{galleryItems[active][0]}</h3>
-              <p className="mt-1 text-xs md:text-sm text-slate-200 max-w-md">{galleryItems[active][1]}</p>
+            <div className="absolute inset-x-6 bottom-6 flex flex-col justify-end text-white">
+              <span className="label text-[hsl(var(--accent))] text-[10px] font-bold mb-1">0{active + 1} / 0{galleryItems.length}</span>
+              <h3 className="display text-xl sm:text-2xl md:text-3xl font-black leading-tight text-white">{galleryItems[active][0]}</h3>
+              <p className="mt-1.5 text-xs sm:text-sm md:text-base text-slate-200 max-w-lg font-medium">{galleryItems[active][1]}</p>
             </div>
             <div className="absolute right-5 top-5 flex gap-1.5">
               {galleryItems.map((_, i) => (
@@ -979,7 +994,7 @@ function GallerySlider() {
                   key={i} 
                   type="button"
                   onClick={() => setActive(i)} 
-                  className={`h-1.5 rounded-full transition-all duration-300 ${active === i ? 'w-6 bg-[hsl(var(--accent))]' : 'w-1.5 bg-white/40 hover:bg-white/60'}`}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${active === i ? 'w-6 bg-[hsl(var(--accent))]' : 'w-1.5 bg-white/40 hover:bg-white/70'}`}
                   aria-label={`Show slide ${i + 1}`}
                   data-testid={`button-slider-dot-${i}`}
                 />
@@ -1002,7 +1017,7 @@ const heroImages = [
 ];
 
 function Home() {
-  const { conferences, webinars, insightsList, mentors, mediaPartners } = useContext(APIContext);
+  const { conferences, webinars, insightsList, mentors, mediaPartners, events: eventsList } = useContext(APIContext);
   const [email, setEmail] = useState('');
   const [joined, setJoined] = useState(false);
   const [heroImgIndex, setHeroImgIndex] = useState(0);
@@ -1021,8 +1036,20 @@ function Home() {
       }
       return c.date === 'upcoming';
     });
-    return upcoming.length > 0 ? upcoming.slice(0, 3) : conferences.slice(0, 3);
-  }, [conferences]);
+    const pool = upcoming.length > 0 ? upcoming : conferences;
+    if (pool.length >= 4) return pool.slice(0, 4);
+
+    const fallbackConfs = (eventsList || []).filter((e: any) => e.type === 'Conference' || e.type === 'conference');
+    const combined = [...pool];
+    for (const f of fallbackConfs) {
+      if (combined.length >= 4) break;
+      const fId = f._id || f.id;
+      if (!combined.some((item) => (item._id || item.id) === fId || item.title === f.title)) {
+        combined.push(f);
+      }
+    }
+    return combined.slice(0, 4);
+  }, [conferences, eventsList]);
 
   const displayWebinars = useMemo(() => {
     const upcoming = webinars.filter((w: any) => {
@@ -1031,8 +1058,20 @@ function Home() {
       }
       return w.date === 'upcoming';
     });
-    return upcoming.length > 0 ? upcoming.slice(0, 3) : webinars.slice(0, 3);
-  }, [webinars]);
+    const pool = upcoming.length > 0 ? upcoming : webinars;
+    if (pool.length >= 4) return pool.slice(0, 4);
+
+    const fallbackWebs = (eventsList || []).filter((e: any) => e.type === 'Webinar' || e.type === 'webinar');
+    const combined = [...pool];
+    for (const f of fallbackWebs) {
+      if (combined.length >= 4) break;
+      const fId = f._id || f.id;
+      if (!combined.some((item) => (item._id || item.id) === fId || item.title === f.title)) {
+        combined.push(f);
+      }
+    }
+    return combined.slice(0, 4);
+  }, [webinars, eventsList]);
 
   return <Layout>
     <main>
@@ -1121,7 +1160,7 @@ function Home() {
         </div>
 
         {/* Left Side Content Container */}
-        <div className="relative z-20 w-full lg:w-[58%] min-h-[90vh] lg:min-h-screen px-6 sm:px-12 lg:px-16 pt-28 sm:pt-32 lg:pt-36 pb-12 lg:pb-16 flex flex-col justify-between">
+        <div className="relative z-20 w-full lg:w-[58%] min-h-[90vh] lg:min-h-screen px-6 sm:px-12 lg:px-16 pt-28 sm:pt-32 lg:pt-36 pb-20 lg:pb-24 flex flex-col justify-between">
           <div className="my-auto max-w-2xl">
             {/* Website Badge */}
             <div className="flex flex-wrap items-center gap-2 mb-6">
@@ -1162,36 +1201,36 @@ function Home() {
           </div>
 
           {/* Bottom Quick Stats Counter Grid */}
-          <div className="mt-10 pt-6 border-t border-white/20 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl">
+          <div className="mt-8 pt-5 border-t border-white/20 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-2xl">
             <div>
-              <p className="font-['Space_Grotesk'] text-2xl sm:text-3xl font-black text-white leading-none">
+              <p className="font-['Space_Grotesk'] text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
                 {conferences.length > 0 ? `${conferences.length}+` : '20+'}
               </p>
-              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-white/80 mt-1">
+              <p className="font-mono text-xs font-bold uppercase tracking-wider text-white/90 mt-2">
                 CONFERENCES
               </p>
             </div>
             <div>
-              <p className="font-['Space_Grotesk'] text-2xl sm:text-3xl font-black text-white leading-none">
+              <p className="font-['Space_Grotesk'] text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
                 {webinars.length > 0 ? `${webinars.length}+` : '15+'}
               </p>
-              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-white/80 mt-1">
+              <p className="font-mono text-xs font-bold uppercase tracking-wider text-white/90 mt-2">
                 LIVE WEBINARS
               </p>
             </div>
             <div>
-              <p className="font-['Space_Grotesk'] text-2xl sm:text-3xl font-black text-white leading-none">
+              <p className="font-['Space_Grotesk'] text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
                 {mentors.length > 0 ? `${mentors.length}+` : '30+'}
               </p>
-              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-white/80 mt-1">
+              <p className="font-mono text-xs font-bold uppercase tracking-wider text-white/90 mt-2">
                 GLOBAL MENTORS
               </p>
             </div>
             <div>
-              <p className="font-['Space_Grotesk'] text-2xl sm:text-3xl font-black text-white leading-none">
+              <p className="font-['Space_Grotesk'] text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
                 {insightsList.length > 0 ? `${insightsList.length}+` : '15+'}
               </p>
-              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-white/80 mt-1">
+              <p className="font-mono text-xs font-bold uppercase tracking-wider text-white/90 mt-2">
                 PUBLICATIONS
               </p>
             </div>
@@ -1217,31 +1256,37 @@ function Home() {
               const registerHref = subdomainUrl(item, '/register');
               const detailsHref = subdomainUrl(item) || `/conference/${encodeURIComponent(item.eventId || item.slug || item._id)}`;
               return (
-                <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-home-conference-${index}`}>
-                  <div className="relative aspect-[16/9] w-full bg-[hsl(var(--muted)/.25)] border-b border-[hsl(var(--border))] overflow-hidden">
-                    {item.logoUrl ? (
+                <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-home-conference-${index}`}>
+                  <div className="relative aspect-[16/9] w-full bg-white dark:bg-slate-900/60 border-b border-[hsl(var(--border))] overflow-hidden flex items-center justify-center">
+                    {item.bannerUrl ? (
                       <img 
-                        src={mediaUrl(item.logoUrl)} 
+                        src={mediaUrl(item.bannerUrl)} 
                         alt={`${item.title} banner`} 
                         className="h-full w-full object-cover" 
+                      />
+                    ) : item.logoUrl ? (
+                      <img 
+                        src={mediaUrl(item.logoUrl)} 
+                        alt={`${item.title} logo`} 
+                        className="h-full w-full object-contain p-2.5" 
                       />
                     ) : (
                       <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center">
                         <Building2 className="text-[hsl(var(--primary-foreground))] opacity-65" size={40} />
                       </div>
                     )}
-                    <span className="absolute right-3 top-3 inline-block text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-[hsl(var(--primary)/.85)] text-[hsl(var(--primary-foreground))] backdrop-blur-[2px] label">
+                    <span className="absolute right-3 top-3 inline-block text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-[hsl(var(--primary)/.85)] text-[hsl(var(--primary-foreground))] backdrop-blur-[2px] label z-10">
                       CONFERENCE
                     </span>
                   </div>
-                  <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div className="p-6 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="display text-lg font-bold leading-snug text-[hsl(var(--foreground))] line-clamp-2">
+                      <h3 className="display text-xl sm:text-[21px] font-black leading-snug text-[hsl(var(--foreground))] line-clamp-2">
                         {item.title}
                       </h3>
-                      <div className="mt-4 space-y-2">
-                        <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
-                          <MapPin size={13} className="shrink-0 text-[hsl(var(--accent))]" />
+                      <div className="mt-4 space-y-2.5">
+                        <div className="flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
+                          <MapPin size={15} className="shrink-0 text-[hsl(var(--accent))]" />
                           <span className="truncate">{item.location}</span>
                         </div>
                         {item.eventDate && (() => {
@@ -1250,13 +1295,13 @@ function Home() {
                           const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
                           return (
                             <>
-                              <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
-                                <CalendarDays size={13} className="shrink-0 text-[hsl(var(--secondary))]" />
+                              <div className="flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
+                                <CalendarDays size={15} className="shrink-0 text-[hsl(var(--secondary))]" />
                                 <span>{startFormatted}{endFormatted ? ` – ${endFormatted}` : ''}</span>
                               </div>
                               {(item.startTime || item.endTime) && (
-                                <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
-                                  <Clock3 size={13} className="shrink-0 text-[hsl(var(--secondary))]" />
+                                <div className="flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
+                                  <Clock3 size={15} className="shrink-0 text-[hsl(var(--secondary))]" />
                                   <span>{item.startTime || '—'} – {item.endTime || '—'}</span>
                                 </div>
                               )}
@@ -1270,7 +1315,7 @@ function Home() {
                         href={detailsHref} 
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 text-center py-3 px-3 rounded-full text-sm font-bold border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors"
+                        className="flex-1 text-center py-3 px-3 rounded-full text-sm font-extrabold border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors"
                         data-testid={`btn-home-conf-details-${index}`}
                       >
                         Details
@@ -1279,7 +1324,7 @@ function Home() {
                         target="_blank"
                         rel="noopener noreferrer"
                         href={registerHref} 
-                        className="flex-1 text-center py-3 px-3 rounded-full text-sm font-bold bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 transition-opacity"
+                        className="flex-1 text-center py-3 px-3 rounded-full text-sm font-extrabold bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 transition-opacity"
                         data-testid={`btn-home-conf-register-${index}`}
                       >
                         Register Now
@@ -1311,37 +1356,43 @@ function Home() {
               const registerHref = subdomainUrl(item, '/register');
               const detailsHref = subdomainUrl(item) || `/webinar/${encodeURIComponent(item.eventId || item.slug || item._id)}`;
               return (
-                <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-home-webinar-${index}`}>
-                  <div className="relative aspect-[16/9] w-full bg-[hsl(var(--muted)/.25)] border-b border-[hsl(var(--border))] overflow-hidden">
-                    {item.logoUrl ? (
+                <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-home-webinar-${index}`}>
+                  <div className="relative aspect-[16/9] w-full bg-white dark:bg-slate-900/60 border-b border-[hsl(var(--border))] overflow-hidden flex items-center justify-center">
+                    {item.bannerUrl ? (
                       <img 
-                        src={mediaUrl(item.logoUrl)} 
+                        src={mediaUrl(item.bannerUrl)} 
                         alt={`${item.title} banner`} 
                         className="h-full w-full object-cover" 
+                      />
+                    ) : item.logoUrl ? (
+                      <img 
+                        src={mediaUrl(item.logoUrl)} 
+                        alt={`${item.title} logo`} 
+                        className="h-full w-full object-contain p-2.5" 
                       />
                     ) : (
                       <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center">
                         <Users className="text-[hsl(var(--primary-foreground))] opacity-65" size={40} />
                       </div>
                     )}
-                    <span className="absolute right-3 top-3 inline-block text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-[hsl(var(--accent)/.85)] text-[hsl(var(--accent-foreground))] backdrop-blur-[2px] label">
+                    <span className="absolute right-3 top-3 inline-block text-[11px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded bg-[hsl(var(--accent)/.85)] text-[hsl(var(--accent-foreground))] backdrop-blur-[2px] z-10">
                       WEBINAR
                     </span>
                   </div>
-                  <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div className="p-6 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="display text-lg font-bold leading-snug text-[hsl(var(--foreground))] line-clamp-2">
+                      <h3 className="display text-xl sm:text-[21px] font-black leading-snug text-[hsl(var(--foreground))] line-clamp-2">
                         {item.title}
                       </h3>
-                      <div className="mt-4 space-y-2">
+                      <div className="mt-4 space-y-2.5">
                         {item.speaker && (
-                          <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
-                            <Users size={13} className="shrink-0 text-[hsl(var(--accent))]" />
+                          <div className="flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
+                            <Users size={15} className="shrink-0 text-[hsl(var(--accent))]" />
                             <span className="truncate">{item.speaker}</span>
                           </div>
                         )}
-                        <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
-                          <MapPin size={13} className="shrink-0 text-[hsl(var(--muted-foreground))]" />
+                        <div className="flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
+                          <MapPin size={15} className="shrink-0 text-[hsl(var(--muted-foreground))]" />
                           <span className="truncate">{item.location || 'Online'}</span>
                         </div>
                         {item.eventDate && (() => {
@@ -1350,13 +1401,13 @@ function Home() {
                           const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
                           return (
                             <>
-                              <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
-                                <CalendarDays size={13} className="shrink-0 text-[hsl(var(--secondary))]" />
+                              <div className="flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
+                                <CalendarDays size={15} className="shrink-0 text-[hsl(var(--secondary))]" />
                                 <span>{startFormatted}{endFormatted ? ` – ${endFormatted}` : ''}</span>
                               </div>
                               {(item.startTime || item.endTime) && (
-                                <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
-                                  <Clock3 size={13} className="shrink-0 text-[hsl(var(--secondary))]" />
+                                <div className="flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
+                                  <Clock3 size={15} className="shrink-0 text-[hsl(var(--secondary))]" />
                                   <span>{item.startTime || '—'} – {item.endTime || '—'}</span>
                                 </div>
                               )}
@@ -1397,31 +1448,45 @@ function Home() {
       <TestimonialCarousel />
       <GallerySlider />
       <section className="border-y border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] py-12 text-[hsl(var(--foreground))]">
-        <div className="container-wide flex flex-col justify-between gap-8 md:flex-row md:items-center">
-          <div className="shrink-0 max-w-sm">
+        <div className="container-wide">
+          <div className="text-center mb-8">
             <p className="label text-[hsl(var(--secondary))]">Media partners</p>
-            <p className="display mt-2 text-2xl font-bold text-[hsl(var(--foreground))]">Amplifying work that deserves to travel.</p>
+            <p className="display mt-2 text-2xl sm:text-3xl font-black text-[hsl(var(--foreground))]">
+              Amplifying work that deserves to travel.
+            </p>
           </div>
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6 flex-1 justify-start md:justify-end">
+          <div className="logo-marquee-container py-2">
             {mediaPartners && mediaPartners.length > 0 ? (
-              mediaPartners.map((partner: any, idx: number) => (
-                <Link key={partner._id || partner.id || idx} href="/media-partners" className="card-lift flex items-center gap-3 bg-[hsl(var(--card))] px-4 py-3 rounded-2xl border border-[hsl(var(--border))] shadow-sm transition-all hover:border-[hsl(var(--secondary))] group">
-                  {partner.logo ? (
-                    <img src={mediaUrl(partner.logo)} alt={partner.name} className="h-9 w-9 object-contain rounded-lg shrink-0 border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] p-0.5" />
-                  ) : (
-                    <div className="h-9 w-9 rounded-lg bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--secondary))] shrink-0 border border-[hsl(var(--border))]">
-                      <Building2 size={18} />
-                    </div>
-                  )}
-                  <span className="text-xs font-bold text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--secondary))] transition-colors leading-tight">{partner.name}</span>
-                </Link>
-              ))
+              <div className="logo-marquee-track">
+                {[...mediaPartners, ...mediaPartners, ...mediaPartners, ...mediaPartners].map((partner: any, idx: number) => (
+                  <Link
+                    key={`${partner._id || partner.id || idx}-${idx}`}
+                    href="/media-partners"
+                    className="card-lift flex items-center justify-center bg-white dark:bg-slate-900 h-36 px-4 py-2 min-w-[220px] max-w-[300px] rounded-xl border border-[hsl(var(--border))] shadow-sm transition-all hover:border-[hsl(var(--secondary))] shrink-0 group overflow-hidden"
+                    title={partner.name}
+                  >
+                    {partner.logo ? (
+                      <img
+                        src={mediaUrl(partner.logo)}
+                        alt={partner.name}
+                        className="h-28 max-h-[110px] w-full max-w-[260px] object-contain transition-transform group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2 text-sm font-bold text-[hsl(var(--foreground))]">
+                        <Building2 size={26} className="text-[hsl(var(--secondary))]" />
+                        <span className="truncate max-w-[160px]">{partner.name}</span>
+                      </div>
+                    )}
+                  </Link>
+                ))}
+              </div>
             ) : (
-              <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-xs font-bold text-[hsl(var(--muted-foreground))] sm:grid-cols-4 uppercase tracking-wider">
-                <span>JOURNAL OF TRANSLATIONAL MEDICINE</span>
-                <span>SCIENCEWIRE</span>
-                <span>HEALTH / REVIEW</span>
-                <span>TECHNICA</span>
+              <div className="logo-marquee-track">
+                {['JOURNAL OF TRANSLATIONAL MEDICINE', 'SCIENCEWIRE', 'HEALTH / REVIEW', 'TECHNICA', 'JOURNAL OF TRANSLATIONAL MEDICINE', 'SCIENCEWIRE', 'HEALTH / REVIEW', 'TECHNICA'].map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-center bg-white dark:bg-slate-900 h-36 px-6 py-2 min-w-[220px] rounded-xl border border-[hsl(var(--border))] shadow-sm shrink-0">
+                    <span className="text-xs font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">{item}</span>
+                  </div>
+                ))}
               </div>
             )}
           </div>

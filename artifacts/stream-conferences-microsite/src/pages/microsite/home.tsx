@@ -33,7 +33,7 @@ function formatDateRange(event: EventData): string {
 function useCountdown(targetDate: string | Date | undefined) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 60_000);
+    const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
   if (!targetDate) return null;
@@ -226,7 +226,7 @@ export function HomePage({ event }: { event: EventData }) {
   return (
     <>
       {/* Full-Bleed Edge-to-Edge Dynamic Theme Hero Section with Ambient Glow & Grid Lines (Matching Selected Admin Theme) */}
-      <section className="relative w-full hero-slant-bg text-white py-6 md:py-8 border-b border-white/10 overflow-hidden flex flex-col justify-between min-h-[calc(100vh-64px)]">
+      <section className="relative w-full hero-slant-bg text-white pt-20 pb-6 md:pt-24 md:pb-8 border-b border-white/10 overflow-hidden flex flex-col justify-between min-h-screen">
         {/* Glowing Grid Lines Overlay Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0f_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0f_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none" />
 
@@ -247,11 +247,16 @@ export function HomePage({ event }: { event: EventData }) {
                 </span>
               </div>
 
-              {/* Main Title & Cohort */}
+              {/* Main Title, Theme & Cohort */}
               <div className="space-y-2">
                 <h1 className="display text-3xl sm:text-5xl md:text-6xl font-black leading-tight text-white tracking-tight drop-shadow-md">
                   {event.title}
                 </h1>
+                {event.theme && (
+                  <p className="text-base sm:text-xl md:text-2xl font-extrabold text-amber-300 tracking-wide italic drop-shadow-sm">
+                    Theme: {event.theme}
+                  </p>
+                )}
                 {event.activeCohort && (
                   <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 text-white text-xs sm:text-sm font-semibold backdrop-blur-md border border-white/25 shadow-sm">
                     <span>{event.activeCohort.isCurrent ? 'Current Cohort' : 'Cohort'}</span>
