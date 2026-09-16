@@ -322,62 +322,33 @@ export function HomePage({ event }: { event: EventData }) {
               </div>
             </div>
 
-            {/* Right Column: Glassmorphism Event Overview Box */}
-            <div className="lg:col-span-5">
-              <div className="rounded-3xl border border-white/30 bg-white/15 backdrop-blur-xl p-5 sm:p-6 text-white space-y-4 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-36 h-36 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-
-                <div className="flex items-center justify-between border-b border-white/20 pb-3 relative z-10">
-                  <span className="text-base font-bold uppercase tracking-wider text-white">Event Overview</span>
-                  <span className="px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-emerald-500/30 text-emerald-200 border border-emerald-400/40 shadow-sm">
-                    Registrations Open
-                  </span>
+            {/* Right Column: 3D Circular Logo Card & Reminder Button */}
+            <div className="lg:col-span-5 flex flex-col items-center justify-center space-y-6 text-center">
+              {/* 3D Circular Card containing the Logo */}
+              {event.logoUrl ? (
+                <div className="relative w-72 h-72 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-full ring-8 sm:ring-12 ring-white/30 bg-white shadow-[0_30px_70px_-15px_rgba(0,0,0,0.45)] flex items-center justify-center p-3 sm:p-4 overflow-hidden transition-all duration-300 transform hover:scale-105 hover:shadow-[0_35px_80px_-10px_rgba(0,0,0,0.55)] group shrink-0">
+                  <img
+                    src={mediaUrl(event.logoUrl)}
+                    alt={event.title}
+                    className="w-full h-full object-contain max-h-full transition-transform duration-300 group-hover:scale-105"
+                  />
                 </div>
-
-                <div className="grid grid-cols-2 gap-3 relative z-10">
-                  <div className="bg-white/10 rounded-2xl p-3 sm:p-3.5 border border-white/20 shadow-sm flex flex-col justify-center">
-                    <span className="text-xs uppercase tracking-wider text-white/90 block mb-0.5 font-bold">Date</span>
-                    <p className="text-sm sm:text-base font-black text-white leading-snug break-words">{formatDateRange(event) || 'TBA'}</p>
-                  </div>
-                  <div className="bg-white/10 rounded-2xl p-3 sm:p-3.5 border border-white/20 shadow-sm flex flex-col justify-center">
-                    <span className="text-xs uppercase tracking-wider text-white/90 block mb-0.5 font-bold">Location</span>
-                    <p className="text-sm sm:text-base font-black text-white leading-snug break-words capitalize">{event.venue || event.location || 'TBA'}</p>
-                  </div>
-                  <div className="bg-white/10 rounded-2xl p-3 sm:p-3.5 border border-white/20 shadow-sm flex flex-col justify-center">
-                    <span className="text-xs uppercase tracking-wider text-white/90 block mb-0.5 font-bold">Format</span>
-                    <p className="text-sm sm:text-base font-black text-white leading-snug">Hybrid Summit</p>
-                  </div>
-                  <div className="bg-white/10 rounded-2xl p-3 sm:p-3.5 border border-white/20 shadow-sm flex flex-col justify-center">
-                    <span className="text-xs uppercase tracking-wider text-white/90 block mb-0.5 font-bold">Proceedings</span>
-                    <p className="text-sm sm:text-base font-black text-white leading-snug">DOI / ISBN</p>
-                  </div>
+              ) : (
+                <div className="relative w-72 h-72 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-full ring-8 sm:ring-12 ring-white/30 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.45)] flex items-center justify-center p-4 shrink-0 text-white text-6xl font-extrabold font-['Space_Grotesk']">
+                  {getNameInitials(event.title, 'SC')}
                 </div>
+              )}
 
-                <div className="space-y-2 pt-2 border-t border-white/20 text-sm sm:text-base font-bold text-white relative z-10">
-                  <div className="flex items-center gap-2.5">
-                    <Check size={18} className="text-emerald-400 shrink-0 stroke-[3]" />
-                    <span>Peer-reviewed scientific proceedings</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <Check size={18} className="text-emerald-400 shrink-0 stroke-[3]" />
-                    <span>Accepted abstracts receive permanent DOI assignment</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <Check size={18} className="text-emerald-400 shrink-0 stroke-[3]" />
-                    <span>Global delegation & keynote technical forums</span>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-white/20 flex items-center justify-between relative z-10">
-                  <Link href="/fees" className="text-sm sm:text-base font-extrabold text-white hover:underline inline-flex items-center gap-1.5">
-                    <span>View Fee Structure</span>
-                    <ChevronsRight size={16} />
-                  </Link>
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/15 border border-white/25">
-                    Peer-Reviewed
-                  </span>
-                </div>
-              </div>
+              {/* Action Button: Reminder to Join !! */}
+              <button
+                type="button"
+                onClick={() => createCalendarReminder(event)}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-slate-900/90 dark:bg-black/90 hover:bg-black text-white font-bold text-sm shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-0.5 border border-white/30 cursor-pointer whitespace-nowrap"
+                title="Add to Calendar"
+              >
+                <Calendar size={16} className="text-emerald-400" />
+                <span>Reminder to Join !!</span>
+              </button>
             </div>
           </div>
 
@@ -414,66 +385,16 @@ export function HomePage({ event }: { event: EventData }) {
       </section>
 
 
-      {/* Interactive Banner Carousel, Logo & Action Navigation Section */}
-      {(headerBanners.length > 0 || event.logoUrl) && (
+      {/* Centered Banner Carousel Section */}
+      {headerBanners.length > 0 && (
         <section className="container-wide py-10 md:py-14 border-b border-[hsl(var(--border))]">
-          {/* Centered 2-Column Unit with Balanced Left/Right Spacing */}
-          <div className="max-w-[1440px] w-full mx-auto flex flex-col lg:flex-row items-stretch justify-center gap-6 lg:gap-8">
-            {/* Left Column: Banner Carousel (Aspect 1500:500) */}
-            {headerBanners.length > 0 && (
-              <div className="w-full lg:flex-1 max-w-[1060px] flex flex-col justify-center">
-                <HeaderBannerCarousel
-                  banners={headerBanners}
-                  title={event.title}
-                  location={event.venue || event.location || ''}
-                />
-              </div>
-            )}
-
-            {/* Right Column: Glassmorphic Container matching Banner Height */}
-            <div className="w-full lg:w-[380px] shrink-0 rounded-2xl md:rounded-3xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-5 shadow-xl flex flex-col items-center justify-between space-y-4">
-              {/* Header Badge */}
-              <div className="w-full flex items-center justify-center">
-                <span className="px-3.5 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-widest bg-[hsl(var(--primary)/0.12)] text-[hsl(var(--primary))] border border-[hsl(var(--primary)/0.25)] shadow-sm">
-                  Official Event Portal
-                </span>
-              </div>
-
-              {/* Conference-Specific Circular Logo (No text clipping) */}
-              {event.logoUrl ? (
-                <div className="relative w-40 h-40 sm:w-44 sm:h-44 rounded-full ring-4 ring-[hsl(var(--primary)/0.35)] bg-white shadow-2xl flex items-center justify-center p-4 overflow-hidden group shrink-0 transition-all duration-300 hover:scale-105">
-                  <img
-                    src={mediaUrl(event.logoUrl)}
-                    alt={event.title}
-                    className="w-full h-full object-contain max-h-full"
-                  />
-                </div>
-              ) : (
-                <div className="relative w-40 h-40 sm:w-44 sm:h-44 rounded-full ring-4 ring-[hsl(var(--primary)/0.35)] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] shadow-2xl flex items-center justify-center p-4 shrink-0 text-white text-3xl font-extrabold font-['Space_Grotesk']">
-                  {getNameInitials(event.title, 'SC')}
-                </div>
-              )}
-
-              {/* Action Buttons - Side by Side Below Logo */}
-              <div className="flex flex-row items-center justify-center gap-2.5 w-full flex-wrap sm:flex-nowrap pt-1">
-                <Link
-                  href="/submit-abstract"
-                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 font-extrabold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 border border-white/20 cursor-pointer whitespace-nowrap"
-                >
-                  <ChevronsRight size={16} />
-                  <span>SUBMIT ABSTRACT</span>
-                </Link>
-
-                <button
-                  type="button"
-                  onClick={() => createCalendarReminder(event)}
-                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-slate-800 dark:bg-black hover:bg-slate-900 text-white font-bold text-xs shadow hover:shadow-md transition-all border border-slate-700 cursor-pointer whitespace-nowrap"
-                  title="Add to Calendar"
-                >
-                  <Calendar size={14} className="text-emerald-400" />
-                  <span>Reminder to Join !!</span>
-                </button>
-              </div>
+          <div className="max-w-[1350px] w-full mx-auto flex flex-col items-center justify-center">
+            <div className="w-full">
+              <HeaderBannerCarousel
+                banners={headerBanners}
+                title={event.title}
+                location={event.venue || event.location || ''}
+              />
             </div>
           </div>
         </section>
