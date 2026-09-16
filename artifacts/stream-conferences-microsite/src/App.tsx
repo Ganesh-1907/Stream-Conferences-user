@@ -407,9 +407,6 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
                       <Building2 className="text-[hsl(var(--primary-foreground))] opacity-65" size={40} />
                     </div>
                   )}
-                  <span className="absolute right-3 top-3 inline-block text-xs font-bold tracking-wider uppercase px-2.5 py-1 rounded bg-[hsl(var(--primary)/.85)] text-[hsl(var(--primary-foreground))] backdrop-blur-[2px] z-10">
-                    {e.type || 'CONFERENCE'}
-                  </span>
                 </div>
                 <div className="p-6 flex-1 flex flex-col justify-between">
                   <div>
@@ -445,35 +442,37 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
                     </div>
                   </div>
 
-                  <div className="mt-6 pt-5 border-t border-[hsl(var(--border))] flex flex-wrap items-center gap-2">
+                  <div className="mt-6 pt-5 border-t border-[hsl(var(--border))] space-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={registerHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 text-center py-2.5 px-3 rounded-full text-xs font-bold border-2 border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-[hsl(var(--primary-foreground))] transition-colors"
+                        aria-label={`Register for ${e.title}`}
+                      >
+                        Register
+                      </a>
+                      {e.type === 'Conference' && (
+                        <a
+                          href={abstractHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 text-center py-2.5 px-3 rounded-full text-xs font-bold border-2 border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-[hsl(var(--primary-foreground))] transition-colors"
+                          aria-label={`Submit abstract for ${e.title}`}
+                        >
+                          Submit Abstract
+                        </a>
+                      )}
+                    </div>
                     <a
                       href={detailsHref}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="btn-main border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] text-[hsl(var(--foreground))] flex-1 text-center justify-center py-2.5 text-sm font-bold"
+                      className="w-full text-center py-3 px-4 rounded-full text-sm font-bold bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
                       aria-label={`View details for ${e.title}`}
                     >
-                      Details
-                    </a>
-                    {e.type === 'Conference' && (
-                      <a
-                        href={abstractHref}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-main border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] text-[hsl(var(--foreground))] flex-1 text-center justify-center py-2.5 text-sm font-bold whitespace-nowrap"
-                        aria-label={`Submit abstract for ${e.title}`}
-                      >
-                        Submit Abstract
-                      </a>
-                    )}
-                    <a
-                      href={registerHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-main btn-primary flex-1 text-center justify-center py-2.5 text-sm font-bold whitespace-nowrap"
-                      aria-label={`Register for ${e.title}`}
-                    >
-                      Register <ArrowRight size={14} />
+                      Details <ArrowRight size={14} />
                     </a>
                   </div>
                 </div>
@@ -1230,14 +1229,14 @@ function Countdown() {
 }
 
 function TrackGrid() {
-  return <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">{tracks.map(({ title, text, icon: Icon }, index) => <Reveal key={title} className={index === 0 ? 'lg:-translate-y-3' : ''}><div className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5" data-testid={`card-track-${index}`}><Icon className="text-[hsl(var(--secondary))]" size={23} strokeWidth={1.8} /><h3 className="display mt-7 text-lg font-bold leading-tight">{title}</h3><p className="mt-3 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{text}</p><span className="mt-8 block text-[hsl(var(--accent))]"><ArrowUpRight size={18} /></span></div></Reveal>)}</div>;
+  return <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">{tracks.map(({ title, text, icon: Icon }, index) => <Reveal key={title} className={index === 0 ? 'lg:-translate-y-3' : ''}><div className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5" data-testid={`card-track-${index}`}><Icon className="text-[hsl(var(--secondary))]" size={23} strokeWidth={1.8} /><h3 className="display mt-7 text-lg sm:text-xl font-bold leading-tight">{title}</h3><p className="mt-3 text-base sm:text-lg leading-7 text-[hsl(var(--muted-foreground))] font-medium">{text}</p><span className="mt-8 block text-[hsl(var(--accent))]"><ArrowUpRight size={18} /></span></div></Reveal>)}</div>;
 }
 
 function TestimonialCarousel() {
   const [active, setActive] = useState(0);
   const testimonial = testimonials[active];
   const move = (direction: number) => setActive((current) => (current + direction + testimonials.length) % testimonials.length);
-  return <section className="section-pad bg-[hsl(var(--card))] text-[hsl(var(--foreground))] border-y border-[hsl(var(--border))]" aria-label="Delegate testimonials">
+  return <section className="section-pad bg-[hsl(var(--card))] text-[hsl(var(--foreground))]" aria-label="Delegate testimonials">
     <div className="container-wide grid gap-10 lg:grid-cols-[.65fr_1.35fr] lg:items-end">
       <div><p className="label text-[hsl(var(--secondary))]">From the delegate community</p><h2 className="display mt-5 max-w-md text-4xl font-bold leading-[1.03] tracking-[-.05em] md:text-6xl text-[hsl(var(--foreground))]">A room people remember.</h2><p className="mt-6 max-w-md text-base leading-7 text-[hsl(var(--muted-foreground))]">The conference experience is designed to stay useful long after the final session.</p></div>
       <div className="relative rounded-[22px] border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.35)] p-7 md:p-10 shadow-lg">
@@ -1255,6 +1254,74 @@ function TestimonialCarousel() {
     </div>
   </section>;
 }
+
+function HomeFaqSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const homeFaqs = faqs.slice(0, 5);
+
+  return (
+    <section className="section-pad bg-[hsl(var(--card))]">
+      <div className="container-wide max-w-4xl">
+        <div className="text-center mb-10">
+          <SectionTitle
+            eyebrow=""
+            title="Frequently Asked Questions"
+          />
+          <p className="mt-3 text-base sm:text-lg text-[hsl(var(--muted-foreground))]">
+            Here are common questions delegates ask before submitting or attending.
+          </p>
+        </div>
+
+        <div className="grid gap-3">
+          {homeFaqs.map(([question, answer], index) => {
+            const isOpen = openIndex === index;
+            return (
+              <div
+                key={question}
+                className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm overflow-hidden"
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenIndex(isOpen ? null : index)}
+                  className="flex w-full items-center justify-between gap-5 p-5 text-left font-bold text-base sm:text-lg"
+                  aria-expanded={isOpen}
+                  data-testid={`button-home-faq-${index}`}
+                >
+                  <span>{question}</span>
+                  <ChevronDown
+                    size={18}
+                    className={`shrink-0 text-[hsl(var(--secondary))] transition-transform ${
+                      isOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+                {isOpen && (
+                  <div
+                    className="border-t border-[hsl(var(--border))] px-6 pb-6 pt-4 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]"
+                    data-testid={`text-home-faq-answer-${index}`}
+                  >
+                    {answer}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-10 text-center">
+          <Link
+            href="/faq"
+            className="btn-main btn-quiet inline-flex items-center gap-2"
+            data-testid="link-home-see-all-faqs"
+          >
+            See All FAQs <ArrowRight size={16} />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 
 function GallerySlider() {
   const [active, setActive] = useState(0);
@@ -1293,7 +1360,7 @@ function GallerySlider() {
   const activeItem = items[active] || { title: '', description: '', image: '' };
 
   return (
-    <section className="py-12 border-y border-[hsl(var(--border))] bg-[hsl(var(--muted)/.2)]" aria-label="Inside the exchange">
+    <section className="section-pad bg-[hsl(var(--card))]" aria-label="Inside the exchange">
       <div className="container-wide">
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end mb-8">
           <SectionTitle 
@@ -1586,7 +1653,8 @@ function Home() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {displayConferences.map((item, index) => {
               const registerHref = subdomainUrl(item, '/register');
-              const detailsHref = subdomainUrl(item) || `/conference/${encodeURIComponent(item.eventId || item.slug || item._id)}`;
+              const detailsHref = subdomainUrl(item);
+              const abstractHref = subdomainUrl(item, '/submit-abstract');
               return (
                 <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-home-conference-${index}`}>
                   <div className="relative aspect-[16/9] w-full bg-white dark:bg-slate-900/60 border-b border-[hsl(var(--border))] overflow-hidden flex items-center justify-center">
@@ -1607,9 +1675,6 @@ function Home() {
                         <Building2 className="text-[hsl(var(--primary-foreground))] opacity-65" size={40} />
                       </div>
                     )}
-                    <span className="absolute right-3 top-3 inline-block text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-[hsl(var(--primary)/.85)] text-[hsl(var(--primary-foreground))] backdrop-blur-[2px] label z-10">
-                      CONFERENCE
-                    </span>
                   </div>
                   <div className="p-6 flex-1 flex flex-col justify-between">
                     <div>
@@ -1642,24 +1707,35 @@ function Home() {
                         })()}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 mt-6 pt-5 border-t border-[hsl(var(--border))]">
+                    <div className="mt-6 pt-5 border-t border-[hsl(var(--border))] space-y-2.5">
+                      <div className="flex items-center gap-2">
+                        <a 
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          href={registerHref} 
+                          className="flex-1 text-center py-2.5 px-3 rounded-full text-xs font-bold border-2 border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-[hsl(var(--primary-foreground))] transition-colors"
+                          data-testid={`btn-home-conf-register-${index}`}
+                        >
+                          Register
+                        </a>
+                        <a 
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          href={abstractHref} 
+                          className="flex-1 text-center py-2.5 px-3 rounded-full text-xs font-bold border-2 border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-[hsl(var(--primary-foreground))] transition-colors"
+                          data-testid={`btn-home-conf-abstract-${index}`}
+                        >
+                          Submit Abstract
+                        </a>
+                      </div>
                       <a 
                         href={detailsHref} 
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 text-center py-3 px-3 rounded-full text-sm font-extrabold border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors"
+                        className="w-full text-center py-3 px-4 rounded-full text-sm font-bold bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
                         data-testid={`btn-home-conf-details-${index}`}
                       >
-                        Details
-                      </a>
-                      <a 
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href={registerHref} 
-                        className="flex-1 text-center py-3 px-3 rounded-full text-sm font-extrabold bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 transition-opacity"
-                        data-testid={`btn-home-conf-register-${index}`}
-                      >
-                        Register Now
+                        Details <ArrowRight size={14} />
                       </a>
                     </div>
                   </div>
@@ -1676,9 +1752,10 @@ function Home() {
       <TestimonialCarousel />
       <GallerySlider />
       {insightsList.length > 0 && (
-        <section className="section-pad"><div className="container-wide grid gap-10 md:grid-cols-[.7fr_1.3fr]"><div><SectionTitle eyebrow="From the Stream Conferences blog" title="Notes for the in-between." /><Link href="/blog" className="btn-main btn-quiet mt-8" data-testid="link-home-insights">Read the blog <ArrowRight size={16} /></Link></div><div className="grid gap-6 sm:grid-cols-3">{insightsList.slice(0, 3).map((insight, index) => <div key={insight.id || insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full shadow-sm"><div className="p-6 flex-1"><div className="aspect-video w-full rounded-xl overflow-hidden mb-4 bg-[hsl(var(--muted)/.25)] flex items-center justify-center relative">{insight.bannerUrl ? <img src={mediaUrl(insight.bannerUrl)} alt={insight.title} className="h-full w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} /> : <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center"><BookOpen className="text-[hsl(var(--primary-foreground))] opacity-65" size={32} /></div>}</div><span className="text-xs font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">{insight.label}</span><h3 className="display mt-2 text-xl font-bold leading-snug line-clamp-2 text-[hsl(var(--foreground))]">{insight.title}</h3><p className="mt-3 text-base leading-7 text-[hsl(var(--muted-foreground))] line-clamp-3">{insight.copy}</p></div><div className="px-6 pb-6 pt-0"><Link href={`/blog/${encodeURIComponent(insight.id)}`} className="inline-flex items-center gap-1.5 text-base font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition" data-testid={`link-home-blog-${index}`}>Read field note <ArrowRight size={15} /></Link></div></div>)}</div></div></section>
+        <section className="section-pad bg-[hsl(var(--card))]"><div className="container-wide grid gap-10 md:grid-cols-[.7fr_1.3fr]"><div><SectionTitle eyebrow="From the Stream Conferences blog" title="Notes for the in-between." /><Link href="/blog" className="btn-main btn-quiet mt-8" data-testid="link-home-insights">Read the blog <ArrowRight size={16} /></Link></div><div className="grid gap-6 sm:grid-cols-3">{insightsList.slice(0, 3).map((insight, index) => <div key={insight.id || insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full shadow-sm"><div className="p-6 flex-1"><div className="aspect-video w-full rounded-xl overflow-hidden mb-4 bg-[hsl(var(--muted)/.25)] flex items-center justify-center relative">{insight.bannerUrl ? <img src={mediaUrl(insight.bannerUrl)} alt={insight.title} className="h-full w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} /> : <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center"><BookOpen className="text-[hsl(var(--primary-foreground))] opacity-65" size={32} /></div>}</div><span className="text-xs font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">{insight.label}</span><h3 className="display mt-2 text-xl font-bold leading-snug line-clamp-2 text-[hsl(var(--foreground))]">{insight.title}</h3><p className="mt-3 text-base leading-7 text-[hsl(var(--muted-foreground))] line-clamp-3">{insight.copy}</p></div><div className="px-6 pb-6 pt-0"><Link href={`/blog/${encodeURIComponent(insight.id)}`} className="inline-flex items-center gap-1.5 text-base font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition" data-testid={`link-home-blog-${index}`}>Read field note <ArrowRight size={15} /></Link></div></div>)}</div></div></section>
       )}
-      <section className="bg-[hsl(var(--primary))] py-12 text-[hsl(var(--primary-foreground))] border-t border-[hsl(var(--primary-foreground)/.15)]"><div className="container-wide flex flex-col justify-between gap-6 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--accent))]">Delegate desk</p><p className="display mt-2 text-2xl font-bold text-[hsl(var(--primary-foreground))]">Have a question before you arrive?</p><div className="mt-3 flex flex-wrap gap-4 text-sm text-[hsl(var(--primary-foreground)/.85)]"><a href="mailto:info@streamconferences.com" className="flex items-center gap-2 font-semibold hover:text-[hsl(var(--accent))]" data-testid="link-home-email"><Mail size={16} /> info@streamconferences.com</a><span className="flex items-center gap-2"><Phone size={16} /> +1 (617) 555-0199</span></div></div><Link href="/contact" className="btn-main bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:brightness-110 shadow-lg border-0" data-testid="link-home-contact">Contact us <ArrowUpRight size={16} /></Link></div></section>
+      <HomeFaqSection />
+      <section className="bg-[hsl(var(--primary))] py-12 text-[hsl(var(--primary-foreground))]"><div className="container-wide flex flex-col justify-between gap-6 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--accent))]">Delegate desk</p><p className="display mt-2 text-2xl font-bold text-[hsl(var(--primary-foreground))]">Have a question before you arrive?</p><div className="mt-3 flex flex-wrap gap-4 text-sm text-[hsl(var(--primary-foreground)/.85)]"><a href="mailto:info@streamconferences.com" className="flex items-center gap-2 font-semibold hover:text-[hsl(var(--accent))]" data-testid="link-home-email"><Mail size={16} /> info@streamconferences.com</a><span className="flex items-center gap-2"><Phone size={16} /> +1 (617) 555-0199</span></div></div><Link href="/contact" className="btn-main bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:brightness-110 shadow-lg border-0" data-testid="link-home-contact">Contact us <ArrowUpRight size={16} /></Link></div></section>
     </main>
   </Layout>;
 }
@@ -1791,7 +1868,7 @@ function AboutPage() {
         </section>
 
         {/* 2. Vision & Mission Section - Stacked one by one */}
-        <section className="section-pad border-t border-[hsl(var(--border))]">
+        <section className="section-pad bg-[hsl(var(--card))]">
           <div className="container-wide w-full grid gap-14 grid-cols-1">
             <div>
               <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))] mb-3">
@@ -1816,7 +1893,7 @@ function AboutPage() {
         </section>
 
         {/* 3. What Guides The Work - 4 Cards in 1 Row */}
-        <section className="section-pad bg-[hsl(var(--background))]">
+        <section className="section-pad bg-[hsl(var(--card))]">
           <div className="container-wide">
             <SectionTitle eyebrow="What guides the work" title="Four values behind every stage, review, and connection." />
             <div className="mt-12 grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
@@ -1824,8 +1901,8 @@ function AboutPage() {
                 <div key={title} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm">
                   <div>
                     <span className="font-mono text-[hsl(var(--secondary))] font-bold text-sm tracking-wider">0{i + 1}</span>
-                    <h3 className="display mt-4 text-lg font-bold text-[hsl(var(--foreground))] leading-snug">{title}</h3>
-                    <p className="mt-3 text-xs sm:text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">{body}</p>
+                    <h3 className="display mt-4 text-lg sm:text-xl font-bold text-[hsl(var(--foreground))] leading-snug">{title}</h3>
+                    <p className="mt-3 text-base sm:text-lg leading-7 text-[hsl(var(--muted-foreground))] font-medium">{body}</p>
                   </div>
                 </div>
               ))}
@@ -1834,15 +1911,15 @@ function AboutPage() {
         </section>
 
         {/* 4. Who We Gather */}
-        <section className="section-pad bg-[hsl(var(--muted)/.35)]">
+        <section className="section-pad bg-[hsl(var(--card))]">
           <div className="container-wide grid gap-12 lg:grid-cols-[.8fr_1.2fr]">
             <SectionTitle eyebrow="Who we gather" title="A premier delegation of decision-makers and innovators." />
             <div className="grid gap-3 sm:grid-cols-2">
               {['Clinical & Academic Leaders', 'Industry Innovators', 'Research & Advisory Authorities', 'Next-Gen Researchers'].map((item, i) => (
                 <div key={item} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5">
                   <Building2 size={20} className="text-[hsl(var(--secondary))]" />
-                  <h3 className="display mt-6 text-lg font-bold">{item}</h3>
-                  <p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">Physicians, executives, editors, strategists, doctoral candidates, and outstanding young scientists.</p>
+                  <h3 className="display mt-6 text-lg sm:text-xl font-bold">{item}</h3>
+                  <p className="mt-3 text-base sm:text-lg leading-7 text-[hsl(var(--muted-foreground))] font-medium">Physicians, executives, editors, strategists, doctoral candidates, and outstanding young scientists.</p>
                 </div>
               ))}
             </div>
@@ -1850,7 +1927,7 @@ function AboutPage() {
         </section>
 
         {/* 5. Research Dissemination & Healthcare Publishing */}
-        <section className="section-pad border-t border-[hsl(var(--border))]">
+        <section className="section-pad bg-[hsl(var(--card))]">
           <div className="container-wide">
             <SectionTitle eyebrow="Publishing & Indexing" title="Research Dissemination & Healthcare Publishing" />
             <div className="mt-8 grid gap-5 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] max-w-4xl">
@@ -2167,7 +2244,7 @@ function VenuePage() {
 function SponsorsPage() {
   const [sent, setSent] = useState(false);
   const submit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); setSent(true); };
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1200&q=80" eyebrow="Build the room with us" title="Put your work in the conversation." body="Sponsorship and exhibition at ICMLHS 2027 places your organization alongside the researchers and practitioners shaping what comes next." /><main><section className="section-pad"><div className="container-wide"><div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">{[['Platinum', 'Lead the room', ['Main stage recognition', 'Keynote introduction', 'Premium exhibition footprint']], ['Gold', 'Shape the exchange', ['Session recognition', 'Exhibition footprint', 'Delegate invitations']], ['Silver', 'Join the network', ['Logo visibility', 'Exhibition table', 'Delegate invitations']], ['Exhibitor', 'Show the work', ['Dedicated table', 'Listing in event guide', 'Passes included']]].map(([tier, lead, benefits]) => <div key={String(tier)} className={`rounded-2xl border p-6 ${tier === 'Platinum' ? 'border-[hsl(var(--accent))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : 'border-[hsl(var(--border))] bg-[hsl(var(--card))]'}`}><p className={`label ${tier === 'Platinum' ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--secondary))]'}`}>{tier}</p><h3 className="display mt-4 text-2xl font-bold">{lead}</h3><ul className="mt-8 grid gap-3">{(benefits as string[]).map((benefit) => <li key={benefit} className="flex gap-2 text-sm"><Check size={16} className="mt-0.5 shrink-0 text-[hsl(var(--accent))]" />{benefit}</li>)}</ul></div>)}</div></div></section><section className="section-pad border-t border-[hsl(var(--border))] bg-[hsl(var(--muted)/.35)]"><div className="container-wide grid gap-12 lg:grid-cols-[.75fr_1.25fr]"><SectionTitle eyebrow="Partner desk" title="Start a useful conversation." body="Send an initial brief to partners@streamconferences.com. Our partnership team will respond within 24–48 business hours." />{sent ? <SuccessState title="Brief received" body="Thanks. The partnership desk has received your request and will contact you shortly." reset={() => setSent(false)} testId="status-sponsor-success" /> : <form onSubmit={submit} className="grid gap-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6"><input required className="form-field" placeholder="Company name" aria-label="Company name" data-testid="input-sponsor-company" /><input required className="form-field" placeholder="Contact name" aria-label="Contact name" data-testid="input-sponsor-contact" /><div className="grid gap-4 sm:grid-cols-2"><input required type="email" className="form-field" placeholder="Email address" aria-label="Email address" data-testid="input-sponsor-email" /><input className="form-field" placeholder="Phone number" aria-label="Phone number" data-testid="input-sponsor-phone" /></div><select className="form-field" defaultValue="" aria-label="Tier of interest" data-testid="select-sponsor-tier"><option value="" disabled>Tier of interest</option><option>Platinum</option><option>Gold</option><option>Silver</option><option>Exhibitor</option></select><textarea className="form-field min-h-28" placeholder="Tell us what you want to make possible" aria-label="Message" data-testid="input-sponsor-message" /><button type="submit" className="btn-main btn-primary" data-testid="button-submit-sponsor">Send partnership brief <Send size={16} /></button></form>}</div></section></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1200&q=80" eyebrow="Build the room with us" title="Put your work in the conversation." body="Sponsorship and exhibition at ICMLHS 2027 places your organization alongside the researchers and practitioners shaping what comes next." /><main><section className="section-pad"><div className="container-wide"><div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">{[['Platinum', 'Lead the room', ['Main stage recognition', 'Keynote introduction', 'Premium exhibition footprint']], ['Gold', 'Shape the exchange', ['Session recognition', 'Exhibition footprint', 'Delegate invitations']], ['Silver', 'Join the network', ['Logo visibility', 'Exhibition table', 'Delegate invitations']], ['Exhibitor', 'Show the work', ['Dedicated table', 'Listing in event guide', 'Passes included']]].map(([tier, lead, benefits]) => <div key={String(tier)} className={`rounded-2xl border p-6 ${tier === 'Platinum' ? 'border-[hsl(var(--accent))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : 'border-[hsl(var(--border))] bg-[hsl(var(--card))]'}`}><p className={`label ${tier === 'Platinum' ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--secondary))]'}`}>{tier}</p><h3 className="display mt-4 text-2xl font-bold">{lead}</h3><ul className="mt-8 grid gap-3">{(benefits as string[]).map((benefit) => <li key={benefit} className="flex gap-2 text-sm"><Check size={16} className="mt-0.5 shrink-0 text-[hsl(var(--accent))]" />{benefit}</li>)}</ul></div>)}</div></div></section><section className="section-pad bg-[hsl(var(--card))]"><div className="container-wide grid gap-12 lg:grid-cols-[.75fr_1.25fr]"><SectionTitle eyebrow="Partner desk" title="Start a useful conversation." body="Send an initial brief to partners@streamconferences.com. Our partnership team will respond within 24–48 business hours." />{sent ? <SuccessState title="Brief received" body="Thanks. The partnership desk has received your request and will contact you shortly." reset={() => setSent(false)} testId="status-sponsor-success" /> : <form onSubmit={submit} className="grid gap-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6"><input required className="form-field" placeholder="Company name" aria-label="Company name" data-testid="input-sponsor-company" /><input required className="form-field" placeholder="Contact name" aria-label="Contact name" data-testid="input-sponsor-contact" /><div className="grid gap-4 sm:grid-cols-2"><input required type="email" className="form-field" placeholder="Email address" aria-label="Email address" data-testid="input-sponsor-email" /><input className="form-field" placeholder="Phone number" aria-label="Phone number" data-testid="input-sponsor-phone" /></div><select className="form-field" defaultValue="" aria-label="Tier of interest" data-testid="select-sponsor-tier"><option value="" disabled>Tier of interest</option><option>Platinum</option><option>Gold</option><option>Silver</option><option>Exhibitor</option></select><textarea className="form-field min-h-28" placeholder="Tell us what you want to make possible" aria-label="Message" data-testid="input-sponsor-message" /><button type="submit" className="btn-main btn-primary" data-testid="button-submit-sponsor">Send partnership brief <Send size={16} /></button></form>}</div></section></main></Layout>;
 }
 
 function RegisterPage() {
@@ -2974,7 +3051,7 @@ function FAQPage() {
   const [open, setOpen] = useState<number | null>(0);
   const [query, setQuery] = useState('');
   const filtered = useMemo(() => faqs.filter(([question, answer]) => `${question} ${answer}`.toLowerCase().includes(query.toLowerCase())), [query]);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80" eyebrow="Delegate desk" title="The questions worth answering early." body="Find practical guidance on eligibility, submission, review, presentation formats, registration, and joining from abroad." /><main className="section-pad"><div className="container-wide max-w-4xl"><div className="relative mb-10"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] pointer-events-none z-10" size={19} /><input className="form-field !pl-12 pr-4 py-3.5 text-base shadow-sm rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]" style={{ paddingLeft: '48px' }} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the delegate desk" aria-label="Search FAQs" data-testid="input-faq-search" /></div><div className="grid gap-3">{filtered.map(([question, answer], index) => { const actualIndex = faqs.findIndex(([item]) => item === question); const isOpen = open === actualIndex; return <div key={question} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"><button type="button" onClick={() => setOpen(isOpen ? null : actualIndex)} className="flex w-full items-center justify-between gap-5 p-5 text-left font-bold text-base sm:text-lg" aria-expanded={isOpen} data-testid={`button-faq-${actualIndex}`}><span>{question}</span><ChevronDown size={18} className={`shrink-0 text-[hsl(var(--secondary))] transition-transform ${isOpen ? 'rotate-180' : ''}`} /></button>{isOpen && <div className="border-t border-[hsl(var(--border))] px-6 pb-6 pt-4 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]" data-testid={`text-faq-answer-${actualIndex}`}>{answer}</div>}</div>; })}</div>{filtered.length === 0 && <div className="rounded-2xl border border-dashed border-[hsl(var(--border))] p-10 text-center"><CircleHelp className="mx-auto text-[hsl(var(--secondary))]" /><p className="mt-4 font-bold text-lg">No matching questions</p><p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Try a shorter search, or email the scientific coordination team.</p></div>}<div className="mt-16 rounded-2xl bg-[hsl(var(--muted))] p-8"><p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">Need further assistance?</p><p className="mt-3 max-w-2xl text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">For questions regarding abstract guidelines or technical issues, contact <a href="mailto:abstracts@streamconferences.com" className="font-bold text-[hsl(var(--secondary))]" data-testid="link-faq-email">abstracts@streamconferences.com</a>.</p><Link href="/contact" className="btn-main btn-quiet mt-6" data-testid="link-faq-contact">Contact us <ArrowUpRight size={16} /></Link></div></div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80" eyebrow="Delegate desk" title="The questions worth answering early." body="Find practical guidance on eligibility, submission, review, presentation formats, registration, and joining from abroad." /><main className="section-pad"><div className="container-wide max-w-4xl"><div className="relative mb-10"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] pointer-events-none z-10" size={19} /><input className="form-field !pl-12 pr-4 py-3.5 text-base shadow-sm rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]" style={{ paddingLeft: '48px' }} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the delegate desk" aria-label="Search FAQs" data-testid="input-faq-search" /></div><div className="grid gap-3">{filtered.map(([question, answer], index) => { const actualIndex = faqs.findIndex(([item]) => item === question); const isOpen = open === actualIndex; return <div key={question} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"><button type="button" onClick={() => setOpen(isOpen ? null : actualIndex)} className="flex w-full items-center justify-between gap-5 p-5 text-left font-bold text-base sm:text-lg" aria-expanded={isOpen} data-testid={`button-faq-${actualIndex}`}><span>{question}</span><ChevronDown size={18} className={`shrink-0 text-[hsl(var(--secondary))] transition-transform ${isOpen ? 'rotate-180' : ''}`} /></button>{isOpen && <div className="border-t border-[hsl(var(--border))] px-6 pb-6 pt-4 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]" data-testid={`text-faq-answer-${actualIndex}`}>{answer}</div>}</div>; })}</div>{filtered.length === 0 && <div className="rounded-2xl border border-dashed border-[hsl(var(--border))] p-10 text-center"><CircleHelp className="mx-auto text-[hsl(var(--secondary))]" /><p className="mt-4 font-bold text-lg">No matching questions</p><p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Try a shorter search, or email the scientific coordination team.</p></div>}<div className="mt-16 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm"><p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">Need further assistance?</p><p className="mt-3 max-w-2xl text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">For questions regarding abstract guidelines or technical issues, contact <a href="mailto:abstracts@streamconferences.com" className="font-bold text-[hsl(var(--secondary))]" data-testid="link-faq-email">abstracts@streamconferences.com</a>.</p><Link href="/contact" className="btn-main btn-quiet mt-6" data-testid="link-faq-contact">Contact us <ArrowUpRight size={16} /></Link></div></div></main></Layout>;
 }
 
 function AbstractSubmissionGuidelinesPage() {
@@ -3309,11 +3386,11 @@ function ContactPage() {
                   data-testid={`card-contact-${i}`}
                 >
                   <Mail className="text-[hsl(var(--secondary))]" size={21} />
-                  <h3 className="display mt-6 text-xl font-bold">{title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{body}</p>
+                  <h3 className="display mt-6 text-xl sm:text-2xl font-bold">{title}</h3>
+                  <p className="mt-3 text-base sm:text-lg leading-7 text-[hsl(var(--muted-foreground))] font-medium">{body}</p>
                   <a
                     href={`mailto:${email}`}
-                    className="mt-5 inline-block text-sm font-bold text-[hsl(var(--secondary))] hover:underline"
+                    className="mt-5 inline-block text-base sm:text-lg font-bold text-[hsl(var(--secondary))] hover:underline"
                     data-testid={`link-contact-email-${i}`}
                   >
                     {email}
@@ -3324,7 +3401,7 @@ function ContactPage() {
           </div>
         </section>
 
-        <section className="section-pad bg-[hsl(var(--muted)/.35)]">
+        <section className="section-pad bg-[hsl(var(--card))]">
           <div className="container-wide grid gap-12 lg:grid-cols-[.7fr_1.3fr]">
             <div>
               <SectionTitle
