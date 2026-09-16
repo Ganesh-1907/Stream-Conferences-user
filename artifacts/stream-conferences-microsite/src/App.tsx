@@ -18,6 +18,7 @@ import {
   Globe2,
   GraduationCap,
   HeartPulse,
+  Instagram,
   Linkedin,
   Mail,
   MapPin,
@@ -41,6 +42,9 @@ import {
   ChevronLeft,
   Handshake,
   Store,
+  Clock,
+  CheckCircle2,
+  FileText,
 } from 'lucide-react';
 import { Link, Route, Switch, Router as WouterRouter, useLocation, useParams } from 'wouter';
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -57,30 +61,55 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
 const ROOT_DOMAIN = import.meta.env.VITE_ROOT_DOMAIN || '';
 const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
 
-// Build the public microsite URL for an event based on its subdomain.
+interface DetectedSubdomain {
+  subdomain: string;
+  customBase?: string;
+}
+
+// Build the public microsite URL for an event based on its subdomain/eventId.
 const subdomainUrl = (item: any, path = ''): string => {
-  const sub = item?.subdomain;
+  const sub = item?.subdomain || item?.eventId || item?.slug || (item as any)?._id || item?.id;
   if (!sub) return '';
   const root = ROOT_DOMAIN.toLowerCase();
-  if (!root || root === 'localhost') {
-    return `${window.location.origin}/?subdomain=${encodeURIComponent(sub)}${path ? `#${path}` : ''}`;
+  const cleanPath = path ? (path.startsWith('/') ? path : `/${path}`) : '';
+
+  if (!root || root === 'localhost' || root === '127.0.0.1') {
+    const typePath = item?.type === 'Webinar' || item?.eventType === 'webinar' ? 'webinar' : 'conference';
+    return `${window.location.origin}/${typePath}/${encodeURIComponent(sub)}${cleanPath}`;
   }
-  const protocol = window.location.protocol === 'https:' ? 'https' : 'https';
-  return `${protocol}://${sub}.${root}${path}`;
+
+  const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
+  return `${protocol}//${sub}.${root}${cleanPath}`;
 };
 
-function detectSubdomain(hostname: string): string | null {
+function detectSubdomainInfo(hostname: string, pathname: string, search: string): DetectedSubdomain | null {
   try {
-    const querySub = new URLSearchParams(window.location.search).get('subdomain');
-    if (querySub) return querySub.trim().toLowerCase();
+    const params = new URLSearchParams(search);
+    const querySub = params.get('subdomain') || params.get('event');
+    if (querySub) {
+      return { subdomain: querySub.trim().toLowerCase() };
+    }
   } catch {
     /* ignore */
   }
+
+  // Check path-based microsite routes: /conference/:id, /webinar/:id, /events/:id, /event/:id
+  const match = pathname.match(/^\/(conference|webinar|events|event)\/([^/]+)/i);
+  if (match) {
+    const sub = decodeURIComponent(match[2]).trim().toLowerCase();
+    const customBase = `/${match[1]}/${match[2]}`;
+    return { subdomain: sub, customBase };
+  }
+
+  // Check hostname subdomains: e.g. scc00006.streamconferences.com
   const root = ROOT_DOMAIN.toLowerCase();
   const host = hostname.toLowerCase();
-  if (!root || host === root || !host.endsWith('.' + root)) return null;
-  const sub = host.slice(0, host.length - root.length - 1);
-  return sub || null;
+  if (root && host !== root && host.endsWith('.' + root)) {
+    const sub = host.slice(0, host.length - root.length - 1);
+    if (sub) return { subdomain: sub };
+  }
+
+  return null;
 }
 
 const getStartAndEndDates = (eventDateStr?: string, dayRangeStr?: string) => {
@@ -140,15 +169,22 @@ const schedule: Record<string, { time: string; title: string; speaker: string; t
   ],
 };
 const faqs = [
-  ['Who is eligible to submit an abstract?', 'Abstract submissions are open to researchers, clinical physicians, academicians, industry professionals, postdoctoral fellows, and students from around the world. We welcome all career stages and multidisciplinary sectors aligned with our tracks.'],
-  ['Can I submit more than one abstract?', 'Yes. You may submit multiple abstracts. Each accepted abstract must have a unique registered author to present the work and avoid scheduling conflicts.'],
-  ['Is there an abstract submission fee?', 'No. Submitting an abstract for review by our Scientific Advisory Board is completely free. Registration fees apply only after acceptance.'],
-  ['What is the word limit and structure?', 'Abstracts must be 250–350 words, excluding the title, author list, and affiliations. Use Background/Objectives, Methods, Results, and Conclusion/Significance.'],
-  ['How are abstracts evaluated?', 'All submissions undergo double-blind peer review by experts on our Scientific Advisory Board. Criteria include rigor, originality, track relevance, clarity, and potential impact.'],
-  ['When will I be notified of the decision?', 'Notifications are sent via email within 5 to 7 business days following submission. Please check your spam or junk folder if you do not receive an update.'],
-  ['Do I need to register before submitting?', 'No. Submit first. You only need to register after receiving your formal acceptance notification.'],
-  ['What if I cannot attend in person?', 'We offer a Virtual Presentation option. Remote presenters may participate live online or submit a pre-recorded session.'],
-  ['What if I need a visa?', 'Once your abstract is accepted and registration is complete, the organizing committee will issue an Official Acceptance & Visa Invitation Letter.'],
+  // Eligibility & Submissions
+  ['Who is eligible to submit an abstract?', 'Abstract submissions are open to researchers, clinical physicians, academicians, industry professionals, postdoctoral fellows, and students from around the world. We welcome submissions across all career stages and multidisciplinary sectors aligned with our conference tracks.'],
+  ['Can I submit more than one abstract?', 'Yes. You may submit multiple abstracts. However, each accepted abstract must have a unique registered author to present the work at the conference to avoid scheduling conflicts.'],
+  ['Is there an abstract submission fee?', 'No. Submitting an abstract for review by our Scientific Advisory Board is completely free. Registration fees apply only after your abstract has been accepted for presentation.'],
+  // Format & Submission Process
+  ['What is the word limit and structure for the abstract?', 'Abstracts must be between 250 and 350 words (excluding title, author list, and affiliations). They should follow a structured format including Background/Objectives, Methods, Results, and Conclusion/Significance.'],
+  ['Can I submit an abstract that has already been published?', 'No. We require original research that has not been published or accepted for publication in a peer-reviewed journal prior to the date of the conference.'],
+  ['Can I edit my abstract after submitting it?', 'You can request modifications to your submitted abstract prior to the final submission deadline by contacting our team with your Submission ID. Revisions requested after the deadline will be subject to editorial review.'],
+  // Review & Acceptance
+  ['How are abstracts evaluated?', 'All submissions undergo a double-blind peer review by experts on our Scientific Advisory Board. Evaluation criteria include scientific rigor, originality, relevance to the track, clarity of methodology, and potential impact.'],
+  ['When and how will I be notified of the decision?', 'Notifications of acceptance or rejection are sent via email within 5 to 7 business days following your submission. Please ensure your contact details are accurate and check your spam/junk folder if you have not received an update.'],
+  ['Will accepted abstracts be published?', 'Yes. All accepted and presented abstracts will be published in the official Conference Proceedings digital book, complete with an assigned DOI/ISBN where applicable.'],
+  // Presentation & Registration
+  ['Do I need to register for the conference right away to submit?', 'No. You do not need to register before submitting your abstract. You only need to register after receiving your formal acceptance notification.'],
+  ['What happens if I cannot attend the conference in person?', 'We offer a dedicated Virtual Presentation option. Remote presenters can participate live online or submit a pre-recorded session, allowing their work to be included in the proceedings and presented to the global audience.'],
+  ['What if I need a visa to attend in person?', 'Once your abstract is accepted and your conference registration is completed, our organizing committee will issue an Official Acceptance & Visa Invitation Letter to support your visa application.'],
 ];
 const galleryItems = [
   ['Keynote stage', 'Ideas with a clear line of sight to impact.', 'stage'],
@@ -222,10 +258,47 @@ const events: EventItem[] = [
 ];
 
 function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?: Status; onlyType?: 'Conference' | 'Webinar' }) {
+  const [location] = useLocation();
   const { events: eventsList } = useContext(APIContext);
-  const [status, setStatus] = useState<Status>(initialStatus);
+
+  const getStatusFromUrl = (): Status => {
+    if (typeof window !== 'undefined') {
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.get('status') === 'past') return 'past';
+      if (sp.get('status') === 'upcoming') return 'upcoming';
+    }
+    return initialStatus;
+  };
+
+  const [status, setStatus] = useState<Status>(getStatusFromUrl);
   const [query, setQuery] = useState('');
   const [type, setType] = useState<'All' | 'Conference' | 'Webinar'>(onlyType ?? 'All');
+
+  useEffect(() => {
+    const syncStatusFromUrl = () => {
+      if (typeof window !== 'undefined') {
+        const sp = new URLSearchParams(window.location.search);
+        const s = sp.get('status');
+        if (s === 'past') {
+          setStatus('past');
+        } else if (s === 'upcoming') {
+          setStatus('upcoming');
+        } else {
+          setStatus(initialStatus);
+        }
+      }
+    };
+
+    syncStatusFromUrl();
+
+    window.addEventListener('popstate', syncStatusFromUrl);
+    const timer = setInterval(syncStatusFromUrl, 100);
+
+    return () => {
+      window.removeEventListener('popstate', syncStatusFromUrl);
+      clearInterval(timer);
+    };
+  }, [location, initialStatus]);
   
   const visible = useMemo(() => {
     return eventsList.filter((e) => {
@@ -238,33 +311,41 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
 
   return (
     <>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
-        <div className="flex flex-wrap gap-2">
-          <div className="inline-flex p-1 bg-[hsl(var(--muted))] rounded-full border border-[hsl(var(--border))]">
+      <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        {/* Left: Tab Switcher */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="inline-flex p-1 bg-[hsl(var(--muted))] rounded-full border border-[hsl(var(--border))] shadow-sm">
             {(['upcoming', 'past'] as Status[]).map((tab) => (
               <button
                 type="button"
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                className={`px-5 py-2 rounded-full text-sm font-bold transition-all duration-200 ${
                   status === tab
-                    ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-sm'
+                    ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-md scale-[1.02]'
                     : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
                 }`}
                 key={tab}
-                onClick={() => setStatus(tab)}
+                onClick={() => {
+                  setStatus(tab);
+                  if (typeof window !== 'undefined') {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('status', tab);
+                    window.history.pushState({}, '', url.toString());
+                  }
+                }}
               >
-                {tab === 'upcoming' ? 'Upcoming' : 'Past archive'}
+                {tab === 'upcoming' ? 'Upcoming Conferences' : 'Past Archive'}
               </button>
             ))}
           </div>
-          
+
           {!onlyType && (
-            <div className="inline-flex p-1 bg-[hsl(var(--muted))] rounded-full border border-[hsl(var(--border))]">
+            <div className="inline-flex p-1 bg-[hsl(var(--muted))] rounded-full border border-[hsl(var(--border))] shadow-sm">
               {(['All', 'Conference', 'Webinar'] as const).map((tab) => (
                 <button
                   type="button"
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
                     type === tab
-                      ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-sm'
+                      ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-md'
                       : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
                   }`}
                   key={tab}
@@ -277,82 +358,130 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
           )}
         </div>
 
-        <div className="relative flex items-center w-full sm:w-64">
-          <Search size={15} className="absolute left-3 text-[hsl(var(--muted-foreground))] pointer-events-none" />
+        {/* Right End: High-Contrast Search Bar on SAME row */}
+        <div className="relative w-full md:w-80 lg:w-96">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[hsl(var(--secondary))] pointer-events-none" />
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={`Search ${onlyType?.toLowerCase() ?? 'events'}...`}
-            className="w-full pl-9 pr-4 py-2 border border-[hsl(var(--border))] bg-[hsl(var(--card))] rounded-full text-sm focus:outline-none focus:border-[hsl(var(--secondary))] transition-colors"
+            className="w-full pl-10 pr-9 py-2.5 border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] rounded-full text-sm font-medium shadow-sm focus:outline-none focus:border-[hsl(var(--secondary))] focus:ring-2 focus:ring-[hsl(var(--secondary)/.2)] transition-all"
           />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery('')}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+            >
+              Clear
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {visible.length ? (
-          visible.map((e) => (
-            <article className="card-lift flex gap-5 items-center p-5 border border-[hsl(var(--border))] bg-[hsl(var(--card))] rounded-2xl" key={e.id}>
-              {e.logoUrl ? (
-                <img src={mediaUrl(e.logoUrl)} alt={`${e.title} logo`} className="shrink-0 w-16 h-16 rounded-xl border border-[hsl(var(--border))] bg-white object-contain p-1" />
-              ) : (
-                <div className="flex flex-col items-center justify-center shrink-0 w-16 h-16 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded-xl text-center">
-                  <b className="text-xl font-bold tracking-tight display leading-none">{e.day}</b>
-                  <span className="text-[9px] font-bold tracking-widest uppercase mt-1 label leading-none">{e.month}</span>
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <span className="inline-block text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-[hsl(var(--secondary)/.12)] text-[hsl(var(--secondary))] label mb-2 leading-none">
-                  {e.type}
-                </span>
-                <h3 className="display text-base md:text-lg font-bold leading-tight text-[hsl(var(--foreground))]">
-                  {e.title}
-                </h3>
-                <div className="flex items-center gap-1.5 mt-2 text-xs text-[hsl(var(--muted-foreground))]">
-                  <MapPin size={12} className="shrink-0" />
-                  <span className="truncate">{e.location}</span>
-                  {e.speaker && (
-                    <>
-                      <span>·</span>
-                      <span className="truncate font-medium">{e.speaker}</span>
-                    </>
+          visible.map((e, index) => {
+            const registerHref = subdomainUrl(e, '/register') || `/register?event=${encodeURIComponent(e.eventId || e.slug || (e as any)._id || e.id)}`;
+            const detailsHref = subdomainUrl(e) || `/${e.type === 'Conference' ? 'conference' : 'webinar'}/${encodeURIComponent(e.eventId || e.slug || (e as any)._id || e.id)}`;
+            const abstractHref = subdomainUrl(e, '/submit-abstract') || `/submit-abstract?event=${encodeURIComponent(e.eventId || e.slug || (e as any)._id || e.id)}`;
+
+            return (
+              <div key={e.id || (e as any)._id || index} className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-event-${index}`}>
+                <div className="relative aspect-[16/9] w-full bg-white dark:bg-slate-900/60 border-b border-[hsl(var(--border))] overflow-hidden flex items-center justify-center">
+                  {e.bannerUrl ? (
+                    <img 
+                      src={mediaUrl(e.bannerUrl)} 
+                      alt={`${e.title} banner`} 
+                      className="h-full w-full object-cover" 
+                    />
+                  ) : e.logoUrl ? (
+                    <img 
+                      src={mediaUrl(e.logoUrl)} 
+                      alt={`${e.title} logo`} 
+                      className="h-full w-full object-contain p-2.5" 
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center">
+                      <Building2 className="text-[hsl(var(--primary-foreground))] opacity-65" size={40} />
+                    </div>
                   )}
+                  <span className="absolute right-3 top-3 inline-block text-xs font-bold tracking-wider uppercase px-2.5 py-1 rounded bg-[hsl(var(--primary)/.85)] text-[hsl(var(--primary-foreground))] backdrop-blur-[2px] z-10">
+                    {e.type || 'CONFERENCE'}
+                  </span>
                 </div>
-                {e.eventDate && (() => {
-                  const { start, end } = getStartAndEndDates(e.eventDate, e.day);
-                  const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                  const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                  return (
-                    <>
-                      <div className="flex items-center gap-1.5 mt-1 text-xs text-[hsl(var(--muted-foreground))]">
-                        <CalendarDays size={12} className="shrink-0" />
-                        <span>{startFormatted}{endFormatted ? ` – ${endFormatted}` : ''}</span>
-                      </div>
-                      {(e.startTime || e.endTime) && (
-                        <div className="flex items-center gap-1.5 mt-1 text-xs text-[hsl(var(--muted-foreground))]">
-                          <Clock3 size={12} className="shrink-0" />
-                          <span>{e.startTime || '—'} – {e.endTime || '—'}</span>
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="display text-xl sm:text-2xl font-black leading-snug text-[hsl(var(--foreground))] line-clamp-2">
+                      {e.title}
+                    </h3>
+                    <div className="mt-4 space-y-3">
+                      {e.location && (
+                        <div className="flex items-center gap-2.5 text-base font-semibold text-[hsl(var(--foreground)/.88)]">
+                          <MapPin size={16} className="shrink-0 text-[hsl(var(--accent))]" />
+                          <span className="truncate">{e.location}</span>
                         </div>
                       )}
-                    </>
-                  );
-                })()}
+                      {e.eventDate && (() => {
+                        const { start, end } = getStartAndEndDates(e.eventDate, e.day);
+                        const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                        const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                        return (
+                          <>
+                            <div className="flex items-center gap-2.5 text-base font-semibold text-[hsl(var(--foreground)/.88)]">
+                              <CalendarDays size={16} className="shrink-0 text-[hsl(var(--secondary))]" />
+                              <span>{startFormatted}{endFormatted ? ` – ${endFormatted}` : ''}</span>
+                            </div>
+                            {(e.startTime || e.endTime) && (
+                              <div className="flex items-center gap-2.5 text-base font-semibold text-[hsl(var(--foreground)/.88)]">
+                                <Clock3 size={16} className="shrink-0 text-[hsl(var(--secondary))]" />
+                                <span>{e.startTime || '—'} – {e.endTime || '—'}</span>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  <div className="mt-6 pt-5 border-t border-[hsl(var(--border))] flex flex-wrap items-center gap-2">
+                    <a
+                      href={detailsHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-main border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] text-[hsl(var(--foreground))] flex-1 text-center justify-center py-2.5 text-sm font-bold"
+                      aria-label={`View details for ${e.title}`}
+                    >
+                      Details
+                    </a>
+                    {e.type === 'Conference' && (
+                      <a
+                        href={abstractHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-main border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] text-[hsl(var(--foreground))] flex-1 text-center justify-center py-2.5 text-sm font-bold whitespace-nowrap"
+                        aria-label={`Submit abstract for ${e.title}`}
+                      >
+                        Submit Abstract
+                      </a>
+                    )}
+                    <a
+                      href={registerHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-main btn-primary flex-1 text-center justify-center py-2.5 text-sm font-bold whitespace-nowrap"
+                      aria-label={`Register for ${e.title}`}
+                    >
+                      Register <ArrowRight size={14} />
+                    </a>
+                  </div>
+                </div>
               </div>
-              <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-                <a href={subdomainUrl(e) || `/${e.type === 'Conference' ? 'conference' : 'webinar'}/${encodeURIComponent(e.eventId || e.slug || e.id)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--border))] px-3.5 py-2 text-xs font-bold hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors" aria-label={`View details for ${e.title}`}>
-                  Details
-                </a>
-                <a href={subdomainUrl(e, '/submit-abstract') || `/submit-abstract?event=${encodeURIComponent(e.eventId || e.slug || e.id)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--border))] px-3.5 py-2 text-xs font-bold hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors" aria-label={`Submit abstract for ${e.title}`}>
-                  Submit Abstract
-                </a>
-                <a target="_blank" rel="noopener noreferrer" href={subdomainUrl(e, '/register') || `/register?event=${encodeURIComponent(e.eventId || e.slug || e.id)}`} className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3.5 py-2 text-xs font-bold hover:opacity-90 transition-opacity" aria-label={`Register for ${e.title}`}>
-                  Register <ArrowRight size={13} />
-                </a>
-              </div>
-            </article>
-          ))
+            );
+          })
         ) : (
-          <div className="rounded-2xl border border-dashed border-[hsl(var(--border))] p-10 text-center w-full">
+          <div className="col-span-full rounded-2xl border border-dashed border-[hsl(var(--border))] p-10 text-center w-full">
             <CircleHelp className="mx-auto text-[hsl(var(--secondary))]" />
             <p className="mt-4 font-bold">No events match that search</p>
             <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">Try searching for something else or clearing filters.</p>
@@ -395,6 +524,7 @@ interface APIContextType {
   mentors: any[];
   people: any[];
   venues: any[];
+  mainBrochure: { title: string; fileUrl: string; fileName?: string } | null;
   loading: boolean;
   error: boolean;
 }
@@ -411,6 +541,7 @@ const APIContext = createContext<APIContextType>({
   mentors: [],
   people: [],
   venues: [],
+  mainBrochure: null,
   loading: false,
   error: false
 });
@@ -425,6 +556,7 @@ function APIProvider({ children }: { children: ReactNode }) {
   const [mentors, setMentors] = useState<any[]>([]);
   const [people, setPeople] = useState<any[]>([]);
   const [venues, setVenues] = useState<any[]>([]);
+  const [mainBrochure, setMainBrochure] = useState<{ title: string; fileUrl: string; fileName?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -432,7 +564,7 @@ function APIProvider({ children }: { children: ReactNode }) {
     let active = true;
     const fetchData = async () => {
       try {
-        const [confRes, webRes, blogRes, mpRes, collabRes, exhRes, mentorsRes, peopleRes, venuesRes] = await Promise.all([
+        const [confRes, webRes, blogRes, mpRes, collabRes, exhRes, mentorsRes, peopleRes, venuesRes, brochureRes] = await Promise.all([
           fetch(`${API_BASE}/conferences`),
           fetch(`${API_BASE}/webinars`),
           fetch(`${API_BASE}/blogs`),
@@ -441,7 +573,8 @@ function APIProvider({ children }: { children: ReactNode }) {
           fetch(`${API_BASE}/exhibitors`),
           fetch(`${API_BASE}/mentors`),
           fetch(`${API_BASE}/people`),
-          fetch(`${API_BASE}/venues`)
+          fetch(`${API_BASE}/venues`),
+          fetch(`${API_BASE}/brochure/main`).catch(() => null)
         ]);
         
         if (!confRes.ok || !webRes.ok || !blogRes.ok || !mpRes.ok || !collabRes.ok || !exhRes.ok || !mentorsRes.ok || !peopleRes.ok || !venuesRes.ok) {
@@ -457,6 +590,7 @@ function APIProvider({ children }: { children: ReactNode }) {
         const mentorsData = await mentorsRes.json();
         const peopleData = await peopleRes.json();
         const venuesData = await venuesRes.json();
+        const brochureData = brochureRes && brochureRes.ok ? await brochureRes.json() : null;
 
         if (active) {
           setConferences(confData);
@@ -468,6 +602,7 @@ function APIProvider({ children }: { children: ReactNode }) {
           setMentors(mentorsData);
           setPeople(peopleData);
           setVenues(venuesData);
+          setMainBrochure(brochureData);
           setLoading(false);
         }
       } catch (err) {
@@ -531,10 +666,21 @@ function APIProvider({ children }: { children: ReactNode }) {
     }));
 
     const merged = [...normalizedConfs, ...normalizedWebs];
+    const hasPastConf = merged.some((e) => e.type === 'Conference' && e.date === 'past');
+    const hasPastWeb = merged.some((e) => e.type === 'Webinar' && e.date === 'past');
+    const mockPastEvents = events.filter((e) => e.date === 'past');
+    const extraPast: EventItem[] = [];
+    if (!hasPastConf) {
+      extraPast.push(...mockPastEvents.filter((e) => e.type === 'Conference'));
+    }
+    if (!hasPastWeb) {
+      extraPast.push(...mockPastEvents.filter((e) => e.type === 'Webinar'));
+    }
+
     if (merged.length === 0) {
       return events;
     }
-    return merged;
+    return [...merged, ...extraPast];
   }, [conferences, webinars]);
 
   const insightsList = useMemo(() => {
@@ -553,7 +699,7 @@ function APIProvider({ children }: { children: ReactNode }) {
   }, [blogs]);
 
   return (
-    <APIContext.Provider value={{ conferences, webinars, blogs, events: eventsList, insightsList, mediaPartners, collaborators, exhibitors, mentors, people, venues, loading, error }}>
+    <APIContext.Provider value={{ conferences, webinars, blogs, events: eventsList, insightsList, mediaPartners, collaborators, exhibitors, mentors, people, venues, mainBrochure, loading, error }}>
       {children}
     </APIContext.Provider>
   );
@@ -582,38 +728,32 @@ function SiteHeader() {
 
   const menuGroups = [
     {
-      id: 'conference-info',
-      label: 'Conference Info',
+      id: 'conferences',
+      label: 'Conferences',
       items: [
-        ['/about', 'About Stream', 'Learn about our mission, vision and values'],
-        ['/program', 'Program Overview', 'Scientific track details and conference lenses'],
-        ['/speakers', 'OCM & Speakers', 'Meet our organizing committee and faculty'],
-        ['/venue', 'Venue', 'Explore the venue available for our events']
+        ['/conferences?status=upcoming', 'Upcoming Conferences'],
+        ['/conferences?status=past', 'Past Conferences']
       ]
     },
     {
-      id: 'events-webinars',
-      label: 'Events & Webinars',
+      id: 'media',
+      label: 'Media',
       items: [
-        ['/conferences', 'Conferences Calendar', 'Browse upcoming and past scientific conferences'],
-        ['/webinars', 'Webinars Calendar', 'Join our digital panels and online clinical seminars'],
-        ['/gallery', 'Event Gallery', 'Photos and highlights of scientific convocations']
+        ['/blog', 'Blogs'],
+        ['/sponsors', 'Sponsors'],
+        ['/gallery', 'Gallery'],
+        ['/brochure', 'Brochure']
       ]
     },
     {
-      id: 'media-support',
-      label: 'Media & Support',
+      id: 'guidelines',
+      label: 'Guidelines',
       items: [
-        ['/blog', 'Insights Blog', 'Latest news, field notes, and medical updates'],
-        ['/media-partners', 'Media Partners', 'Organizations amplifying our conversations'],
-        ['/collaborators', 'Collaborators', 'Institutions and partners working with us'],
-        ['/exhibitors', 'Exhibitors', 'Companies showcasing their work with us'],
-        ['/sponsors', 'Exhibitor & Sponsor', 'Partnership tiers and exhibition guidelines'],
-        ['/guidelines', 'Presenter Guidelines', 'A/V formats, poster specifications and checklists'],
-        ['/brochure', 'Brochure PDF', 'Download the complete delegate handbook'],
-        ['/faq', 'FAQs', 'Answers to common submission and queries'],
-        ['/terms', 'Terms & Conditions', 'Registration guidelines and cancellation policies'],
-        ['/contact', 'Contact Us', 'Get in touch with our global secretariat desk']
+        ['/abstract-submission-guidelines', 'Abstract Submission Guidelines'],
+        ['/guidelines', 'Program Guidelines'],
+        ['/faq', 'FAQS'],
+        ['/terms', 'Terms & Conditions'],
+        ['/contact', 'Contact']
       ]
     }
   ];
@@ -659,9 +799,9 @@ function SiteHeader() {
       <header className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ${
         location === '/'
           ? scrolled
-            ? 'bg-slate-950/95 backdrop-blur-xl border-b border-slate-800 shadow-2xl py-2.5'
+            ? 'bg-[hsl(var(--primary))] backdrop-blur-xl border-b border-[hsl(var(--primary-foreground)/.15)] shadow-2xl py-2.5'
             : 'bg-transparent border-none py-4'
-          : 'bg-slate-950/95 backdrop-blur-xl border-b border-slate-800 shadow-xl py-3'
+          : 'bg-[hsl(var(--primary))] backdrop-blur-xl border-b border-[hsl(var(--primary-foreground)/.15)] shadow-xl py-3'
       }`}>
         <div className="container-wide flex h-[76px] items-center justify-between gap-4">
           {/* Brand / Logo */}
@@ -672,7 +812,7 @@ function SiteHeader() {
             </span>
           </Link>
 
-          {/* Center Floating Pill Menu (Matching Reference Image) */}
+          {/* Center Navigation Options: White floating pill navigation menu bar on all pages */}
           <nav className="hidden lg:flex items-center gap-2 bg-white/95 dark:bg-slate-900/90 backdrop-blur-xl px-4 py-2 rounded-full shadow-2xl border border-white/40 text-slate-800 dark:text-white" aria-label="Primary">
             <Link
               href="/"
@@ -685,9 +825,20 @@ function SiteHeader() {
             >
               Home
             </Link>
+            <Link
+              href="/about"
+              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                location === '/about'
+                  ? 'bg-[hsl(var(--primary))] text-white shadow-sm'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-[hsl(var(--primary))]'
+              }`}
+              data-testid="link-nav-about"
+            >
+              About
+            </Link>
             {menuGroups.map((group) => {
               const isOpen = openDropdown === group.id;
-              const isGroupActive = isOpen || group.items.some(([href]) => location === href);
+              const isGroupActive = isOpen || group.items.some(([href]) => location.startsWith(href.split('?')[0]));
               return (
                 <div
                   key={group.id}
@@ -714,30 +865,20 @@ function SiteHeader() {
                   </button>
                   {isOpen && (
                     <div
-                      className={`absolute top-full left-1/2 -translate-x-1/2 pt-2.5 transition-all duration-200 z-50 ${
-                        group.id === 'conference-info' ? 'w-[240px]' :
-                        group.id === 'media-support' ? 'w-[440px]' :
-                        'w-[240px]'
-                      }`}
+                      className="absolute top-full left-1/2 -translate-x-1/2 pt-2.5 transition-all duration-200 z-50 min-w-[210px] w-max"
                       data-testid={`dropdown-nav-group-${group.id}`}
                     >
-                      <div
-                        className={`grid gap-1 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 shadow-2xl ${
-                          group.id === 'conference-info' ? 'grid-cols-1' :
-                          group.id === 'media-support' ? 'grid-cols-2' :
-                          'grid-cols-1'
-                        }`}
-                      >
+                      <div className="grid gap-1 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-2 shadow-2xl grid-cols-1">
                         {group.items.map(([href, label]) => (
                           <Link
                             key={href}
                             href={href}
                             onClick={() => setOpenDropdown(null)}
-                            className={`group/item flex items-center justify-between rounded-xl px-3.5 py-2.5 transition-colors hover:bg-[hsl(var(--muted)/.75)] ${location === href ? 'bg-[hsl(var(--muted)/.5)] text-[hsl(var(--secondary))]' : ''}`}
+                            className={`group/item flex items-center justify-between gap-3 rounded-xl px-3.5 py-2 transition-colors hover:bg-[hsl(var(--muted)/.75)] ${location === href ? 'bg-[hsl(var(--muted)/.5)] text-[hsl(var(--secondary))]' : ''}`}
                             data-testid={`link-nav-item-${label.toLowerCase().replaceAll(' ', '-')}`}
                           >
-                            <span className={`text-[14px] font-bold text-[hsl(var(--foreground))] transition-colors group-hover/item:text-[hsl(var(--secondary))] ${location === href ? 'text-[hsl(var(--secondary))]' : ''}`}>{label}</span>
-                            <ChevronRight size={15} className="opacity-0 -translate-x-1 transition-all group-hover/item:opacity-100 group-hover/item:translate-x-0" />
+                            <span className={`text-[13.5px] font-bold text-[hsl(var(--foreground))] transition-colors group-hover/item:text-[hsl(var(--secondary))] whitespace-nowrap ${location === href ? 'text-[hsl(var(--secondary))]' : ''}`}>{label}</span>
+                            <ChevronRight size={14} className="opacity-0 -translate-x-1 transition-all group-hover/item:opacity-100 group-hover/item:translate-x-0" />
                           </Link>
                         ))}
                       </div>
@@ -828,6 +969,7 @@ function SiteHeader() {
         {menuOpen && <div className="border-t border-[hsl(var(--border))] bg-[hsl(var(--background))] p-4 lg:hidden max-h-[80vh] overflow-y-auto">
           <nav className="container-wide grid gap-6" aria-label="Mobile">
             <Link href="/" className="flex items-center justify-between border-b border-[hsl(var(--border)/.65)] py-2 text-sm font-bold" data-testid="link-mobile-home">Home<ArrowRight size={15} className="text-[hsl(var(--secondary))]" /></Link>
+            <Link href="/about" className="flex items-center justify-between border-b border-[hsl(var(--border)/.65)] py-2 text-sm font-bold" data-testid="link-mobile-about">About<ArrowRight size={15} className="text-[hsl(var(--secondary))]" /></Link>
             {menuGroups.map((group) => (
               <div key={group.id} className="grid gap-2">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">{group.label}</p>
@@ -849,18 +991,139 @@ function SiteHeader() {
 }
 
 function Footer() {
-  return <footer className="border-t border-[hsl(var(--border))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]">
-    <div className="container-wide grid gap-12 py-16 md:grid-cols-[1.5fr_1fr_1fr]">
-      <div><div className="flex items-center gap-3"><img src="/logo.jpg" className="h-10 w-10 rounded-[11px] object-cover" alt="SC" /><span className="display text-lg font-bold">Stream Conferences</span></div><p className="mt-5 max-w-sm text-sm leading-7 text-[hsl(var(--primary-foreground)/.68)]">Connecting minds, advancing science. A high-credibility global platform for research, clinical practice, and industry.</p><a href="https://streamconferences.com" className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[hsl(var(--accent))]" data-testid="link-parent-brand">An event by Stream Conferences <ArrowUpRight size={15} /></a></div>
-      <div><p className="label text-[hsl(var(--accent))]">Explore</p><div className="mt-5 grid gap-3 text-sm text-[hsl(var(--primary-foreground)/.72)]"><Link href="/about" data-testid="link-footer-about">About Stream Conferences</Link><Link href="/program" data-testid="link-footer-program">Program</Link><Link href="/speakers" data-testid="link-footer-speakers">OCM & Speakers</Link><Link href="/gallery" data-testid="link-footer-gallery">Gallery</Link><Link href="/blog" data-testid="link-footer-blog">Blog</Link><Link href="/venue" data-testid="link-footer-venue">Venue</Link><Link href="/brochure" data-testid="link-footer-brochure">Brochure</Link></div></div>
-      <div><p className="label text-[hsl(var(--accent))]">Delegate desk</p><div className="mt-5 grid gap-3 text-sm text-[hsl(var(--primary-foreground)/.72)]"><a href="mailto:info@streamconferences.com" data-testid="link-footer-email">info@streamconferences.com</a><a href="mailto:abstracts@streamconferences.com" data-testid="link-footer-abstracts">abstracts@streamconferences.com</a><Link href="/contact" data-testid="link-footer-contact">Contact the secretariat</Link></div></div>
-    </div>
-    <div className="container-wide flex flex-col justify-between gap-3 border-t border-[hsl(var(--primary-foreground)/.15)] py-5 text-[11px] text-[hsl(var(--primary-foreground)/.55)] sm:flex-row"><span>© 2027 Stream Conferences. All rights reserved.</span><span>ICMLHS 2027 · Boston, USA</span></div>
-  </footer>;
+  return (
+    <footer className="border-t border-[hsl(var(--border))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]">
+      <div className="container-wide grid gap-10 py-16 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+        {/* Brand & Social Icons */}
+        <div>
+          <div className="flex items-center gap-3">
+            <img src="/logo.jpg" className="h-10 w-10 rounded-[11px] object-cover" alt="SC" />
+            <span className="display text-lg font-bold">Stream Conferences</span>
+          </div>
+          <p className="mt-4 max-w-xs text-sm leading-6 text-[hsl(var(--primary-foreground)/.68)]">
+            Connecting minds, advancing science.
+          </p>
+
+          {/* Integrated Social Icons */}
+          <div className="mt-6">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--accent))]">
+              Stay close to the conversation
+            </p>
+            <div className="mt-3 flex items-center gap-2.5">
+              <a
+                href="https://x.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Follow on X"
+                className="grid h-9 w-9 place-items-center rounded-lg border border-[hsl(var(--primary-foreground)/.2)] bg-[hsl(var(--primary-foreground)/.08)] text-[hsl(var(--primary-foreground))] hover:border-[hsl(var(--accent))] hover:text-[hsl(var(--accent))] hover:bg-[hsl(var(--primary-foreground)/.15)] transition-all"
+                data-testid="link-footer-social-x"
+              >
+                <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+              </a>
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Follow on LinkedIn"
+                className="grid h-9 w-9 place-items-center rounded-lg border border-[hsl(var(--primary-foreground)/.2)] bg-[hsl(var(--primary-foreground)/.08)] text-[hsl(var(--primary-foreground))] hover:border-[hsl(var(--accent))] hover:text-[hsl(var(--accent))] hover:bg-[hsl(var(--primary-foreground)/.15)] transition-all"
+                data-testid="link-footer-social-linkedin"
+              >
+                <Linkedin size={18} />
+              </a>
+              <a
+                href="https://youtube.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Subscribe on YouTube"
+                className="grid h-9 w-9 place-items-center rounded-lg border border-[hsl(var(--primary-foreground)/.2)] bg-[hsl(var(--primary-foreground)/.08)] text-[hsl(var(--primary-foreground))] hover:border-[hsl(var(--accent))] hover:text-[hsl(var(--accent))] hover:bg-[hsl(var(--primary-foreground)/.15)] transition-all"
+                data-testid="link-footer-social-youtube"
+              >
+                <Youtube size={18} />
+              </a>
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Follow on Instagram"
+                className="grid h-9 w-9 place-items-center rounded-lg border border-[hsl(var(--primary-foreground)/.2)] bg-[hsl(var(--primary-foreground)/.08)] text-[hsl(var(--primary-foreground))] hover:border-[hsl(var(--accent))] hover:text-[hsl(var(--accent))] hover:bg-[hsl(var(--primary-foreground)/.15)] transition-all"
+                data-testid="link-footer-social-instagram"
+              >
+                <Instagram size={18} />
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Column 2: Explore & Media */}
+        <div className="grid gap-6 content-start">
+          <div>
+            <p className="label text-[hsl(var(--accent))] text-xs font-bold uppercase tracking-wider">Explore</p>
+            <div className="mt-3 grid gap-2.5 text-sm text-[hsl(var(--primary-foreground)/.75)]">
+              <Link href="/" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-home">Home</Link>
+              <Link href="/about" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-about">About</Link>
+            </div>
+          </div>
+          <div>
+            <p className="label text-[hsl(var(--accent))] text-xs font-bold uppercase tracking-wider">Media</p>
+            <div className="mt-3 grid gap-2.5 text-sm text-[hsl(var(--primary-foreground)/.75)]">
+              <Link href="/blog" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-blog">Blogs</Link>
+              <Link href="/sponsors" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-sponsors">Sponsors</Link>
+              <Link href="/gallery" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-gallery">Gallery</Link>
+              <Link href="/brochure" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-brochure">Brochure</Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Column 3: Conferences & Guidelines */}
+        <div className="grid gap-6 content-start">
+          <div>
+            <p className="label text-[hsl(var(--accent))] text-xs font-bold uppercase tracking-wider">Conferences</p>
+            <div className="mt-3 grid gap-2.5 text-sm text-[hsl(var(--primary-foreground)/.75)]">
+              <Link href="/conferences?status=upcoming" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-upcoming">Upcoming Conferences</Link>
+              <Link href="/conferences?status=past" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-past">Past Conferences</Link>
+            </div>
+          </div>
+          <div>
+            <p className="label text-[hsl(var(--accent))] text-xs font-bold uppercase tracking-wider">Guidelines</p>
+            <div className="mt-3 grid gap-2.5 text-sm text-[hsl(var(--primary-foreground)/.75)]">
+              <Link href="/abstract-submission-guidelines" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-abstract-guidelines">Abstract Submission Guidelines</Link>
+              <Link href="/guidelines" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-guidelines">Program Guidelines</Link>
+              <Link href="/terms" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-terms">Terms & Conditions</Link>
+              <Link href="/faq" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-faq">FAQS</Link>
+              <Link href="/contact" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-contact">Contact</Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Column 4: Delegate desk only */}
+        <div className="content-start">
+          <p className="label text-[hsl(var(--accent))] text-xs font-bold uppercase tracking-wider">Delegate desk</p>
+          <div className="mt-3 grid gap-2.5 text-sm text-[hsl(var(--primary-foreground)/.75)]">
+            <a href="mailto:info@streamconferences.com" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-email">info@streamconferences.com</a>
+            <a href="mailto:abstracts@streamconferences.com" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-abstracts">abstracts@streamconferences.com</a>
+          </div>
+        </div>
+      </div>
+
+      <div className="container-wide flex flex-col justify-between gap-3 border-t border-[hsl(var(--primary-foreground)/.15)] py-5 text-[11px] text-[hsl(var(--primary-foreground)/.55)] sm:flex-row">
+        <span>© 2027 Stream Conferences. All rights reserved.</span>
+        <span>ICMLHS 2027 · Boston, USA</span>
+      </div>
+    </footer>
+  );
 }
 
 function Layout({ children }: { children: ReactNode }) {
-  return <div className="site-grain min-h-[100dvh]"><SiteHeader />{children}<Footer /><LiveChatWidget /></div>;
+  return (
+    <div className="site-grain min-h-[100dvh]">
+      <SiteHeader />
+      {children}
+      <Footer />
+      <LiveChatWidget />
+    </div>
+  );
 }
 
 function Reveal({ children, className = '' }: { children: ReactNode; className?: string }) {
@@ -886,15 +1149,15 @@ function Reveal({ children, className = '' }: { children: ReactNode; className?:
 
 function SectionTitle({ eyebrow, title, body, light = false }: { eyebrow: string; title: string; body?: string; light?: boolean }) {
   return (
-    <div className={light ? 'text-[hsl(var(--primary-foreground))]' : ''}>
+    <div>
       <p className={`text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] ${light ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--secondary))]'}`}>
         {eyebrow}
       </p>
-      <h2 className="display mt-3.5 max-w-4xl text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-[-.045em]">
+      <h2 className={`display mt-3.5 w-full text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-[-.045em] ${light ? 'text-white' : 'text-[hsl(var(--foreground))]'}`}>
         {title}
       </h2>
       {body && (
-        <p className={`mt-4 max-w-3xl text-base sm:text-lg md:text-xl font-medium leading-relaxed ${light ? 'text-[hsl(var(--primary-foreground)/.85)]' : 'text-[hsl(var(--muted-foreground))]'}`}>
+        <p className={`mt-4 w-full text-base sm:text-lg md:text-xl font-medium leading-relaxed ${light ? 'text-slate-200' : 'text-[hsl(var(--muted-foreground))]'}`}>
           {body}
         </p>
       )}
@@ -902,7 +1165,47 @@ function SectionTitle({ eyebrow, title, body, light = false }: { eyebrow: string
   );
 }
 
-function PageHero({ eyebrow, title, body }: { eyebrow: string; title: string; body: string; bgImage?: string }) {
+function PageHero({ eyebrow, title, body, variant = 'wave' }: { eyebrow: string; title: string; body: string; bgImage?: string; variant?: 'standard' | 'wave' }) {
+  if (variant === 'wave') {
+    return (
+      <section className="relative overflow-hidden bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] pt-36 pb-20 sm:pt-40 sm:pb-24 md:pt-44 md:pb-28 shadow-none">
+        {/* Crystal-clear ambient background glow - zero overlapping line disturbance */}
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-[hsl(var(--accent)/0.15)] via-transparent to-[hsl(var(--secondary)/0.18)] opacity-90" />
+
+        {/* Hero Content */}
+        <div className="container-wide relative z-10 reveal">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[hsl(var(--accent))] text-xs font-extrabold uppercase tracking-widest mb-4">
+              <span className="h-2 w-2 rounded-full bg-[hsl(var(--accent))] animate-pulse" />
+              {eyebrow}
+            </div>
+            <h1 className="display text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white leading-tight">
+              {title}
+            </h1>
+            {body && (
+              <p className="mt-4 text-base sm:text-lg text-white/90 leading-relaxed pl-4 border-l-2 border-[hsl(var(--accent))]">
+                {body}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom Razor-Sharp Organic SVG Wave Curve */}
+        <div className="absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none pointer-events-none z-10">
+          <svg 
+            className="relative block w-full h-14 sm:h-20 md:h-28 text-[hsl(var(--background))]" 
+            viewBox="0 0 1440 160" 
+            preserveAspectRatio="none" 
+            fill="currentColor"
+            shapeRendering="geometricPrecision"
+          >
+            <path d="M0,40 C320,145 640,90 960,35 C1160,15 1320,10 1440,20 L1440,160 L0,160 Z"></path>
+          </svg>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="page-intro bg-grid">
       <div className="container-wide pt-28 pb-12 sm:pt-32 md:pt-36 md:pb-16 lg:pt-40 lg:pb-20 reveal">
@@ -955,11 +1258,39 @@ function TestimonialCarousel() {
 
 function GallerySlider() {
   const [active, setActive] = useState(0);
-  
+  const [items, setItems] = useState<{ title: string; description?: string; image: string }[]>([]);
+
   useEffect(() => {
-    const t = setInterval(() => setActive((a) => (a + 1) % galleryItems.length), 4500);
-    return () => clearInterval(t);
+    let cancelled = false;
+    fetch(`${API_BASE}/gallery`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (cancelled) return;
+        if (Array.isArray(data)) {
+          setItems(
+            data.map((item: any) => ({
+              title: item.title,
+              description: item.description || '',
+              image: mediaUrl(item.image),
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  useEffect(() => {
+    if (!items.length) return;
+    const t = setInterval(() => setActive((a) => (a + 1) % items.length), 4500);
+    return () => clearInterval(t);
+  }, [items.length]);
+
+  if (items.length === 0) return null;
+
+  const activeItem = items[active] || { title: '', description: '', image: '' };
 
   return (
     <section className="py-12 border-y border-[hsl(var(--border))] bg-[hsl(var(--muted)/.2)]" aria-label="Inside the exchange">
@@ -978,18 +1309,18 @@ function GallerySlider() {
           <div 
             className="relative h-[320px] sm:h-[360px] md:h-[400px] lg:h-[420px] w-full overflow-hidden rounded-[14px] transition-all duration-700 ease-in-out"
             style={{ 
-              backgroundImage: `linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.3) 60%, rgba(15, 23, 42, 0.1) 100%), url(${galleryImages[active]})`,
+              backgroundImage: `linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.3) 60%, rgba(15, 23, 42, 0.1) 100%), url(${activeItem.image})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center'
             }}
           >
             <div className="absolute inset-x-6 bottom-6 flex flex-col justify-end text-white">
-              <span className="label text-[hsl(var(--accent))] text-[10px] font-bold mb-1">0{active + 1} / 0{galleryItems.length}</span>
-              <h3 className="display text-xl sm:text-2xl md:text-3xl font-black leading-tight text-white">{galleryItems[active][0]}</h3>
-              <p className="mt-1.5 text-xs sm:text-sm md:text-base text-slate-200 max-w-lg font-medium">{galleryItems[active][1]}</p>
+              <span className="label text-[hsl(var(--accent))] text-[10px] font-bold mb-1">0{active + 1} / 0{items.length || 1}</span>
+              <h3 className="display text-xl sm:text-2xl md:text-3xl font-black leading-tight text-white">{activeItem.title}</h3>
+              <p className="mt-1.5 text-xs sm:text-sm md:text-base text-slate-200 max-w-lg font-medium">{activeItem.description}</p>
             </div>
             <div className="absolute right-5 top-5 flex gap-1.5">
-              {galleryItems.map((_, i) => (
+              {items.map((_, i) => (
                 <button 
                   key={i} 
                   type="button"
@@ -1043,8 +1374,8 @@ function Home() {
     const combined = [...pool];
     for (const f of fallbackConfs) {
       if (combined.length >= 4) break;
-      const fId = f._id || f.id;
-      if (!combined.some((item) => (item._id || item.id) === fId || item.title === f.title)) {
+      const fId = (f as any)._id || f.id;
+      if (!combined.some((item) => ((item as any)._id || item.id) === fId || item.title === f.title)) {
         combined.push(f);
       }
     }
@@ -1065,8 +1396,8 @@ function Home() {
     const combined = [...pool];
     for (const f of fallbackWebs) {
       if (combined.length >= 4) break;
-      const fId = f._id || f.id;
-      if (!combined.some((item) => (item._id || item.id) === fId || item.title === f.title)) {
+      const fId = (f as any)._id || f.id;
+      if (!combined.some((item) => ((item as any)._id || item.id) === fId || item.title === f.title)) {
         combined.push(f);
       }
     }
@@ -1171,13 +1502,14 @@ function Home() {
             </div>
 
             {/* Main Headline */}
-            <h1 className="font-['Space_Grotesk'] text-4xl sm:text-6xl lg:text-7xl font-black uppercase leading-[1.05] tracking-tight text-white">
-              THE SCIENCE OF MOVING FORWARD.
+            <h1 className="font-['Space_Grotesk'] text-3xl sm:text-4xl md:text-5xl lg:text-[48px] xl:text-[56px] font-black uppercase leading-[1.1] tracking-tight text-white">
+              <span className="block whitespace-nowrap">CONNECTING MINDS,</span>
+              <span className="block whitespace-nowrap text-[hsl(var(--accent))]">ADVANCING SCIENCE.</span>
             </h1>
 
             {/* Description Paragraph */}
             <p className="mt-6 text-sm sm:text-base lg:text-lg leading-relaxed text-white/90 font-medium max-w-xl">
-              The International Conference on Medical, Life & Health Sciences brings the people who discover, test, build, and deliver better futures into one serious global conversation.
+              The International Conferences on Medical, Life & Health Sciences brings the people who discover, test, build, and deliver better futures into one serious global conversation.
             </p>
 
             {/* Action Buttons (Matching reference pill style) */}
@@ -1338,165 +1670,15 @@ function Home() {
         </div>
       </section>
 
-      {/* Upcoming Webinars Section */}
-      <section className="section-pad bg-[hsl(var(--muted)/.35)]" id="upcoming-events-webinars">
-        <div className="container-wide">
-          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end mb-10">
-            <SectionTitle 
-              eyebrow="Upcoming webinars" 
-              title="Live webinars & online briefings." 
-              body="Connect and exchange ideas with experts and peers on research and clinical practice." 
-            />
-            <Link href="/webinars" className="btn-main btn-quiet shrink-0" data-testid="link-home-view-webinars">
-              All Webinars <ArrowUpRight size={16} />
-            </Link>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {displayWebinars.map((item, index) => {
-              const registerHref = subdomainUrl(item, '/register');
-              const detailsHref = subdomainUrl(item) || `/webinar/${encodeURIComponent(item.eventId || item.slug || item._id)}`;
-              return (
-                <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-home-webinar-${index}`}>
-                  <div className="relative aspect-[16/9] w-full bg-white dark:bg-slate-900/60 border-b border-[hsl(var(--border))] overflow-hidden flex items-center justify-center">
-                    {item.bannerUrl ? (
-                      <img 
-                        src={mediaUrl(item.bannerUrl)} 
-                        alt={`${item.title} banner`} 
-                        className="h-full w-full object-cover" 
-                      />
-                    ) : item.logoUrl ? (
-                      <img 
-                        src={mediaUrl(item.logoUrl)} 
-                        alt={`${item.title} logo`} 
-                        className="h-full w-full object-contain p-2.5" 
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center">
-                        <Users className="text-[hsl(var(--primary-foreground))] opacity-65" size={40} />
-                      </div>
-                    )}
-                    <span className="absolute right-3 top-3 inline-block text-[11px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded bg-[hsl(var(--accent)/.85)] text-[hsl(var(--accent-foreground))] backdrop-blur-[2px] z-10">
-                      WEBINAR
-                    </span>
-                  </div>
-                  <div className="p-6 flex-1 flex flex-col justify-between">
-                    <div>
-                      <h3 className="display text-xl sm:text-[21px] font-black leading-snug text-[hsl(var(--foreground))] line-clamp-2">
-                        {item.title}
-                      </h3>
-                      <div className="mt-4 space-y-2.5">
-                        {item.speaker && (
-                          <div className="flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
-                            <Users size={15} className="shrink-0 text-[hsl(var(--accent))]" />
-                            <span className="truncate">{item.speaker}</span>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
-                          <MapPin size={15} className="shrink-0 text-[hsl(var(--muted-foreground))]" />
-                          <span className="truncate">{item.location || 'Online'}</span>
-                        </div>
-                        {item.eventDate && (() => {
-                          const { start, end } = getStartAndEndDates(item.eventDate, item.day);
-                          const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                          const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                          return (
-                            <>
-                              <div className="flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
-                                <CalendarDays size={15} className="shrink-0 text-[hsl(var(--secondary))]" />
-                                <span>{startFormatted}{endFormatted ? ` – ${endFormatted}` : ''}</span>
-                              </div>
-                              {(item.startTime || item.endTime) && (
-                                <div className="flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
-                                  <Clock3 size={15} className="shrink-0 text-[hsl(var(--secondary))]" />
-                                  <span>{item.startTime || '—'} – {item.endTime || '—'}</span>
-                                </div>
-                              )}
-                            </>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 mt-6 pt-5 border-t border-[hsl(var(--border))]">
-                      <a 
-                        href={detailsHref} 
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 text-center py-3 px-3 rounded-full text-sm font-bold border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))] transition-colors"
-                        data-testid={`btn-home-webinar-details-${index}`}
-                      >
-                        Details
-                      </a>
-                      <a 
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href={registerHref} 
-                        className="flex-1 text-center py-3 px-3 rounded-full text-sm font-bold bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 transition-opacity"
-                        data-testid={`btn-home-webinar-register-${index}`}
-                      >
-                        Register Now
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
 
-      <section className="section-pad" id="speakers"><div className="container-wide"><div className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><SectionTitle eyebrow="People to follow" title="The room is part of the research." body="A deliberately mixed faculty of clinical authorities, technical pioneers, and emerging scholars." /><Link href="/speakers" className="btn-main btn-quiet shrink-0" data-testid="link-home-speakers">Meet the speakers <ArrowUpRight size={16} /></Link></div><div className="mt-12 grid gap-4 md:grid-cols-3 lg:grid-cols-5">{mentors.slice(0, 5).map((mentor, i) => <SpeakerCard key={mentor.username} person={mentor} index={i + 1} />)}</div></div></section>
+
+
       <TestimonialCarousel />
       <GallerySlider />
-      <section className="border-y border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] py-12 text-[hsl(var(--foreground))]">
-        <div className="container-wide">
-          <div className="text-center mb-8">
-            <p className="label text-[hsl(var(--secondary))]">Media partners</p>
-            <p className="display mt-2 text-2xl sm:text-3xl font-black text-[hsl(var(--foreground))]">
-              Amplifying work that deserves to travel.
-            </p>
-          </div>
-          <div className="logo-marquee-container py-2">
-            {mediaPartners && mediaPartners.length > 0 ? (
-              <div className="logo-marquee-track">
-                {[...mediaPartners, ...mediaPartners, ...mediaPartners, ...mediaPartners].map((partner: any, idx: number) => (
-                  <Link
-                    key={`${partner._id || partner.id || idx}-${idx}`}
-                    href="/media-partners"
-                    className="card-lift flex items-center justify-center bg-white dark:bg-slate-900 h-36 px-4 py-2 min-w-[220px] max-w-[300px] rounded-xl border border-[hsl(var(--border))] shadow-sm transition-all hover:border-[hsl(var(--secondary))] shrink-0 group overflow-hidden"
-                    title={partner.name}
-                  >
-                    {partner.logo ? (
-                      <img
-                        src={mediaUrl(partner.logo)}
-                        alt={partner.name}
-                        className="h-28 max-h-[110px] w-full max-w-[260px] object-contain transition-transform group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex items-center gap-2 text-sm font-bold text-[hsl(var(--foreground))]">
-                        <Building2 size={26} className="text-[hsl(var(--secondary))]" />
-                        <span className="truncate max-w-[160px]">{partner.name}</span>
-                      </div>
-                    )}
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="logo-marquee-track">
-                {['JOURNAL OF TRANSLATIONAL MEDICINE', 'SCIENCEWIRE', 'HEALTH / REVIEW', 'TECHNICA', 'JOURNAL OF TRANSLATIONAL MEDICINE', 'SCIENCEWIRE', 'HEALTH / REVIEW', 'TECHNICA'].map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-center bg-white dark:bg-slate-900 h-36 px-6 py-2 min-w-[220px] rounded-xl border border-[hsl(var(--border))] shadow-sm shrink-0">
-                    <span className="text-xs font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">{item}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
       {insightsList.length > 0 && (
-        <section className="section-pad"><div className="container-wide grid gap-10 md:grid-cols-[.7fr_1.3fr]"><div><SectionTitle eyebrow="From the Stream Conferences blog" title="Notes for the in-between." /><Link href="/blog" className="btn-main btn-quiet mt-8" data-testid="link-home-insights">Read the blog <ArrowRight size={16} /></Link></div><div className="grid gap-4 sm:grid-cols-3">{insightsList.slice(0, 3).map((insight, index) => <div key={insight.id || insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full"><div className="p-5 flex-1"><div className="aspect-video w-full rounded-lg overflow-hidden mb-4 bg-[hsl(var(--muted)/.25)] flex items-center justify-center relative">{insight.bannerUrl ? <img src={insight.bannerUrl} alt={insight.title} className="h-full w-full object-cover" /> : <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center"><BookOpen className="text-[hsl(var(--primary-foreground))] opacity-65" size={32} /></div>}</div><span className="label text-[hsl(var(--accent))] text-[9px]">{insight.label}</span><h3 className="display mt-3 text-lg font-bold leading-tight line-clamp-2">{insight.title}</h3><p className="mt-2 text-xs leading-5 text-[hsl(var(--muted-foreground))] line-clamp-3">{insight.copy}</p></div><div className="px-5 pb-5 pt-0"><Link href={`/blog/${encodeURIComponent(insight.id)}`} className="inline-flex items-center gap-1 text-xs font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition" data-testid={`link-home-blog-${index}`}>Read field note <ArrowRight size={13} /></Link></div></div>)}</div></div></section>
+        <section className="section-pad"><div className="container-wide grid gap-10 md:grid-cols-[.7fr_1.3fr]"><div><SectionTitle eyebrow="From the Stream Conferences blog" title="Notes for the in-between." /><Link href="/blog" className="btn-main btn-quiet mt-8" data-testid="link-home-insights">Read the blog <ArrowRight size={16} /></Link></div><div className="grid gap-6 sm:grid-cols-3">{insightsList.slice(0, 3).map((insight, index) => <div key={insight.id || insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full shadow-sm"><div className="p-6 flex-1"><div className="aspect-video w-full rounded-xl overflow-hidden mb-4 bg-[hsl(var(--muted)/.25)] flex items-center justify-center relative">{insight.bannerUrl ? <img src={mediaUrl(insight.bannerUrl)} alt={insight.title} className="h-full w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} /> : <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center"><BookOpen className="text-[hsl(var(--primary-foreground))] opacity-65" size={32} /></div>}</div><span className="text-xs font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">{insight.label}</span><h3 className="display mt-2 text-xl font-bold leading-snug line-clamp-2 text-[hsl(var(--foreground))]">{insight.title}</h3><p className="mt-3 text-base leading-7 text-[hsl(var(--muted-foreground))] line-clamp-3">{insight.copy}</p></div><div className="px-6 pb-6 pt-0"><Link href={`/blog/${encodeURIComponent(insight.id)}`} className="inline-flex items-center gap-1.5 text-base font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition" data-testid={`link-home-blog-${index}`}>Read field note <ArrowRight size={15} /></Link></div></div>)}</div></div></section>
       )}
-      <section className="border-t border-[hsl(var(--border))] bg-[hsl(var(--muted)/.38)] py-10"><div className="container-wide flex flex-col justify-between gap-5 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--secondary))]">Stay close to the conversation</p><p className="mt-2 text-sm font-semibold">Follow <span className="text-[hsl(var(--secondary))]">#ICMLHS2027</span> across the summit.</p></div><div className="flex gap-2"><a href="https://www.linkedin.com" className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))]" aria-label="LinkedIn" data-testid="link-social-linkedin"><Linkedin size={17} /></a><a href="https://x.com" className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))]" aria-label="X" data-testid="link-social-x"><X size={17} /></a><a href="https://www.youtube.com" className="grid h-10 w-10 place-items-center rounded-full border border-[hsl(var(--border))] hover:border-[hsl(var(--secondary))]" aria-label="YouTube" data-testid="link-social-youtube"><Youtube size={17} /></a></div></div></section>
-      <section className="bg-[hsl(var(--primary))] py-12 text-[hsl(var(--primary-foreground))] border-t border-[hsl(var(--primary-foreground)/.15)]"><div className="container-wide flex flex-col justify-between gap-6 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--accent))]">Delegate secretariat</p><p className="display mt-2 text-2xl font-bold text-[hsl(var(--primary-foreground))]">Have a question before you arrive?</p><div className="mt-3 flex flex-wrap gap-4 text-sm text-[hsl(var(--primary-foreground)/.85)]"><a href="mailto:info@streamconferences.com" className="flex items-center gap-2 font-semibold hover:text-[hsl(var(--accent))]" data-testid="link-home-email"><Mail size={16} /> info@streamconferences.com</a><span className="flex items-center gap-2"><Phone size={16} /> +1 (617) 555-0199</span></div></div><Link href="/contact" className="btn-main bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:brightness-110 shadow-lg border-0" data-testid="link-home-contact">Contact us <ArrowUpRight size={16} /></Link></div></section>
+      <section className="bg-[hsl(var(--primary))] py-12 text-[hsl(var(--primary-foreground))] border-t border-[hsl(var(--primary-foreground)/.15)]"><div className="container-wide flex flex-col justify-between gap-6 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--accent))]">Delegate desk</p><p className="display mt-2 text-2xl font-bold text-[hsl(var(--primary-foreground))]">Have a question before you arrive?</p><div className="mt-3 flex flex-wrap gap-4 text-sm text-[hsl(var(--primary-foreground)/.85)]"><a href="mailto:info@streamconferences.com" className="flex items-center gap-2 font-semibold hover:text-[hsl(var(--accent))]" data-testid="link-home-email"><Mail size={16} /> info@streamconferences.com</a><span className="flex items-center gap-2"><Phone size={16} /> +1 (617) 555-0199</span></div></div><Link href="/contact" className="btn-main bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:brightness-110 shadow-lg border-0" data-testid="link-home-contact">Contact us <ArrowUpRight size={16} /></Link></div></section>
     </main>
   </Layout>;
 }
@@ -1516,15 +1698,15 @@ function SpeakerCard({ person, index }: { person: any; index: number }) {
             <div className="h-32 w-32 rounded-full bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))]"><Users size={44} /></div>
           )}
         </div>
-        <div className="p-5 pb-0 text-center">
-          <p className="label text-[hsl(var(--secondary))]">{label}</p>
-          <h3 className="display mt-3 text-xl font-bold text-[hsl(var(--foreground))]">{displayName}</h3>
-          {role && <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{role}</p>}
+        <div className="p-6 pb-0 text-center">
+          <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">{label}</p>
+          <h3 className="display mt-3 text-xl sm:text-2xl font-bold text-[hsl(var(--foreground))]">{displayName}</h3>
+          {role && <p className="mt-2 text-base leading-7 text-[hsl(var(--muted-foreground))]">{role}</p>}
         </div>
       </div>
-      <div className="p-5 pt-0 text-center">
-        <Link href={`/mentors/${person.username}?from=speakers`} className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition group" data-testid={`link-details-${index}`}>
-          View details <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+      <div className="p-6 pt-0 text-center">
+        <Link href={`/mentors/${person.username}?from=speakers`} className="mt-5 inline-flex items-center gap-1.5 text-base font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition group" data-testid={`link-details-${index}`}>
+          View details <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
         </Link>
       </div>
     </div>
@@ -1584,17 +1766,214 @@ function SpeakersPage() {
 
 function AboutPage() {
   const values = [
-    ['Scientific Integrity & Rigor', 'We hold empirical truth to the highest standard. Every abstract, paper, and presentation hosted across our stages undergoes uncompromising peer review, ensuring that all shared intelligence is grounded in methodological excellence and transparency.'],
-    ['Action-Driven Innovation', 'Knowledge achieves its true value only when translated into real-world impact. We bridge academic theory and industrial application, moving lab-scale breakthroughs toward clinical treatments and scalable technological infrastructure.'],
-    ['Multidisciplinary Synergy', 'Humanity’s most formidable challenges transcend singular disciplines. We align clinical authorities, technical pioneers, and corporate strategists to generate unexpected insights and borderless innovation.'],
-    ['Global Inclusivity & Intellectual Accessibility', 'Scientific advancement is a global imperative. Our borderless platform elevates pioneering work from every continent and gives early-career scholars and seasoned authorities equal access to recognition and strategic networks.'],
+    ['Scientific Integrity & Rigor', 'We hold empirical truth to the highest standard. Every abstract, paper, and presentation hosted across our stages undergoes uncompromising peer review, ensuring that all shared intelligence is grounded in methodological excellence and absolute transparency.'],
+    ['Action-Driven Innovation', 'Knowledge achieves its true value only when translated into real-world impact. We aggressively bridge academic theory and industrial application, expediting the passage of lab-scale breakthroughs into advanced clinical treatments and scalable technological infrastructure.'],
+    ['Multidisciplinary Synergy', 'Humanity’s most formidable challenges transcend singular disciplines. We systematically dismantle sectoral barriers, aligning clinical authorities, technical pioneers, and corporate strategists to generate unexpected insights and borderless innovation.'],
+    ['Global Inclusivity & Intellectual Accessibility', 'Scientific advancement is a global imperative. We sustain a borderless platform that elevates pioneering work from across all continents, guaranteeing early-career scholars, doctoral candidates, and seasoned authorities equal access to high-impact publishing, peer recognition, and strategic networks.'],
   ];
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1455849318743-b2233052fcff?auto=format&fit=crop&w=1200&q=80" eyebrow="The organization behind the room" title="Connecting minds. Advancing science." body="Stream Conferences is an established global architect of elite scientific, technical, research, engineering, academic, and medical summits." /><main><section className="section-pad"><div className="container-wide grid gap-12 lg:grid-cols-[.8fr_1.2fr]"><div><SectionTitle eyebrow="About Stream Conferences" title="A platform built to close the gap between discovery and delivery." body="Stream Conferences was established to solve a systemic inefficiency that stalls modern research: the expanding void between theoretical discovery and real-world execution." /></div><div className="grid gap-5 text-base leading-8 text-[hsl(var(--muted-foreground))]"><p>In today’s hyper-accelerated innovation landscape, traditional conference models—plagued by passive presentations and institutional siloing—are no longer equipped to drive meaningful scientific velocity.</p><p>We redefine the international summit experience through focused, result-driven frameworks that convert intellectual capital into immediate market momentum. We deliberately cultivate environments where data scientists, clinical physicians, biotech innovators, and systems engineers converge to solve high-stakes global challenges.</p></div></div></section><section className="section-pad bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"><div className="container-wide"><SectionTitle light eyebrow="What guides the work" title="Four values behind every stage, review, and connection." /><div className="mt-12 grid gap-4 md:grid-cols-2">{values.map(([title, body], i) => <div key={title} className="rounded-2xl border border-[hsl(var(--primary-foreground)/.16)] bg-[hsl(var(--primary-foreground)/.06)] p-7"><span className="label text-[hsl(var(--accent))]">0{i + 1}</span><h2 className="display mt-8 text-2xl font-bold">{title}</h2><p className="mt-4 text-sm leading-7 text-[hsl(var(--primary-foreground)/.68)]">{body}</p></div>)}</div></div></section><section className="section-pad"><div className="container-wide grid gap-12 lg:grid-cols-2"><div><SectionTitle eyebrow="Vision" title="The definitive benchmark for scientific-industrial convergence." body="We are building a borderless research ecosystem where breakthrough science seamlessly transitions into commercial technology and clinical practice." /></div><div><SectionTitle eyebrow="Mission" title="Move knowledge into the world." /><ul className="mt-8 grid gap-5">{['Accelerate technology transfer from university-led research into commercial pipelines and clinical application.', 'Foster multidisciplinary synergy across Medicine, Pharma, Health Science, Life Science, Engineering, and Technology.', 'Elevate emerging scholars through visibility and direct mentorship alongside recognized industry leaders.', 'Uphold academic excellence across every keynote, technical panel, symposium, and peer-reviewed publication.'].map((item, i) => <li key={item} className="flex gap-4 border-b border-[hsl(var(--border))] pb-5 text-sm leading-6"><span className="mono text-[hsl(var(--accent))]">0{i + 1}</span>{item}</li>)}</ul></div></div></section><section className="section-pad bg-[hsl(var(--muted)/.35)]"><div className="container-wide grid gap-12 lg:grid-cols-[.8fr_1.2fr]"><SectionTitle eyebrow="Who we gather" title="A premier delegation of decision-makers and innovators." /><div className="grid gap-3 sm:grid-cols-2">{['Clinical & Academic Leaders', 'Industry Innovators', 'Research & Advisory Authorities', 'Next-Gen Researchers'].map((item, i) => <div key={item} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5"><Building2 size={20} className="text-[hsl(var(--secondary))]" /><h3 className="display mt-6 text-lg font-bold">{item}</h3><p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">Physicians, executives, editors, strategists, doctoral candidates, and outstanding young scientists.</p></div>)}</div></div></section><section className="section-pad"><div className="container-wide grid gap-12 lg:grid-cols-[1.2fr_.8fr]"><div><SectionTitle eyebrow="The conference experience" title="More than a presentation schedule." body="Keynote addresses, interactive technical sessions, specialized symposiums, workshops, and strategic networking are designed to create the next collaboration beyond the stage." /></div><div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-7"><p className="label text-[hsl(var(--secondary))]">Research dissemination</p><p className="mt-5 text-sm leading-7 text-[hsl(var(--muted-foreground))]">Presented research secures permanent global reach through publishing alliances. Accepted abstracts and manuscripts are published in official digital proceedings with dedicated DOI/ISBN assignment where applicable.</p></div></div></section></main></Layout>;
+  return (
+    <Layout>
+      <PageHero
+        bgImage="https://images.unsplash.com/photo-1455849318743-b2233052fcff?auto=format&fit=crop&w=1200&q=80"
+        eyebrow="About STREAM Conferences"
+        title="A platform built to close the gap between discovery and delivery."
+        body="Uniting Academia, Industry, and Clinical Excellence on One Global Stage"
+      />
+      <main>
+        {/* 1. About Section - Paragraphs */}
+        <section className="section-pad">
+          <div className="container-wide w-full">
+            <div className="grid gap-5 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full">
+              <p>STREAM Conferences is an established global architect of elite scientific, technical, research, engineering, academic, and medical summits. Operating at the dynamic intersection of rigorous scholarship and industrial execution, we engineer high-precision platforms designed to accelerate knowledge transfer, forge high-value cross-disciplinary synergies, and catalyse theoretical discoveries into transformative global solutions.</p>
+              <p>We redefine the international summit experience through focused, result-driven frameworks that convert intellectual capital into immediate market momentum. We deliberately cultivate environments where data scientists, clinical physicians, biotech innovators, and systems engineers converge to solve high-stakes global challenges.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* 2. Vision & Mission Section - Stacked one by one */}
+        <section className="section-pad border-t border-[hsl(var(--border))]">
+          <div className="container-wide w-full grid gap-14 grid-cols-1">
+            <div>
+              <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))] mb-3">
+                Vision
+              </p>
+              <p className="text-base sm:text-lg leading-8 text-[hsl(var(--foreground))] font-medium">
+                To serve as the definitive global benchmark for scientific-industrial convergence—building a borderless research ecosystem where breakthrough science seamlessly transitions into commercial technology and clinical practice.
+              </p>
+            </div>
+            <div>
+              <SectionTitle eyebrow="Mission" title="Move knowledge into the world." />
+              <ul className="mt-8 grid gap-5 grid-cols-1">
+                {['Accelerate technology transfer from university-led research into commercial pipelines and clinical application.', 'Foster multidisciplinary synergy across Medicine, Pharma, Health Science, Life Science, Engineering, and Technology.', 'Elevate emerging scholars through visibility and direct mentorship alongside recognized industry leaders.', 'Uphold academic excellence across every keynote, technical panel, symposium, and peer-reviewed publication.'].map((item, i) => (
+                  <li key={item} className="flex gap-4 border-b border-[hsl(var(--border))] pb-5 text-sm sm:text-base leading-6">
+                    <span className="mono text-[hsl(var(--accent))] font-bold text-base">0{i + 1}</span>
+                    <span className="text-[hsl(var(--foreground))]">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* 3. What Guides The Work - 4 Cards in 1 Row */}
+        <section className="section-pad bg-[hsl(var(--background))]">
+          <div className="container-wide">
+            <SectionTitle eyebrow="What guides the work" title="Four values behind every stage, review, and connection." />
+            <div className="mt-12 grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+              {values.map(([title, body], i) => (
+                <div key={title} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm">
+                  <div>
+                    <span className="font-mono text-[hsl(var(--secondary))] font-bold text-sm tracking-wider">0{i + 1}</span>
+                    <h3 className="display mt-4 text-lg font-bold text-[hsl(var(--foreground))] leading-snug">{title}</h3>
+                    <p className="mt-3 text-xs sm:text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">{body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 4. Who We Gather */}
+        <section className="section-pad bg-[hsl(var(--muted)/.35)]">
+          <div className="container-wide grid gap-12 lg:grid-cols-[.8fr_1.2fr]">
+            <SectionTitle eyebrow="Who we gather" title="A premier delegation of decision-makers and innovators." />
+            <div className="grid gap-3 sm:grid-cols-2">
+              {['Clinical & Academic Leaders', 'Industry Innovators', 'Research & Advisory Authorities', 'Next-Gen Researchers'].map((item, i) => (
+                <div key={item} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5">
+                  <Building2 size={20} className="text-[hsl(var(--secondary))]" />
+                  <h3 className="display mt-6 text-lg font-bold">{item}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">Physicians, executives, editors, strategists, doctoral candidates, and outstanding young scientists.</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 5. Research Dissemination & Healthcare Publishing */}
+        <section className="section-pad border-t border-[hsl(var(--border))]">
+          <div className="container-wide">
+            <SectionTitle eyebrow="Publishing & Indexing" title="Research Dissemination & Healthcare Publishing" />
+            <div className="mt-8 grid gap-5 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] max-w-4xl">
+              <p>A fundamental pillar of Stream Conferences is ensuring that presented research secures permanent global reach. We move beyond ephemeral conversations, systematically documenting and indexing scientific discoveries through high-level publishing alliances across healthcare, medical, and technology sectors.</p>
+              <p>High-impact submissions receive direct channels for peer-reviewed evaluation in reputed international journals. Furthermore, all accepted abstracts and manuscripts are published in official digital proceedings assigned dedicated DOIs—ensuring universal indexability, citation permanence, and international prestige for researchers at every stage of their trajectory.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </Layout>
+  );
 }
 
 function GalleryPage() {
   const [selected, setSelected] = useState<number | null>(null);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=1200&q=80" eyebrow="The conference in motion" title="A room built for exchange." body="A visual archive of the people, moments, and working sessions that make Stream Conferences more than a program." /><main className="section-pad"><div className="container-wide"><div className="mb-12 flex items-end justify-between gap-6"><SectionTitle eyebrow="Event gallery" title="See the work between the sessions." body="A curated selection of event moments, technical sessions, poster forums, and academic exchanges." /><Camera className="hidden text-[hsl(var(--accent))] md:block" size={38} /></div><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{galleryItems.map(([title, body], i) => <button key={title} onClick={() => setSelected(i)} className="group relative min-h-[280px] overflow-hidden rounded-2xl border border-[hsl(var(--border))] text-left text-[hsl(var(--primary-foreground))] shadow-md transition-all hover:scale-[1.02] duration-300" style={{ backgroundImage: `linear-gradient(to top, rgba(24, 39, 63, 0.9) 0%, rgba(24, 39, 63, 0.3) 60%, rgba(24, 39, 63, 0.1) 100%), url(${galleryImages[i]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} data-testid={`gallery-item-${i}`}><div className="absolute inset-0 bg-[hsl(var(--primary)/.2)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" /><div className="relative flex h-full flex-col justify-end p-6"><span className="label text-[hsl(var(--accent))] text-[9px] mb-2">0{i + 1}</span><h2 className="display text-2xl font-bold leading-tight">{title}</h2><p className="mt-2 text-xs text-[hsl(var(--primary-foreground)/.85)] max-w-xs">{body}</p><span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[hsl(var(--accent))] group-hover:translate-x-1 transition-transform duration-300">View large photo <ArrowRight size={13} /></span></div></button>)}</div></div></main>{selected !== null && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onClick={() => setSelected(null)}><div className="relative max-w-4xl w-full overflow-hidden rounded-2xl bg-[hsl(var(--card))] shadow-2xl" onClick={(e) => e.stopPropagation()}><button type="button" className="absolute right-4 top-4 z-10 grid h-9 w-9 place-items-center rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors" onClick={() => setSelected(null)}><X size={18} /></button><img src={galleryImages[selected]} alt={galleryItems[selected][0]} className="w-full max-h-[70vh] object-cover" /><div className="bg-[hsl(var(--card))] p-6 border-t border-[hsl(var(--border))]"><span className="label text-[hsl(var(--accent))]">0{selected + 1} · {galleryItems[selected][0]}</span><p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">{galleryItems[selected][1]}</p></div></div></div>}</Layout>;
+  const [items, setItems] = useState<{ title: string; description?: string; image: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_BASE}/gallery`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (cancelled) return;
+        if (Array.isArray(data)) {
+          setItems(
+            data.map((item: any) => ({
+              title: item.title,
+              description: item.description || '',
+              image: mediaUrl(item.image),
+            }))
+          );
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const selectedItem = selected !== null ? items[selected] : null;
+
+  return (
+    <Layout>
+      <PageHero
+        variant="wave"
+        eyebrow="The conference in motion"
+        title="A room built for exchange."
+        body="A visual archive of the people, moments, and working sessions that make Stream Conferences more than a program."
+      />
+      <main className="section-pad">
+        <div className="container-wide">
+          {loading ? (
+            <div className="text-center py-12 text-muted-foreground">Loading gallery...</div>
+          ) : items.length === 0 ? (
+            <div className="text-center py-16 border border-[hsl(var(--border))] rounded-2xl bg-[hsl(var(--card))] text-[hsl(var(--muted-foreground))]">
+              <p className="text-lg font-bold text-[hsl(var(--foreground))]">No gallery images added yet.</p>
+              <p className="text-sm mt-1">Gallery items uploaded in the Admin Panel will appear here.</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {items.map((item, i) => (
+                <button
+                  key={i}
+                  onClick={() => setSelected(i)}
+                  className="group relative min-h-[280px] overflow-hidden rounded-2xl border border-[hsl(var(--border))] text-left text-[hsl(var(--primary-foreground))] shadow-md transition-all hover:scale-[1.02] duration-300 cursor-pointer"
+                  style={{
+                    backgroundImage: `linear-gradient(to top, rgba(24, 39, 63, 0.9) 0%, rgba(24, 39, 63, 0.3) 60%, rgba(24, 39, 63, 0.1) 100%), url(${item.image})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
+                  data-testid={`gallery-item-${i}`}
+                >
+                  <div className="absolute inset-0 bg-[hsl(var(--primary)/.2)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="relative flex h-full flex-col justify-end p-6">
+                    <span className="label text-[hsl(var(--accent))] text-[9px] mb-2">0{i + 1}</span>
+                    <h2 className="display text-2xl font-bold leading-tight text-white drop-shadow-sm">{item.title}</h2>
+                    {item.description && (
+                      <p className="mt-2 text-xs text-slate-200 max-w-xs drop-shadow-xs">{item.description}</p>
+                    )}
+                    <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[hsl(var(--accent))] group-hover:translate-x-1 transition-transform duration-300">
+                      View large photo <ArrowRight size={13} />
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+      {selectedItem && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+          onClick={() => setSelected(null)}
+        >
+          <div
+            className="relative max-w-4xl w-full overflow-hidden rounded-2xl bg-[hsl(var(--card))] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="absolute right-4 top-4 z-10 grid h-9 w-9 place-items-center rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors cursor-pointer"
+              onClick={() => setSelected(null)}
+            >
+              <X size={18} />
+            </button>
+            <img src={selectedItem.image} alt={selectedItem.title} className="w-full max-h-[70vh] object-cover" />
+            <div className="bg-[hsl(var(--card))] p-6 border-t border-[hsl(var(--border))]">
+              <span className="label text-[hsl(var(--accent))]">
+                0{selected! + 1} · {selectedItem.title}
+              </span>
+              {selectedItem.description && (
+                <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">{selectedItem.description}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </Layout>
+  );
 }
 
 function SuccessState({ title, body, reset, testId }: { title: string; body: string; reset?: () => void; testId: string }) {
@@ -1723,18 +2102,72 @@ function ProgramPage() {
 
 function BrochurePage() {
   const { toast } = useToast();
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=1200&q=80" eyebrow="The delegate edition" title="Take the summit with you." body="A concise field guide to ICMLHS 2027: tracks, program architecture, venue notes, and the details that help you make the most of three days in Boston." /><main className="section-pad"><div className="container-wide grid gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-center"><div className="relative mx-auto aspect-[.72] w-full max-w-[360px] overflow-hidden rounded-2xl bg-[hsl(var(--primary))] p-8 text-[hsl(var(--primary-foreground))] shadow-2xl shadow-[hsl(var(--primary)/.2)]"><div className="absolute right-[-50px] top-[-20px] h-48 w-48 rounded-full border border-[hsl(var(--accent)/.55)]" /><span className="label text-[hsl(var(--accent))]">Stream Conferences / 2027</span><div className="mt-24"><p className="label text-[9px] text-[hsl(var(--primary-foreground)/.55)]">International conference on</p><h2 className="display mt-3 text-4xl font-bold leading-[.95] tracking-[-.05em]">Medical, Life &<br />Health Sciences</h2></div><div className="absolute bottom-8 left-8 right-8 flex justify-between border-t border-[hsl(var(--primary-foreground)/.2)] pt-4 text-[10px]"><span>ICMLHS 2027</span><span>Boston / USA</span></div></div><div><SectionTitle eyebrow="Conference brochure" title="Everything you need, before you arrive." body="Use the brochure to align your team, plan your sessions, and share the invitation with collaborators." /><ul className="mt-8 grid gap-4">{['Five interdisciplinary tracks with clear submission routes', 'Three-day program architecture and delegate experience', 'Speaker, venue, travel, and registration overview', 'Publishing and proceedings pathway with DOI/ISBN note'].map((item) => <li key={item} className="flex gap-3 text-sm leading-6"><Check size={18} className="mt-1 shrink-0 text-[hsl(var(--secondary))]" />{item}</li>)}</ul><button type="button" onClick={() => toast({ title: "Brochure Compiled", description: "The official conference brochure PDF has been generated and is downloading." })} className="btn-main btn-primary mt-9" data-testid="button-download-brochure"><Download size={16} /> Download brochure (PDF)</button><p className="mt-4 text-xs text-[hsl(var(--muted-foreground))]">Official brochure edition · PDF version including full track details and registration terms.</p></div></div></main></Layout>;
+  const { mainBrochure } = useContext(APIContext);
+
+  const handleDownload = () => {
+    if (mainBrochure?.fileUrl) {
+      const url = mediaUrl(mainBrochure.fileUrl);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = mainBrochure.fileName || 'Stream-Conferences-Brochure.pdf';
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast({ title: "Downloading Brochure", description: `Downloading ${mainBrochure.title || 'the official brochure'}...` });
+    } else {
+      toast({ title: "Brochure Not Available", description: "No official website brochure has been uploaded yet. Please try again later." });
+    }
+  };
+
+  return (
+    <Layout>
+      <PageHero bgImage="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=1200&q=80" eyebrow="The delegate edition" title="Take the summit with you." body="A concise field guide to Stream Conferences: tracks, program architecture, venue notes, and the details that help you make the most of our events." />
+      <main className="section-pad">
+        <div className="container-wide grid gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-center">
+          <div className="relative mx-auto aspect-[.72] w-full max-w-[360px] overflow-hidden rounded-2xl bg-[hsl(var(--primary))] p-8 text-[hsl(var(--primary-foreground))] shadow-2xl shadow-[hsl(var(--primary)/.2)]">
+            <div className="absolute right-[-50px] top-[-20px] h-48 w-48 rounded-full border border-[hsl(var(--accent)/.55)]" />
+            <span className="label text-[hsl(var(--accent))]">Stream Conferences</span>
+            <div className="mt-24">
+              <p className="label text-[9px] text-[hsl(var(--primary-foreground)/.55)]">Official Summit Brochure</p>
+              <h2 className="display mt-3 text-4xl font-bold leading-[.95] tracking-[-.05em]">{mainBrochure?.title || 'Global Summits & Conferences'}</h2>
+            </div>
+            <div className="absolute bottom-8 left-8 right-8 flex justify-between border-t border-[hsl(var(--primary-foreground)/.2)] pt-4 text-[10px]">
+              <span>Stream Conferences</span>
+              <span>Global Summit</span>
+            </div>
+          </div>
+          <div>
+            <ul className="grid gap-4">
+              {['Five interdisciplinary tracks with clear submission routes', 'Three-day program architecture and delegate experience', 'Speaker, venue, travel, and registration overview', 'Publishing and proceedings pathway with DOI/ISBN note'].map((item) => (
+                <li key={item} className="flex gap-3 text-sm leading-6">
+                  <Check size={18} className="mt-1 shrink-0 text-[hsl(var(--secondary))]" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <button type="button" onClick={handleDownload} className="btn-main btn-primary mt-9" data-testid="button-download-brochure">
+              <Download size={16} /> Download brochure ({mainBrochure?.fileName ? mainBrochure.fileName.split('.').pop()?.toUpperCase() : 'PDF'})
+            </button>
+            <p className="mt-4 text-xs text-[hsl(var(--muted-foreground))]">
+              {mainBrochure ? `Official brochure edition · File: ${mainBrochure.fileName || mainBrochure.title}` : 'Official brochure edition · PDF version including full track details and registration terms.'}
+            </p>
+          </div>
+        </div>
+      </main>
+    </Layout>
+  );
 }
 
 function VenuePage() {
   const { venues } = useContext(APIContext);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1501979392350-f8c5b058a5c6?auto=format&fit=crop&w=1200&q=80" eyebrow="Our spaces" title="Venues for the conversation." body="Explore the venues available for our conferences and webinars." /><main className="section-pad"><div className="container-wide"><SectionTitle eyebrow="Venues" title="Where we gather." body="A curated list of the spaces hosting our events." /><div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{venues.length > 0 ? venues.map((venue) => <div key={venue._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6"><div className="flex items-center gap-3"><MapPin size={20} className="text-[hsl(var(--secondary))]" /><h3 className="display text-xl font-bold">{venue.name}</h3></div>{venue.address && <p className="mt-3 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{venue.address}</p>}{venue.locationUrl && <a href={venue.locationUrl} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition">View location <ExternalLink size={14} /></a>}</div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p>No venues have been added yet.</p></div>}</div></div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1501979392350-f8c5b058a5c6?auto=format&fit=crop&w=1200&q=80" eyebrow="Our spaces" title="Venues for the conversation." body="Explore the venues available for our conferences and webinars." /><main className="section-pad"><div className="container-wide"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{venues.length > 0 ? venues.map((venue) => <div key={venue._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6"><div className="flex items-center gap-3"><MapPin size={20} className="text-[hsl(var(--secondary))]" /><h3 className="display text-xl font-bold">{venue.name}</h3></div>{venue.address && <p className="mt-3 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{venue.address}</p>}{venue.locationUrl && <a href={venue.locationUrl} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition">View location <ExternalLink size={14} /></a>}</div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p>No venues have been added yet.</p></div>}</div></div></main></Layout>;
 }
 
 function SponsorsPage() {
   const [sent, setSent] = useState(false);
   const submit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); setSent(true); };
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1200&q=80" eyebrow="Build the room with us" title="Put your work in the conversation." body="Sponsorship and exhibition at ICMLHS 2027 places your organization alongside the researchers and practitioners shaping what comes next." /><main><section className="section-pad"><div className="container-wide"><SectionTitle eyebrow="Partnership architecture" title="Choose your level of visibility." body="Select from the partnership tiers designed to align your organization with leading research." /><div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">{[['Platinum', 'Lead the room', ['Main stage recognition', 'Keynote introduction', 'Premium exhibition footprint']], ['Gold', 'Shape the exchange', ['Session recognition', 'Exhibition footprint', 'Delegate invitations']], ['Silver', 'Join the network', ['Logo visibility', 'Exhibition table', 'Delegate invitations']], ['Exhibitor', 'Show the work', ['Dedicated table', 'Listing in event guide', 'Passes included']]].map(([tier, lead, benefits]) => <div key={String(tier)} className={`rounded-2xl border p-6 ${tier === 'Platinum' ? 'border-[hsl(var(--accent))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : 'border-[hsl(var(--border))] bg-[hsl(var(--card))]'}`}><p className={`label ${tier === 'Platinum' ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--secondary))]'}`}>{tier}</p><h3 className="display mt-4 text-2xl font-bold">{lead}</h3><ul className="mt-8 grid gap-3">{(benefits as string[]).map((benefit) => <li key={benefit} className="flex gap-2 text-sm"><Check size={16} className="mt-0.5 shrink-0 text-[hsl(var(--accent))]" />{benefit}</li>)}</ul></div>)}</div></div></section><section className="section-pad border-t border-[hsl(var(--border))] bg-[hsl(var(--muted)/.35)]"><div className="container-wide grid gap-12 lg:grid-cols-[.75fr_1.25fr]"><SectionTitle eyebrow="Partner desk" title="Start a useful conversation." body="Send an initial brief to partners@streamconferences.com. Our partnership team will respond within 24–48 business hours." />{sent ? <SuccessState title="Brief received" body="Thanks. The partnership desk has received your request and will contact you shortly." reset={() => setSent(false)} testId="status-sponsor-success" /> : <form onSubmit={submit} className="grid gap-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6"><input required className="form-field" placeholder="Company name" aria-label="Company name" data-testid="input-sponsor-company" /><input required className="form-field" placeholder="Contact name" aria-label="Contact name" data-testid="input-sponsor-contact" /><div className="grid gap-4 sm:grid-cols-2"><input required type="email" className="form-field" placeholder="Email address" aria-label="Email address" data-testid="input-sponsor-email" /><input className="form-field" placeholder="Phone number" aria-label="Phone number" data-testid="input-sponsor-phone" /></div><select className="form-field" defaultValue="" aria-label="Tier of interest" data-testid="select-sponsor-tier"><option value="" disabled>Tier of interest</option><option>Platinum</option><option>Gold</option><option>Silver</option><option>Exhibitor</option></select><textarea className="form-field min-h-28" placeholder="Tell us what you want to make possible" aria-label="Message" data-testid="input-sponsor-message" /><button type="submit" className="btn-main btn-primary" data-testid="button-submit-sponsor">Send partnership brief <Send size={16} /></button></form>}</div></section></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1200&q=80" eyebrow="Build the room with us" title="Put your work in the conversation." body="Sponsorship and exhibition at ICMLHS 2027 places your organization alongside the researchers and practitioners shaping what comes next." /><main><section className="section-pad"><div className="container-wide"><div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">{[['Platinum', 'Lead the room', ['Main stage recognition', 'Keynote introduction', 'Premium exhibition footprint']], ['Gold', 'Shape the exchange', ['Session recognition', 'Exhibition footprint', 'Delegate invitations']], ['Silver', 'Join the network', ['Logo visibility', 'Exhibition table', 'Delegate invitations']], ['Exhibitor', 'Show the work', ['Dedicated table', 'Listing in event guide', 'Passes included']]].map(([tier, lead, benefits]) => <div key={String(tier)} className={`rounded-2xl border p-6 ${tier === 'Platinum' ? 'border-[hsl(var(--accent))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : 'border-[hsl(var(--border))] bg-[hsl(var(--card))]'}`}><p className={`label ${tier === 'Platinum' ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--secondary))]'}`}>{tier}</p><h3 className="display mt-4 text-2xl font-bold">{lead}</h3><ul className="mt-8 grid gap-3">{(benefits as string[]).map((benefit) => <li key={benefit} className="flex gap-2 text-sm"><Check size={16} className="mt-0.5 shrink-0 text-[hsl(var(--accent))]" />{benefit}</li>)}</ul></div>)}</div></div></section><section className="section-pad border-t border-[hsl(var(--border))] bg-[hsl(var(--muted)/.35)]"><div className="container-wide grid gap-12 lg:grid-cols-[.75fr_1.25fr]"><SectionTitle eyebrow="Partner desk" title="Start a useful conversation." body="Send an initial brief to partners@streamconferences.com. Our partnership team will respond within 24–48 business hours." />{sent ? <SuccessState title="Brief received" body="Thanks. The partnership desk has received your request and will contact you shortly." reset={() => setSent(false)} testId="status-sponsor-success" /> : <form onSubmit={submit} className="grid gap-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6"><input required className="form-field" placeholder="Company name" aria-label="Company name" data-testid="input-sponsor-company" /><input required className="form-field" placeholder="Contact name" aria-label="Contact name" data-testid="input-sponsor-contact" /><div className="grid gap-4 sm:grid-cols-2"><input required type="email" className="form-field" placeholder="Email address" aria-label="Email address" data-testid="input-sponsor-email" /><input className="form-field" placeholder="Phone number" aria-label="Phone number" data-testid="input-sponsor-phone" /></div><select className="form-field" defaultValue="" aria-label="Tier of interest" data-testid="select-sponsor-tier"><option value="" disabled>Tier of interest</option><option>Platinum</option><option>Gold</option><option>Silver</option><option>Exhibitor</option></select><textarea className="form-field min-h-28" placeholder="Tell us what you want to make possible" aria-label="Message" data-testid="input-sponsor-message" /><button type="submit" className="btn-main btn-primary" data-testid="button-submit-sponsor">Send partnership brief <Send size={16} /></button></form>}</div></section></main></Layout>;
 }
 
 function RegisterPage() {
@@ -2541,17 +2974,245 @@ function FAQPage() {
   const [open, setOpen] = useState<number | null>(0);
   const [query, setQuery] = useState('');
   const filtered = useMemo(() => faqs.filter(([question, answer]) => `${question} ${answer}`.toLowerCase().includes(query.toLowerCase())), [query]);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80" eyebrow="Delegate desk" title="The questions worth answering early." body="Find practical guidance on eligibility, submission, review, presentation formats, registration, and joining from abroad." /><main className="section-pad"><div className="container-wide max-w-4xl"><div className="relative mb-10"><Search className="absolute left-4 top-3.5 text-[hsl(var(--muted-foreground))]" size={18} /><input className="form-field pl-11" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the delegate desk" aria-label="Search FAQs" data-testid="input-faq-search" /></div><div className="grid gap-3">{filtered.map(([question, answer], index) => { const actualIndex = faqs.findIndex(([item]) => item === question); const isOpen = open === actualIndex; return <div key={question} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"><button type="button" onClick={() => setOpen(isOpen ? null : actualIndex)} className="flex w-full items-center justify-between gap-5 p-5 text-left font-bold" aria-expanded={isOpen} data-testid={`button-faq-${actualIndex}`}><span>{question}</span><ChevronDown size={18} className={`shrink-0 text-[hsl(var(--secondary))] transition-transform ${isOpen ? 'rotate-180' : ''}`} /></button>{isOpen && <div className="border-t border-[hsl(var(--border))] px-5 pb-5 pt-4 text-sm leading-7 text-[hsl(var(--muted-foreground))]" data-testid={`text-faq-answer-${actualIndex}`}>{answer}</div>}</div>; })}</div>{filtered.length === 0 && <div className="rounded-2xl border border-dashed border-[hsl(var(--border))] p-10 text-center"><CircleHelp className="mx-auto text-[hsl(var(--secondary))]" /><p className="mt-4 font-bold">No matching questions</p><p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">Try a shorter search, or email the scientific coordination team.</p></div>}<div className="mt-16 rounded-2xl bg-[hsl(var(--muted))] p-7"><p className="label text-[hsl(var(--secondary))]">Need further assistance?</p><p className="mt-3 max-w-2xl text-sm leading-7">For questions regarding abstract guidelines or technical issues, contact <a href="mailto:abstracts@streamconferences.com" className="font-bold text-[hsl(var(--secondary))]" data-testid="link-faq-email">abstracts@streamconferences.com</a>.</p><Link href="/contact" className="btn-main btn-quiet mt-6" data-testid="link-faq-contact">Contact us <ArrowUpRight size={16} /></Link></div></div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80" eyebrow="Delegate desk" title="The questions worth answering early." body="Find practical guidance on eligibility, submission, review, presentation formats, registration, and joining from abroad." /><main className="section-pad"><div className="container-wide max-w-4xl"><div className="relative mb-10"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] pointer-events-none z-10" size={19} /><input className="form-field !pl-12 pr-4 py-3.5 text-base shadow-sm rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]" style={{ paddingLeft: '48px' }} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the delegate desk" aria-label="Search FAQs" data-testid="input-faq-search" /></div><div className="grid gap-3">{filtered.map(([question, answer], index) => { const actualIndex = faqs.findIndex(([item]) => item === question); const isOpen = open === actualIndex; return <div key={question} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"><button type="button" onClick={() => setOpen(isOpen ? null : actualIndex)} className="flex w-full items-center justify-between gap-5 p-5 text-left font-bold text-base sm:text-lg" aria-expanded={isOpen} data-testid={`button-faq-${actualIndex}`}><span>{question}</span><ChevronDown size={18} className={`shrink-0 text-[hsl(var(--secondary))] transition-transform ${isOpen ? 'rotate-180' : ''}`} /></button>{isOpen && <div className="border-t border-[hsl(var(--border))] px-6 pb-6 pt-4 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]" data-testid={`text-faq-answer-${actualIndex}`}>{answer}</div>}</div>; })}</div>{filtered.length === 0 && <div className="rounded-2xl border border-dashed border-[hsl(var(--border))] p-10 text-center"><CircleHelp className="mx-auto text-[hsl(var(--secondary))]" /><p className="mt-4 font-bold text-lg">No matching questions</p><p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Try a shorter search, or email the scientific coordination team.</p></div>}<div className="mt-16 rounded-2xl bg-[hsl(var(--muted))] p-8"><p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">Need further assistance?</p><p className="mt-3 max-w-2xl text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">For questions regarding abstract guidelines or technical issues, contact <a href="mailto:abstracts@streamconferences.com" className="font-bold text-[hsl(var(--secondary))]" data-testid="link-faq-email">abstracts@streamconferences.com</a>.</p><Link href="/contact" className="btn-main btn-quiet mt-6" data-testid="link-faq-contact">Contact us <ArrowUpRight size={16} /></Link></div></div></main></Layout>;
+}
+
+function AbstractSubmissionGuidelinesPage() {
+  const tracks = [
+    'Medical & Clinical Sciences',
+    'Pharmaceutical & Life Sciences',
+    'Engineering & Technology',
+    'Academic & Research',
+    'Science & Medical Technologies',
+  ];
+
+  const presentationFormats = [
+    {
+      title: 'Keynote / Plenary Talk',
+      desc: 'Reserved for distinguished speakers and senior authorities (25–30 minutes).',
+    },
+    {
+      title: 'Oral Presentation',
+      desc: 'Standard research presentation (15–20 minutes, including Q&A).',
+    },
+    {
+      title: 'Poster Presentation',
+      desc: 'Visual display during dedicated poster sessions with live interactive Q&A.',
+    },
+    {
+      title: 'Virtual / Online Presentation',
+      desc: 'Recorded or live-streamed presentation for remote delegates.',
+    },
+  ];
+
+  const formattingReqs = [
+    {
+      label: 'Title',
+      text: 'Maximum 25 words. Concise, descriptive, and written in Title Case.',
+    },
+    {
+      label: 'Author Details',
+      text: 'Full names, institutional affiliations, city, country, and email address of the presenting author and co-authors. Mark the corresponding/presenting author with an asterisk (*).',
+    },
+    {
+      label: 'Word Limit',
+      text: '250 to 350 words (excluding title, authors, and affiliations).',
+    },
+    {
+      label: 'Keywords',
+      text: '3 to 6 relevant keywords separated by semicolons.',
+    },
+  ];
+
+  const coreStructure = [
+    {
+      title: 'Background / Objectives',
+      desc: 'Clearly state the research problem, context, and primary objective.',
+    },
+    {
+      title: 'Methods / Methodology',
+      desc: 'Describe the research design, dataset, experimental setup, or analytical framework.',
+    },
+    {
+      title: 'Results / Findings',
+      desc: 'Summarize the key quantitative or qualitative findings (avoid vague statements like "results will be discussed").',
+    },
+    {
+      title: 'Conclusion / Significance',
+      desc: 'Highlight the theoretical contribution, practical impact, or industrial application of the work.',
+    },
+  ];
+
+  const terms = [
+    {
+      title: 'Originality',
+      desc: 'Submissions must represent original research that has not been published or accepted for publication in a peer-reviewed journal prior to the event.',
+    },
+    {
+      title: 'Ethics Approval',
+      desc: 'Studies involving human participants or animal subjects must state compliance with ethical standards and institutional approvals.',
+    },
+    {
+      title: 'Registration Requirement',
+      desc: 'At least one author of an accepted abstract must register for the conference to present the work and have the abstract published in the official conference proceedings.',
+    },
+    {
+      title: 'Commercial Bias',
+      desc: 'Abstracts promoting commercial products, services, or proprietary marketing content without scientific merit will be rejected.',
+    },
+  ];
+
+  const steps = [
+    'Prepare your abstract using the standard Stream Conferences Abstract Template (.docx format).',
+    'Access the online submission portal via the "Submit Abstract" button on the event webpage.',
+    'Fill out the required author information and select your primary presentation track and format.',
+    'Upload your abstract document and receive an automated confirmation email with your unique Submission ID.',
+  ];
+
+  return (
+    <Layout>
+      <PageHero
+        bgImage="https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1200&q=80"
+        eyebrow="Author & Presenter Portal"
+        title="Abstract Submission Guidelines"
+        body="Stream Conferences invites researchers, clinicians, academicians, and industry leaders to submit original abstracts for oral, poster, and virtual presentations at our upcoming global events. All submissions undergo a rigorous double-blind peer review by our Scientific Advisory Board to ensure high academic and professional standards."
+      />
+      <main className="section-pad">
+        <div className="container-wide max-w-4xl">
+          {/* Review turnaround notification banner */}
+          <div className="mb-10 rounded-2xl border border-[hsl(var(--secondary)/.3)] bg-[hsl(var(--secondary)/.08)] p-6 text-base sm:text-lg leading-8 flex items-center gap-4">
+            <Clock className="text-[hsl(var(--secondary))] shrink-0" size={24} />
+            <div>
+              <span className="font-bold text-[hsl(var(--foreground))]">Review Turnaround: </span>
+              <span className="text-[hsl(var(--muted-foreground))]">Notification of Acceptance is sent within <strong>5–7 business days</strong> after abstract submission.</span>
+            </div>
+          </div>
+
+          <div className="grid gap-12">
+            {/* 1. Submission Categories & Tracks */}
+            <section className="border-b border-[hsl(var(--border))] pb-10">
+              <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))] mb-2">01</p>
+              <h2 className="display mt-2 text-2xl sm:text-3xl font-bold">Submission Categories & Tracks</h2>
+              <p className="mt-3 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">
+                Abstracts are accepted across all major conference tracks:
+              </p>
+              <div className="mt-6 grid sm:grid-cols-2 gap-4">
+                {tracks.map((track) => (
+                  <div key={track} className="flex items-center gap-3.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-base font-semibold text-[hsl(var(--foreground))]">
+                    <CheckCircle2 size={18} className="text-[hsl(var(--secondary))] shrink-0" />
+                    <span>{track}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* 2. Presentation Formats */}
+            <section className="border-b border-[hsl(var(--border))] pb-10">
+              <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))] mb-2">02</p>
+              <h2 className="display mt-2 text-2xl sm:text-3xl font-bold">Presentation Formats</h2>
+              <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                {presentationFormats.map((pf) => (
+                  <div key={pf.title} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-bold text-lg sm:text-xl text-[hsl(var(--foreground))]">{pf.title}</h3>
+                      <p className="mt-3 text-base leading-7 text-[hsl(var(--muted-foreground))]">{pf.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* 3. Abstract Formatting Requirements */}
+            <section className="border-b border-[hsl(var(--border))] pb-10">
+              <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))] mb-2">03</p>
+              <h2 className="display mt-2 text-2xl sm:text-3xl font-bold">Abstract Formatting Requirements</h2>
+              <p className="mt-3 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">
+                All abstracts must be written in clear, concise English and adhere to the following structure:
+              </p>
+              <div className="mt-6 grid gap-4">
+                {formattingReqs.map((req) => (
+                  <div key={req.label} className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-base leading-7">
+                    <span className="font-bold text-base sm:text-lg text-[hsl(var(--foreground))]">{req.label}: </span>
+                    <span className="text-[hsl(var(--muted-foreground))]">{req.text}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 rounded-2xl bg-[hsl(var(--muted))] p-7">
+                <h3 className="font-bold text-lg sm:text-xl text-[hsl(var(--foreground))] mb-4">Core Structure</h3>
+                <div className="grid gap-4">
+                  {coreStructure.map((cs) => (
+                    <div key={cs.title} className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-base leading-7">
+                      <span className="font-bold text-base sm:text-lg text-[hsl(var(--secondary))]">{cs.title}: </span>
+                      <span className="text-[hsl(var(--muted-foreground))]">{cs.desc}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* 4. Submission Terms & Conditions */}
+            <section className="border-b border-[hsl(var(--border))] pb-10">
+              <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))] mb-2">04</p>
+              <h2 className="display mt-2 text-2xl sm:text-3xl font-bold">Submission Terms & Conditions</h2>
+              <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                {terms.map((t) => (
+                  <div key={t.title} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
+                    <h3 className="font-bold text-base sm:text-lg text-[hsl(var(--foreground))] flex items-center gap-2.5">
+                      <FileText size={18} className="text-[hsl(var(--secondary))]" />
+                      {t.title}
+                    </h3>
+                    <p className="mt-3 text-base leading-7 text-[hsl(var(--muted-foreground))]">{t.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* 5. How to Submit */}
+            <section className="pb-4">
+              <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))] mb-2">05</p>
+              <h2 className="display mt-2 text-2xl sm:text-3xl font-bold">How to Submit</h2>
+              <div className="mt-6 grid gap-4">
+                {steps.map((step, idx) => (
+                  <div key={idx} className="flex gap-4 items-start rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-base sm:text-lg leading-8">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--secondary))] text-xs font-bold text-white mt-0.5">
+                      {idx + 1}
+                    </span>
+                    <span className="text-[hsl(var(--foreground))]">{step}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 rounded-2xl bg-[hsl(var(--muted))] p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                <div>
+                  <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">Technical Support & Inquiries</p>
+                  <p className="mt-2 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">
+                    For inquiries or technical support regarding abstract submissions, please contact{' '}
+                    <a href="mailto:abstracts@streamconferences.com" className="font-bold text-[hsl(var(--secondary))] hover:underline">
+                      abstracts@streamconferences.com
+                    </a>.
+                  </p>
+                </div>
+                <Link href="/submit-abstract" className="btn-main btn-solid shrink-0" data-testid="button-submit-abstract-guidelines">
+                  Submit Abstract <ArrowUpRight size={16} />
+                </Link>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </Layout>
+  );
 }
 
 function GuidelinesPage() {
   const sections = [['Presentation day checklist', ['Arrive 30 minutes before your session.', 'Check in at the speaker desk and confirm your file.', 'Keep a backup copy on a USB drive and in cloud storage.', 'Stay for questions and support the presenters after you.']], ['Poster presentation specifications', ['A0 or A1 portrait orientation.', 'Export at print-ready resolution with accessible type sizes.', 'Include title, authors, affiliations, methods, results, and contact.', 'Mounting boards and pins are provided by the secretariat at the venue.']], ['AV & room support', ['HDMI presentation connection and confidence monitor.', 'Session chair, handheld microphone, and venue Wi-Fi.', 'Technical rehearsal windows published in the final program.', 'Tell the speaker desk about accessibility requirements early.']], ['Code of conduct', ['Be generous with questions and precise with critique.', 'Respect consent, privacy, and intellectual property.', 'No harassment, discrimination, or commercial promotion.', 'Raise concerns with the organizing committee promptly.']]];
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80" eyebrow="Practical notes" title="Arrive ready to contribute." body="A short field guide for presenters and delegates to optimize their conference experience and presentation sessions." /><main className="section-pad"><div className="container-wide grid gap-4 md:grid-cols-2">{sections.map(([title, items], i) => <div key={String(title)} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-7" data-testid={`card-guideline-${i}`}><span className="label text-[hsl(var(--accent))]">0{i + 1}</span><h2 className="display mt-7 text-2xl font-bold">{title}</h2><ul className="mt-6 grid gap-3">{(items as string[]).map((item) => <li key={item} className="flex gap-3 text-sm leading-6"><Check size={16} className="mt-1 shrink-0 text-[hsl(var(--secondary))]" />{item}</li>)}</ul></div>)}</div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80" eyebrow="Practical notes" title="Arrive ready to contribute." body="A short field guide for presenters and delegates to optimize their conference experience and presentation sessions." /><main className="section-pad"><div className="container-wide grid gap-5 md:grid-cols-2">{sections.map(([title, items], i) => <div key={String(title)} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8" data-testid={`card-guideline-${i}`}><span className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">0{i + 1}</span><h2 className="display mt-4 text-2xl font-bold">{title}</h2><ul className="mt-6 grid gap-4">{(items as string[]).map((item) => <li key={item} className="flex gap-3 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]"><Check size={18} className="mt-1.5 shrink-0 text-[hsl(var(--secondary))]" />{item}</li>)}</ul></div>)}</div></main></Layout>;
 }
 
 function TermsPage() {
   const sections = [['Registration & payment terms', 'Registration rates, inclusions, taxes, and payment processing details are finalized in the official prospectus. A registration is confirmed only after successful payment and written confirmation.'], ['Cancellation & refund policy', 'Cancellation requests must be made in writing. Full refunds (less standard administration fees) are available up to 30 days prior to the conference. Transfers to alternate delegates are permitted.'], ['Abstract & publication rights', 'Authors retain ownership of their work while granting the conference a non-exclusive right to display accepted material in conference materials and official digital proceedings. DOI and ISBN assignment are subject to editorial review.'], ['Code of conduct', 'All delegates are expected to participate with respect, integrity, and professional care. Harassment, discrimination, intimidation, and unauthorized commercial promotion are not permitted.'], ['Liability', 'Attendees participate at their own risk. The organizers are not responsible for loss, travel disruption, or personal injury beyond the protections required by applicable law.'], ['Force majeure', 'If circumstances beyond reasonable control affect the event, the organizers may reschedule, change format, or cancel the event. Final remedies and notices will be defined in the reviewed policy.']];
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=1200&q=80" eyebrow="The fine print" title="Terms & conditions." body="Official terms of attendance, cancellation policies, intellectual property rights, and code of conduct standards for all delegates." /><main className="section-pad"><div className="container-wide max-w-4xl"><div className="mb-10 rounded-2xl border border-[hsl(var(--accent)/.5)] bg-[hsl(var(--accent)/.12)] p-5 text-sm leading-6"><ShieldCheck className="mr-2 inline text-[hsl(var(--secondary))]" size={18} /> Official delegate terms for the 2027 International Conference on Medical, Life & Health Sciences.</div><div className="grid gap-8">{sections.map(([title, text], i) => <section key={title} className="border-b border-[hsl(var(--border))] pb-8"><p className="label text-[hsl(var(--secondary))]">0{i + 1}</p><h2 className="display mt-3 text-2xl font-bold">{title}</h2><p className="mt-4 text-sm leading-8 text-[hsl(var(--muted-foreground))]">{text}</p></section>)}</div></div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=1200&q=80" eyebrow="The fine print" title="Terms & conditions." body="Official terms of attendance, cancellation policies, intellectual property rights, and code of conduct standards for all delegates." /><main className="section-pad"><div className="container-wide max-w-4xl"><div className="mb-10 rounded-2xl border border-[hsl(var(--accent)/.5)] bg-[hsl(var(--accent)/.12)] p-6 text-base sm:text-lg leading-8"><ShieldCheck className="mr-2.5 inline text-[hsl(var(--secondary))]" size={20} /> Official delegate terms for the 2027 International Conference on Medical, Life & Health Sciences.</div><div className="grid gap-10">{sections.map(([title, text], i) => <section key={title} className="border-b border-[hsl(var(--border))] pb-8"><p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">0{i + 1}</p><h2 className="display mt-2 text-2xl font-bold">{title}</h2><p className="mt-4 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">{text}</p></section>)}</div></div></main></Layout>;
 }
 
 function ContactPage() {
@@ -2561,7 +3222,9 @@ function ContactPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [subject, setSubject] = useState(eventSlug ? 'Event Enquiry' : 'General');
+  const [country, setCountry] = useState('');
+  const [inquiryType, setInquiryType] = useState('General');
+  const [conferenceName, setConferenceName] = useState('');
   const [message, setMessage] = useState('');
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -2570,7 +3233,16 @@ function ContactPage() {
       const res = await fetch(`${API_BASE}/contacts/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, subject, conference: conferenceName, message, eventSlug: eventSlug || undefined })
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          country,
+          subject: inquiryType,
+          conference: conferenceName,
+          message,
+          eventSlug: eventSlug || undefined,
+        }),
       });
       if (res.ok) {
         setSent(true);
@@ -2587,13 +3259,202 @@ function ContactPage() {
     setName('');
     setEmail('');
     setPhone('');
-    setSubject('General');
+    setCountry('');
+    setInquiryType('General');
+    setConferenceName('');
     setMessage('');
     setSent(false);
   };
 
-  const departments = [['General & Delegate Inquiries', 'info@streamconferences.com', 'Upcoming events, registration, and general information.'], ['Abstract Submissions & Speaker Desk', 'abstracts@streamconferences.com', 'Abstract guidelines, status, formats, and reviews.'], ['Publishing & Research Indexing', 'publishing@streamconferences.com', 'Proceedings, DOI assignments, and journal partnerships.'], ['Sponsorships & Strategic Partnerships', 'partners@streamconferences.com', 'Sponsorship and exhibit opportunities.']];
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80" eyebrow="The secretariat" title="Get in touch with Stream Conferences." body="Whether you are presenting groundbreaking research, planning attendance, exploring publishing, or discussing sponsorship, our team is here to assist. We aim to respond within 24–48 business hours." /><main><section className="section-pad"><div className="container-wide"><div className="grid gap-4 md:grid-cols-2">{departments.map(([title, email, body], i) => <div key={email} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6" data-testid={`card-contact-${i}`}><Mail className="text-[hsl(var(--secondary))]" size={21} /><h2 className="display mt-6 text-xl font-bold">{title}</h2><p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{body}</p><a href={`mailto:${email}`} className="mt-5 inline-block text-sm font-bold text-[hsl(var(--secondary))]" data-testid={`link-contact-email-${i}`}>{email}</a></div>)}</div></div></section><section className="section-pad bg-[hsl(var(--muted)/.35)]"><div className="container-wide grid gap-12 lg:grid-cols-[.7fr_1.3fr]"><div><SectionTitle eyebrow="Global headquarters" title="A team with a reachable desk." body="Stream Conferences Secretariat · 100 Federal Street, Boston, MA 02110, USA" /><div className="mt-7 grid gap-3 text-sm"><p className="flex items-center gap-3"><Phone size={17} className="text-[hsl(var(--secondary))]" /> +1 (617) 555-0199</p><p className="flex items-center gap-3"><Clock3 size={17} className="text-[hsl(var(--secondary))]" /> Monday–Friday · 9:00 AM–6:00 PM EST</p></div></div>{sent ? <SuccessState title="Message sent" body="Thank you. Our coordination team has received your message and will respond within 24–48 business hours." reset={handleReset} testId="status-contact-success" /> : <form onSubmit={submit} className="grid gap-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6"><div className="grid gap-4 sm:grid-cols-2"><input required className="form-field" placeholder="Full name" aria-label="Full name" data-testid="input-contact-name" value={name} onChange={(e) => setName(e.target.value)} /><input required type="email" className="form-field" placeholder="Email address" aria-label="Email address" data-testid="input-contact-email" value={email} onChange={(e) => setEmail(e.target.value)} /></div><input className="form-field" placeholder="Phone number" aria-label="Phone number" data-testid="input-contact-phone" value={phone} onChange={(e) => setPhone(e.target.value)} /><select className="form-field" value={subject} onChange={(e) => setSubject(e.target.value)} aria-label="Inquiry type" data-testid="select-contact-inquiry"><option>General</option><option>Abstract Submission</option><option>Publishing</option><option>Sponsorship</option></select><input className="form-field" defaultValue={conferenceName} aria-label="Conference name" data-testid="input-contact-conference" /><textarea required className="form-field min-h-32" placeholder="How can we help?" aria-label="Message" data-testid="input-contact-message" value={message} onChange={(e) => setMessage(e.target.value)} /><button type="submit" className="btn-main btn-primary" data-testid="button-submit-contact">Send us a message <Send size={16} /></button></form>}</div></section></main></Layout>;
+  const departments = [
+    [
+      'General & Delegate Inquiries',
+      'info@streamconferences.com',
+      'For questions regarding upcoming events, registration details, or general information.',
+    ],
+    [
+      'Abstract Submissions & Speaker Desk',
+      'abstracts@streamconferences.com',
+      'For inquiries related to abstract guidelines, submission status, presentation formats, or scientific committee reviews.',
+    ],
+    [
+      'Publishing & Research Indexing',
+      'publishing@streamconferences.com',
+      'For information regarding conference proceedings, DOI assignments, or journal publication partnerships.',
+    ],
+    [
+      'Sponsorships & Strategic Partnerships',
+      'partners@streamconferences.com',
+      'For corporate organizations, institutions, and industry leaders seeking high-impact event sponsorship and exhibit opportunities.',
+    ],
+  ];
+
+  return (
+    <Layout>
+      <PageHero
+        bgImage="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80"
+        eyebrow="Contact Us"
+        title="Get in Touch with Stream Conferences"
+        body="Whether you are looking to present groundbreaking research, inquire about conference registration, explore healthcare publishing opportunities, or discuss corporate sponsorship, our dedicated team is here to assist you. Reach out to the appropriate department below, and a representative will respond within 24 to 48 business hours."
+      />
+      <main>
+        <section className="section-pad">
+          <div className="container-wide">
+            <h2 className="display text-2xl font-bold mb-6">Departmental Inquiries</h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              {departments.map(([title, email, body], i) => (
+                <div
+                  key={email}
+                  className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6"
+                  data-testid={`card-contact-${i}`}
+                >
+                  <Mail className="text-[hsl(var(--secondary))]" size={21} />
+                  <h3 className="display mt-6 text-xl font-bold">{title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{body}</p>
+                  <a
+                    href={`mailto:${email}`}
+                    className="mt-5 inline-block text-sm font-bold text-[hsl(var(--secondary))] hover:underline"
+                    data-testid={`link-contact-email-${i}`}
+                  >
+                    {email}
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section-pad bg-[hsl(var(--muted)/.35)]">
+          <div className="container-wide grid gap-12 lg:grid-cols-[.7fr_1.3fr]">
+            <div>
+              <SectionTitle
+                eyebrow="Global Headquarters"
+                title="Stream Conferences"
+                body="100 Federal Street, Boston, MA 02110, USA"
+              />
+              <div className="mt-7 grid gap-3 text-sm">
+                <p className="flex items-center gap-3">
+                  <Phone size={17} className="text-[hsl(var(--secondary))]" /> +1 (617) 555-0199
+                </p>
+                <p className="flex items-center gap-3">
+                  <Clock3 size={17} className="text-[hsl(var(--secondary))]" /> Monday – Friday: 9:00 AM – 6:00 PM (EST)
+                </p>
+              </div>
+            </div>
+
+            {sent ? (
+              <SuccessState
+                title="Message Sent"
+                body="Have a quick question? Our coordination team has received your message and will get back to you promptly within 24 to 48 business hours."
+                reset={handleReset}
+                testId="status-contact-success"
+              />
+            ) : (
+              <form onSubmit={submit} className="grid gap-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-xs">
+                <div className="mb-2">
+                  <h3 className="display text-xl font-bold">Send Us a Message</h3>
+                  <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">Have a quick question? Complete the form below, and our coordination team will get back to you promptly.</p>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-[hsl(var(--muted-foreground))]">Full Name *</label>
+                    <input
+                      required
+                      className="form-field w-full"
+                      placeholder="e.g. Dr. Sarah Jenkins"
+                      aria-label="Full Name"
+                      data-testid="input-contact-name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-[hsl(var(--muted-foreground))]">Email Address *</label>
+                    <input
+                      required
+                      type="email"
+                      className="form-field w-full"
+                      placeholder="e.g. sarah.jenkins@example.com"
+                      aria-label="Email Address"
+                      data-testid="input-contact-email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-[hsl(var(--muted-foreground))]">Phone Number</label>
+                    <input
+                      className="form-field w-full"
+                      placeholder="e.g. +1 555-0199"
+                      aria-label="Phone Number"
+                      data-testid="input-contact-phone"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-[hsl(var(--muted-foreground))]">Country</label>
+                    <input
+                      className="form-field w-full"
+                      placeholder="e.g. United States"
+                      aria-label="Country"
+                      data-testid="input-contact-country"
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1 text-[hsl(var(--muted-foreground))]">Inquiry Type *</label>
+                  <select
+                    required
+                    className="form-field w-full cursor-pointer bg-[hsl(var(--card))]"
+                    aria-label="Inquiry Type"
+                    data-testid="select-contact-inquiry-type"
+                    value={inquiryType}
+                    onChange={(e) => setInquiryType(e.target.value)}
+                  >
+                    <option value="General">General Inquiry</option>
+                    <option value="Abstract Submission">Abstract Submission</option>
+                    <option value="Publishing">Publishing & Research Indexing</option>
+                    <option value="Sponsorship">Sponsorship & Strategic Partnerships</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1 text-[hsl(var(--muted-foreground))]">Conference Name (if applicable)</label>
+                  <input
+                    className="form-field w-full"
+                    placeholder="e.g. ICMLHS 2027"
+                    aria-label="Conference Name"
+                    data-testid="input-contact-conference"
+                    value={conferenceName}
+                    onChange={(e) => setConferenceName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1 text-[hsl(var(--muted-foreground))]">Message *</label>
+                  <textarea
+                    required
+                    className="form-field w-full min-h-32"
+                    placeholder="Write your message or question here..."
+                    aria-label="Message"
+                    data-testid="input-contact-message"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                  />
+                </div>
+                <button type="submit" className="btn-main btn-primary cursor-pointer mt-2" data-testid="button-submit-contact">
+                  Send Us a Message <Send size={16} />
+                </button>
+              </form>
+            )}
+          </div>
+        </section>
+      </main>
+    </Layout>
+  );
 }
 
 function EventDetailsPage({ type }: { type: 'conference' | 'webinar' }) {
@@ -2858,26 +3719,39 @@ function BlogPage() {
       />
       <main className="section-pad">
         <div className="container-wide">
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {insightsList.length > 0 ? insightsList.map((insight, index) => (
-              <div key={insight.id || insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full">
-                <div className="p-5 flex-1">
-                  <div className="aspect-video w-full rounded-lg overflow-hidden mb-4">
-                    <img src={insight.bannerUrl} alt={insight.title} className="h-full w-full object-cover" />
+              <div key={insight.id || insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full shadow-sm">
+                <div className="p-6 flex-1">
+                  <div className="aspect-video w-full rounded-xl overflow-hidden mb-5 bg-[hsl(var(--muted)/.25)] flex items-center justify-center relative">
+                    {insight.bannerUrl ? (
+                      <img 
+                        src={mediaUrl(insight.bannerUrl)} 
+                        alt={insight.title} 
+                        className="h-full w-full object-cover" 
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center">
+                        <BookOpen className="text-[hsl(var(--primary-foreground))] opacity-65" size={32} />
+                      </div>
+                    )}
                   </div>
-                  <span className="label text-[hsl(var(--accent))] text-[9px]">{insight.label}</span>
-                  <h3 className="display mt-3 text-lg font-bold leading-tight">{insight.title}</h3>
-                  <p className="mt-2 text-xs leading-5 text-[hsl(var(--muted-foreground))]">{insight.copy}</p>
+                  <span className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">{insight.label}</span>
+                  <h3 className="display mt-3 text-xl font-bold leading-snug text-[hsl(var(--foreground))]">{insight.title}</h3>
+                  <p className="mt-3 text-base leading-7 text-[hsl(var(--muted-foreground))]">{insight.copy}</p>
                 </div>
-                <div className="px-5 pb-5 pt-0">
-                  <Link href={`/blog/${encodeURIComponent(insight.id)}`} className="inline-flex items-center gap-1 text-xs font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition" data-testid={`link-blog-read-${index}`}>
-                    Read field note <ArrowRight size={13} />
+                <div className="px-6 pb-6 pt-0">
+                  <Link href={`/blog/${encodeURIComponent(insight.id)}`} className="inline-flex items-center gap-2 text-base font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition" data-testid={`link-blog-read-${index}`}>
+                    Read field note <ArrowRight size={15} />
                   </Link>
                 </div>
               </div>
             )) : (
               <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]">
-                <p>No blog posts have been published yet. Please check back later.</p>
+                <p className="text-base sm:text-lg">No blog posts have been published yet. Please check back later.</p>
               </div>
             )}
           </div>
@@ -3399,6 +4273,10 @@ function AbstractSubmissionPage() {
 
 
 function ConferencesPage() {
+  const [location] = useLocation();
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const statusParam: Status = searchParams.get('status') === 'past' ? 'past' : 'upcoming';
+
   return (
     <Layout>
       <PageHero 
@@ -3409,10 +4287,7 @@ function ConferencesPage() {
       />
       <main className="section-pad">
         <div className="container-wide">
-          <SectionTitle eyebrow="Conferences" title="Upcoming & past conferences." body="Browse the active schedules and historical details of our global gatherings." />
-          <div className="mt-10">
-            <EventList onlyType="Conference" />
-          </div>
+          <EventList key={`${location}-${statusParam}-${typeof window !== 'undefined' ? window.location.search : ''}`} initial={statusParam} onlyType="Conference" />
         </div>
       </main>
     </Layout>
@@ -3430,10 +4305,7 @@ function WebinarsPage() {
       />
       <main className="section-pad">
         <div className="container-wide">
-          <SectionTitle eyebrow="Webinars" title="Upcoming & archived webinars." body="Sharper briefings for researchers and professionals connecting across the globe." />
-          <div className="mt-10">
-            <EventList onlyType="Webinar" />
-          </div>
+          <EventList onlyType="Webinar" />
         </div>
       </main>
     </Layout>
@@ -3442,17 +4314,17 @@ function WebinarsPage() {
 
 function MediaPartnersPage() {
   const { mediaPartners } = useContext(APIContext);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1200&q=80" eyebrow="The amplification network" title="Media partners." body="Organizations that carry our conversations further and keep our community informed." /><main className="section-pad"><div className="container-wide"><SectionTitle eyebrow="Media partners" title="Voices that help the work travel." /><div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{mediaPartners.length > 0 ? mediaPartners.map((partner) => <div key={partner._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex items-start gap-4">{partner.logo ? <img src={mediaUrl(partner.logo)} alt={partner.name} className="h-14 w-14 rounded-xl object-contain border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] shrink-0" /> : <div className="h-14 w-14 rounded-xl bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] shrink-0"><Building2 size={20} /></div>}<div className="min-w-0"><h3 className="display text-lg font-bold">{partner.name}</h3>{partner.description && <p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{partner.description}</p>}</div></div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p>No media partners have been added yet.</p></div>}</div></div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1200&q=80" eyebrow="The amplification network" title="Media partners." body="Organizations that carry our conversations further and keep our community informed." /><main className="section-pad"><div className="container-wide"><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{mediaPartners.length > 0 ? mediaPartners.map((partner) => <div key={partner._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex items-start gap-4">{partner.logo ? <img src={mediaUrl(partner.logo)} alt={partner.name} className="h-14 w-14 rounded-xl object-contain border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] shrink-0" /> : <div className="h-14 w-14 rounded-xl bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] shrink-0"><Building2 size={20} /></div>}<div className="min-w-0"><h3 className="display text-lg sm:text-xl font-bold text-[hsl(var(--foreground))]">{partner.name}</h3>{partner.description && <p className="mt-2 text-base leading-7 text-[hsl(var(--muted-foreground))]">{partner.description}</p>}</div></div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p className="text-base sm:text-lg">No media partners have been added yet.</p></div>}</div></div></main></Layout>;
 }
 
 function CollaboratorsPage() {
   const { collaborators } = useContext(APIContext);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=1200&q=80" eyebrow="Working together" title="Collaborators." body="Institutions, partners, and research groups advancing the summit with us." /><main className="section-pad"><div className="container-wide"><SectionTitle eyebrow="Collaborators" title="The network behind the room." /><div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{collaborators.length > 0 ? collaborators.map((collaborator) => <div key={collaborator._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex items-start gap-4">{collaborator.logo ? <img src={mediaUrl(collaborator.logo)} alt={collaborator.name} className="h-14 w-14 rounded-xl object-contain border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] shrink-0" /> : <div className="h-14 w-14 rounded-xl bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] shrink-0"><Handshake size={20} /></div>}<div className="min-w-0"><h3 className="display text-lg font-bold">{collaborator.name}</h3>{collaborator.description && <p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{collaborator.description}</p>}</div></div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p>No collaborators have been added yet.</p></div>}</div></div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=1200&q=80" eyebrow="Working together" title="Collaborators." body="Institutions, partners, and research groups advancing the summit with us." /><main className="section-pad"><div className="container-wide"><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{collaborators.length > 0 ? collaborators.map((collaborator) => <div key={collaborator._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex items-start gap-4">{collaborator.logo ? <img src={mediaUrl(collaborator.logo)} alt={collaborator.name} className="h-14 w-14 rounded-xl object-contain border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] shrink-0" /> : <div className="h-14 w-14 rounded-xl bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] shrink-0"><Handshake size={20} /></div>}<div className="min-w-0"><h3 className="display text-lg sm:text-xl font-bold text-[hsl(var(--foreground))]">{collaborator.name}</h3>{collaborator.description && <p className="mt-2 text-base leading-7 text-[hsl(var(--muted-foreground))]">{collaborator.description}</p>}</div></div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p className="text-base sm:text-lg">No collaborators have been added yet.</p></div>}</div></div></main></Layout>;
 }
 
 function ExhibitorsPage() {
   const { exhibitors } = useContext(APIContext);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80" eyebrow="On the floor" title="Exhibitors." body="Organizations showcasing the tools, services, and ideas shaping their fields." /><main className="section-pad"><div className="container-wide"><SectionTitle eyebrow="Exhibitors" title="What's on show." /><div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{exhibitors.length > 0 ? exhibitors.map((exhibitor) => <div key={exhibitor._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex items-start gap-4">{exhibitor.logo ? <img src={mediaUrl(exhibitor.logo)} alt={exhibitor.name} className="h-14 w-14 rounded-xl object-contain border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] shrink-0" /> : <div className="h-14 w-14 rounded-xl bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] shrink-0"><Store size={20} /></div>}<div className="min-w-0"><h3 className="display text-lg font-bold">{exhibitor.name}</h3>{exhibitor.description && <p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{exhibitor.description}</p>}</div></div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p>No exhibitors have been added yet.</p></div>}</div></div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80" eyebrow="On the floor" title="Exhibitors." body="Organizations showcasing the tools, services, and ideas shaping their fields." /><main className="section-pad"><div className="container-wide"><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{exhibitors.length > 0 ? exhibitors.map((exhibitor) => <div key={exhibitor._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex items-start gap-4">{exhibitor.logo ? <img src={mediaUrl(exhibitor.logo)} alt={exhibitor.name} className="h-14 w-14 rounded-xl object-contain border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] shrink-0" /> : <div className="h-14 w-14 rounded-xl bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] shrink-0"><Store size={20} /></div>}<div className="min-w-0"><h3 className="display text-lg sm:text-xl font-bold text-[hsl(var(--foreground))]">{exhibitor.name}</h3>{exhibitor.description && <p className="mt-2 text-base leading-7 text-[hsl(var(--muted-foreground))]">{exhibitor.description}</p>}</div></div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p className="text-base sm:text-lg">No exhibitors have been added yet.</p></div>}</div></div></main></Layout>;
 }
 
 function MentorDetailsPage() {
@@ -3642,16 +4514,16 @@ function ScrollToTop() {
 }
 
 function Router() {
-  return <RoutedErrorBoundary><ScrollToTop /><Switch><Route path="/" component={Home} /><Route path="/about" component={AboutPage} /><Route path="/submit-abstract" component={AbstractSubmissionPage} /><Route path="/program" component={ProgramPage} /><Route path="/speakers" component={SpeakersPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/blog" component={BlogPage} /><Route path="/blog/:slug" component={BlogDetailPage} /><Route path="/conferences" component={ConferencesPage} /><Route path="/webinars" component={WebinarsPage} /><Route path="/brochure" component={BrochurePage} /><Route path="/venue" component={VenuePage} /><Route path="/sponsors" component={SponsorsPage} /><Route path="/media-partners" component={MediaPartnersPage} /><Route path="/collaborators" component={CollaboratorsPage} /><Route path="/exhibitors" component={ExhibitorsPage} /><Route path="/mentors/:username" component={MentorDetailsPage} /><Route path="/thank-you" component={ThankYouPage} /><Route path="/terms" component={TermsPage} /><Route path="/faq" component={FAQPage} /><Route path="/guidelines" component={GuidelinesPage} /><Route path="/contact" component={ContactPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
+  return <RoutedErrorBoundary><ScrollToTop /><Switch><Route path="/" component={Home} /><Route path="/about" component={AboutPage} /><Route path="/submit-abstract" component={AbstractSubmissionPage} /><Route path="/abstract-submission-guidelines" component={AbstractSubmissionGuidelinesPage} /><Route path="/program" component={ProgramPage} /><Route path="/speakers" component={SpeakersPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/blog" component={BlogPage} /><Route path="/blog/:slug" component={BlogDetailPage} /><Route path="/conferences" component={ConferencesPage} /><Route path="/webinars" component={WebinarsPage} /><Route path="/brochure" component={BrochurePage} /><Route path="/venue" component={VenuePage} /><Route path="/sponsors" component={SponsorsPage} /><Route path="/media-partners" component={MediaPartnersPage} /><Route path="/collaborators" component={CollaboratorsPage} /><Route path="/exhibitors" component={ExhibitorsPage} /><Route path="/mentors/:username" component={MentorDetailsPage} /><Route path="/thank-you" component={ThankYouPage} /><Route path="/terms" component={TermsPage} /><Route path="/faq" component={FAQPage} /><Route path="/guidelines" component={GuidelinesPage} /><Route path="/contact" component={ContactPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
 }
 
 function App() {
-  const subdomain = detectSubdomain(window.location.hostname);
-  if (subdomain) {
+  const detected = detectSubdomainInfo(window.location.hostname, window.location.pathname, window.location.search);
+  if (detected) {
     return (
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <EventMicrosite subdomain={subdomain} />
+          <EventMicrosite subdomain={detected.subdomain} customBase={detected.customBase} />
           <Toaster />
         </TooltipProvider>
       </QueryClientProvider>

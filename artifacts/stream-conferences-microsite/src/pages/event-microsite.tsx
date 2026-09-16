@@ -66,7 +66,7 @@ function parseCohortPath(pathname: string): { year: string; batch: string | null
   return null;
 }
 
-export function EventMicrosite({ subdomain }: { subdomain: string }) {
+export function EventMicrosite({ subdomain, customBase }: { subdomain: string; customBase?: string }) {
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -104,8 +104,11 @@ export function EventMicrosite({ subdomain }: { subdomain: string }) {
   }
 
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
-  const cohortPath = parseCohortPath(pathname);
-  const base = cohortPath?.base || '/';
+  const relativePathname = customBase && pathname.startsWith(customBase) ? (pathname.slice(customBase.length) || '/') : pathname;
+  const cohortPath = parseCohortPath(relativePathname);
+  const base = customBase
+    ? `${customBase}${cohortPath?.base || ''}`
+    : (cohortPath?.base || '');
 
   const cohorts = Array.isArray(event.cohorts) ? event.cohorts : [];
   const currentCohort = event.currentCohort || cohorts.find((c) => c.isCurrent) || null;
