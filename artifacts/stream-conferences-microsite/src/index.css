@@ -270,7 +270,7 @@
 /* ===== Dynamic Hero Split & Theme Styling ===== */
 .hero-slant-bg,
 .dark .hero-slant-bg {
-  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 50%, hsl(var(--accent)) 100%) !important;
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%) !important;
   transition: background 0.4s ease;
 }
 @media (min-width: 1024px) {

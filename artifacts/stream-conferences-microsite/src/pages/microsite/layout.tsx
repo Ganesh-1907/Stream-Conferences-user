@@ -257,10 +257,12 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
   const isMoreActive = moreItems.some((item) => isActive(item.path));
 
   return (
-    <header className={`sticky top-0 z-40 transition-all duration-300 text-white ${
-      isHomeTop
-        ? 'bg-transparent border-b-0 shadow-none'
-        : 'bg-[#0b0f19]/95 border-b border-white/10 backdrop-blur-xl shadow-2xl'
+    <header className={`z-40 transition-all duration-300 text-white ${
+      location === '/'
+        ? isHomeTop
+          ? 'absolute top-0 left-0 right-0 bg-transparent border-b-0 shadow-none'
+          : 'fixed top-0 left-0 right-0 bg-[#0b0f19]/95 border-b border-white/10 backdrop-blur-xl shadow-2xl'
+        : 'sticky top-0 bg-[#0b0f19]/95 border-b border-white/10 backdrop-blur-xl shadow-2xl'
     }`}>
       <div className="container-wide flex items-center justify-between gap-4 py-3">
         <Link href="/" className="flex items-center gap-3 min-w-0">
@@ -307,7 +309,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
               <ChevronDown size={16} className="group-hover:rotate-180 transition-transform duration-200" />
             </button>
             <div className="absolute left-0 top-full pt-1.5 hidden group-hover:block z-50 w-56">
-              <div className="rounded-2xl border border-white/20 bg-[#0f172a] text-white shadow-2xl py-1.5 backdrop-blur-xl">
+              <div className="rounded-2xl border border-slate-200/80 dark:border-white/20 bg-white dark:bg-[#0f172a] text-slate-900 dark:text-white shadow-2xl py-1.5 backdrop-blur-xl transition-colors overflow-hidden">
                 {programItems.map((item) => (
                   <Link
                     key={item.id}
@@ -315,7 +317,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
                     className={`flex items-center gap-3 px-4 py-2.5 text-base font-bold transition-colors ${
                       isActive(item.path)
                         ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-extrabold'
-                        : 'text-white/90 hover:text-white hover:bg-white/15'
+                        : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/90 dark:text-white/90 dark:hover:text-white dark:hover:bg-white/15'
                     }`}
                   >
                     {item.icon}
@@ -345,7 +347,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
                 <ChevronDown size={16} className="group-hover:rotate-180 transition-transform duration-200" />
               </button>
               <div className="absolute right-0 top-full pt-1.5 hidden group-hover:block z-50 w-56">
-                <div className="rounded-2xl border border-white/20 bg-[#0f172a] text-white shadow-2xl py-1.5 backdrop-blur-xl">
+                <div className="rounded-2xl border border-slate-200/80 dark:border-white/20 bg-white dark:bg-[#0f172a] text-slate-900 dark:text-white shadow-2xl py-1.5 backdrop-blur-xl transition-colors overflow-hidden">
                   {moreItems.map((item) => (
                     item.isExternal ? (
                       <a
@@ -353,7 +355,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
                         href={item.path}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 px-4 py-2.5 text-base font-bold text-white/90 hover:text-white hover:bg-white/15 transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-base font-bold text-slate-700 hover:text-slate-950 hover:bg-slate-100/90 dark:text-white/90 dark:hover:text-white dark:hover:bg-white/15 transition-colors"
                       >
                         {item.icon}
                         <span>{item.label}</span>
@@ -365,7 +367,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
                         className={`flex items-center gap-3 px-4 py-2.5 text-base font-bold transition-colors ${
                           isActive(item.path)
                             ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-extrabold'
-                            : 'text-white/90 hover:text-white hover:bg-white/15'
+                            : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/90 dark:text-white/90 dark:hover:text-white dark:hover:bg-white/15'
                         }`}
                       >
                         {item.icon}
@@ -673,30 +675,30 @@ function MicrositeFooter({ event, navItems }: { event: EventData; navItems: NavI
               ) : (
                 <img src="/logo.jpg" alt="Conference Logo" className="h-10 w-10 rounded-xl object-cover shrink-0" />
               )}
-              <h3 className="font-['Space_Grotesk'] text-lg font-bold line-clamp-2">{event?.title || 'Stream Conferences'}</h3>
+              <h3 className="font-['Space_Grotesk'] text-lg font-bold line-clamp-2 !text-white">{event?.title || 'Stream Conferences'}</h3>
             </div>
-            {event?.organizerContact?.name && <p className="mt-3 text-base text-white/70">{event.organizerContact.name}</p>}
-            {event?.organizerContact?.address && <p className="mt-1 text-base text-white/70">{event.organizerContact.address}</p>}
+            {event?.organizerContact?.name && <p className="mt-3 text-base text-white/90">{event.organizerContact.name}</p>}
+            {event?.organizerContact?.address && <p className="mt-1 text-base text-white/90">{event.organizerContact.address}</p>}
           </div>
           <div>
-            <h4 className="font-semibold mb-4">Navigate</h4>
+            <h4 className="font-semibold mb-4 !text-white">Navigate</h4>
             <div className="grid grid-cols-2 gap-2">
-              <Link href="/" className="block text-base text-white/70 hover:text-white">Home</Link>
+              <Link href="/" className="block text-base text-white/85 hover:text-white transition-colors">Home</Link>
               {navItems.map((item) => (
-                <Link key={item.id} href={item.path} className="block text-base text-white/70 hover:text-white">{item.label}</Link>
+                <Link key={item.id} href={item.path} className="block text-base text-white/85 hover:text-white transition-colors">{item.label}</Link>
               ))}
             </div>
           </div>
           <div>
-            <h4 className="font-semibold mb-4">Contact</h4>
-            <div className="space-y-3 text-base text-white/70">
-              {event?.organizerContact?.email && <a href={`mailto:${event.organizerContact.email}`} className="flex items-center gap-2 hover:text-white"><Mail size={15} />{event.organizerContact.email}</a>}
-              {event?.organizerContact?.phone && <p className="flex items-center gap-2"><Phone size={15} />{event.organizerContact.phone}</p>}
-              {event?.organizerContact?.website && <a href={event.organizerContact.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white"><ExternalLink size={15} />Website</a>}
+            <h4 className="font-semibold mb-4 !text-white">Contact</h4>
+            <div className="space-y-3 text-base text-white/85">
+              {event?.organizerContact?.email && <a href={`mailto:${event.organizerContact.email}`} className="flex items-center gap-2 text-white/85 hover:text-white transition-colors"><Mail size={15} />{event.organizerContact.email}</a>}
+              {event?.organizerContact?.phone && <p className="flex items-center gap-2 text-white/85"><Phone size={15} />{event.organizerContact.phone}</p>}
+              {event?.organizerContact?.website && <a href={event.organizerContact.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-white/85 hover:text-white transition-colors"><ExternalLink size={15} />Website</a>}
             </div>
           </div>
         </div>
-        <div className="mt-10 pt-6 border-t border-white/15 text-center text-xs text-white/55">
+        <div className="mt-10 pt-6 border-t border-white/15 text-center text-xs text-white/75">
           <p>Powered by Stream Conferences</p>
         </div>
       </div>
@@ -824,7 +826,7 @@ export function MicrositeLayout({ event, navItems, children }: { event: EventDat
   return (
     <div className="min-h-[100dvh] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] flex flex-col">
       <MicrositeHeader event={event} navItems={navItems} />
-      <main className={`flex-1 ${location === '/' ? '-mt-[66px]' : ''}`}>{children}</main>
+      <main className="flex-1">{children}</main>
       {!hideContactFooter && <PersistentContactFooter event={event} />}
       <PreviousCohortsStrip event={event} />
       <MicrositeFooter event={event} navItems={navItems} />

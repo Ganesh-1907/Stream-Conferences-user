@@ -226,21 +226,20 @@ export function HomePage({ event }: { event: EventData }) {
   return (
     <>
       {/* Full-Bleed Edge-to-Edge Dynamic Theme Hero Section with Ambient Glow & Grid Lines (Matching Selected Admin Theme) */}
-      <section className="relative w-full hero-slant-bg text-white pt-20 pb-6 md:pt-24 md:pb-8 border-b border-white/10 overflow-hidden flex flex-col justify-between min-h-screen">
-        {/* Glowing Grid Lines Overlay Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0f_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0f_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none" />
+      <section className="relative w-full hero-slant-bg text-white pt-20 sm:pt-24 md:pt-28 pb-10 sm:pb-14 border-b border-white/10 overflow-hidden flex flex-col justify-between min-h-screen">
+        {/* Subtle Grid Lines Overlay Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none z-0" />
 
-        {/* Ambient Lighting Glow Spots */}
-        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-white/15 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute top-10 right-10 w-[450px] h-[450px] bg-amber-400/20 rounded-full blur-[130px] pointer-events-none" />
-        <div className="absolute -bottom-20 left-1/3 w-[600px] h-[600px] bg-white/10 rounded-full blur-[140px] pointer-events-none" />
+        {/* Ambient Center & Corner Soft Glows */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[450px] bg-white/8 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-white/10 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="container-wide relative z-10 space-y-7 my-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
             {/* Left Column: Info, Countdown & Action CTAs */}
-            <div className="lg:col-span-7 space-y-4">
+            <div className="lg:col-span-7 space-y-4 text-center lg:text-left flex flex-col items-center lg:items-start">
               {/* Type Badge */}
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
                 <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 text-white text-xs sm:text-sm font-bold uppercase tracking-wider backdrop-blur-md border border-white/30 shadow-md">
                   <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                   {event.eventType === 'conference' ? 'Annual Scientific Summit' : 'Live Webinar Series'}
@@ -248,12 +247,12 @@ export function HomePage({ event }: { event: EventData }) {
               </div>
 
               {/* Main Title, Theme & Cohort */}
-              <div className="space-y-2">
-                <h1 className="display text-3xl sm:text-5xl md:text-6xl font-black leading-tight text-white tracking-tight drop-shadow-md">
+              <div className="space-y-2 flex flex-col items-center lg:items-start w-full">
+                <h1 className="display text-3xl sm:text-5xl md:text-6xl font-black leading-tight text-white tracking-tight drop-shadow-md text-center lg:text-left">
                   {event.title}
                 </h1>
                 {event.theme && (
-                  <p className="text-base sm:text-xl md:text-2xl font-extrabold text-amber-300 tracking-wide italic drop-shadow-sm">
+                  <p className="text-base sm:text-xl md:text-2xl font-extrabold text-amber-300 tracking-wide italic drop-shadow-sm text-center lg:text-left">
                     Theme: {event.theme}
                   </p>
                 )}
@@ -267,7 +266,7 @@ export function HomePage({ event }: { event: EventData }) {
               </div>
 
               {/* Meta Info Line */}
-              <div className="flex flex-wrap items-center gap-3 text-sm sm:text-base md:text-lg font-bold text-white">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 text-sm sm:text-base md:text-lg font-bold text-white text-center lg:text-left">
                 {formatDateRange(event) && <span>{formatDateRange(event)}</span>}
                 {(event.startTime || event.endTime) && (
                   <>
@@ -285,9 +284,9 @@ export function HomePage({ event }: { event: EventData }) {
 
               {/* Countdown Timer Row */}
               {cd && !cd.expired && (
-                <div className="space-y-2 pt-1">
-                  <span className="text-xs sm:text-sm font-mono uppercase tracking-wider text-white/90 block font-bold">Conference Starts In</span>
-                  <div className="flex items-center gap-2.5 flex-wrap">
+                <div className="space-y-2 pt-1 flex flex-col items-center lg:items-start w-full">
+                  <span className="text-xs sm:text-sm font-mono uppercase tracking-wider text-white/90 block font-bold text-center lg:text-left">Conference Starts In</span>
+                  <div className="flex items-center justify-center lg:justify-start gap-2.5 flex-wrap">
                     {[
                       { v: cd.days, l: 'D' },
                       { v: cd.hours, l: 'H' },
@@ -304,7 +303,7 @@ export function HomePage({ event }: { event: EventData }) {
               )}
 
               {/* Action CTAs */}
-              <div className="flex flex-wrap items-center gap-3.5 pt-2">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3.5 pt-2">
                 <Link
                   href="/register"
                   className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-white text-[hsl(var(--primary))] font-extrabold text-sm sm:text-base uppercase tracking-wider shadow-2xl hover:bg-white/90 hover:scale-105 transition-all transform cursor-pointer border border-white/40"
@@ -323,59 +322,61 @@ export function HomePage({ event }: { event: EventData }) {
             </div>
 
             {/* Right Column: 3D Circular Logo Card & Reminder Button */}
-            <div className="lg:col-span-5 flex flex-col items-center justify-center space-y-6 text-center">
+            <div className="lg:col-span-5 flex flex-col items-center justify-center space-y-8 sm:space-y-10 text-center">
               {/* 3D Circular Card containing the Logo */}
               {event.logoUrl ? (
-                <div className="relative w-72 h-72 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-full ring-8 sm:ring-12 ring-white/30 bg-white shadow-[0_30px_70px_-15px_rgba(0,0,0,0.45)] flex items-center justify-center p-3 sm:p-4 overflow-hidden transition-all duration-300 transform hover:scale-105 hover:shadow-[0_35px_80px_-10px_rgba(0,0,0,0.55)] group shrink-0">
+                <div className="relative w-72 h-72 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-full ring-8 sm:ring-12 ring-white/30 bg-white shadow-[0_30px_70px_-15px_rgba(0,0,0,0.45)] flex items-center justify-center p-6 sm:p-7 lg:p-8 overflow-hidden transition-all duration-300 transform hover:scale-105 hover:shadow-[0_35px_80px_-10px_rgba(0,0,0,0.55)] group shrink-0">
                   <img
                     src={mediaUrl(event.logoUrl)}
                     alt={event.title}
-                    className="w-full h-full object-contain max-h-full transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-contain max-h-full max-w-full transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>
               ) : (
-                <div className="relative w-72 h-72 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-full ring-8 sm:ring-12 ring-white/30 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.45)] flex items-center justify-center p-4 shrink-0 text-white text-6xl font-extrabold font-['Space_Grotesk']">
+                <div className="relative w-72 h-72 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-full ring-8 sm:ring-12 ring-white/30 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.45)] flex items-center justify-center p-6 shrink-0 text-white text-6xl font-extrabold font-['Space_Grotesk']">
                   {getNameInitials(event.title, 'SC')}
                 </div>
               )}
 
-              {/* Action Button: Reminder to Join !! */}
-              <button
-                type="button"
-                onClick={() => createCalendarReminder(event)}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-slate-900/90 dark:bg-black/90 hover:bg-black text-white font-bold text-sm shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-0.5 border border-white/30 cursor-pointer whitespace-nowrap"
-                title="Add to Calendar"
-              >
-                <Calendar size={16} className="text-emerald-400" />
-                <span>Reminder to Join !!</span>
-              </button>
+              {/* Action Button: Reminder to Join !! (White Theme) */}
+              <div className="pt-2 sm:pt-4">
+                <button
+                  type="button"
+                  onClick={() => createCalendarReminder(event)}
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full bg-white text-[hsl(var(--primary))] font-extrabold text-sm uppercase tracking-wider shadow-2xl hover:bg-white/90 hover:scale-105 transition-all transform cursor-pointer border border-white/40 whitespace-nowrap"
+                  title="Add to Calendar"
+                >
+                  <Calendar size={16} className="text-[hsl(var(--primary))]" />
+                  <span>Reminder to Join !!</span>
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Bottom Registrations Ticker Bar & Rectangular Glass Quick Nav Tab Cards */}
-          <div className="pt-6 border-t border-white/20 flex flex-col items-center gap-4">
-            <div className="inline-flex items-center gap-2 px-5 py-1.5 rounded-full bg-emerald-500/25 border border-emerald-400/40 text-emerald-200 text-xs sm:text-sm font-mono font-extrabold tracking-widest uppercase backdrop-blur-md shadow-md">
+          <div className="pt-6 border-t border-white/20 flex flex-col items-center gap-5">
+            <div className="inline-flex items-center gap-2.5 px-6 py-2 rounded-full bg-black/40 border border-white/30 text-emerald-300 text-xs sm:text-sm font-mono font-extrabold tracking-widest uppercase backdrop-blur-md shadow-lg">
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-ping" />
               <span>REGISTRATIONS OPEN</span>
             </div>
 
             {/* Rectangular Glass Tab Cards Row */}
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-6xl">
+            <div className="flex flex-wrap items-center justify-center gap-3.5 sm:gap-5 max-w-6xl">
               {quickLinks.map((ql) => {
                 const IconComponent = ql.icon;
                 return (
                   <Link
                     key={ql.title}
                     href={ql.href}
-                    className="relative group w-28 sm:w-32 md:w-36 py-3.5 px-3 flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 backdrop-blur-xl transition-all transform hover:-translate-y-1 cursor-pointer shadow-xl text-center"
+                    className="relative group w-32 sm:w-36 md:w-40 py-4 px-4 flex flex-col items-center justify-center gap-2 rounded-2xl bg-black/40 hover:bg-black/60 text-white border border-white/30 hover:border-white/50 backdrop-blur-md transition-all transform hover:-translate-y-1 cursor-pointer shadow-lg text-center"
                   >
                     {ql.hasNew && (
-                      <span className="absolute -top-2 right-2 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-400 text-black uppercase shadow-md border border-amber-300">
+                      <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-black uppercase shadow-md border border-amber-300">
                         NEW
                       </span>
                     )}
-                    <IconComponent size={24} className="text-white group-hover:scale-110 transition-transform" />
-                    <span className="text-sm font-extrabold text-white tracking-wide">{ql.title}</span>
+                    <IconComponent size={28} className="text-white group-hover:scale-110 transition-transform" />
+                    <span className="text-base sm:text-lg font-extrabold text-white tracking-wide">{ql.title}</span>
                   </Link>
                 );
               })}
