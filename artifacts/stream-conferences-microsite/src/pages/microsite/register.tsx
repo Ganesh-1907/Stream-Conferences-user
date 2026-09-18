@@ -2,10 +2,11 @@ import { useState, useMemo, type FormEvent } from 'react';
 import { CalendarDays, MapPin, ChevronDown, ArrowUpRight, ArrowRight, Check } from 'lucide-react';
 import type { EventData } from './layout';
 import { MicrositeHero } from '@/components/microsite-hero';
+import { isFeeDateExpired } from './fees';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
 
-type FeeItem = { type: string; dateLabel: string; usd: number; gbp: number; eur: number };
+type FeeItem = { type: string; dateLabel: string; deadline?: string | Date; usd: number; gbp: number; eur: number };
 type Currency = 'USD' | 'EUR' | 'GBP';
 
 function formatDateRange(event: EventData): string {
@@ -320,13 +321,14 @@ export function RegisterPage({ event }: { event: EventData }) {
                             {items.map((item, idx) => {
                               const globalIdx = fees.indexOf(item);
                               const price = currency === 'USD' ? item.usd : currency === 'EUR' ? item.eur : item.gbp;
+                              const expired = isFeeDateExpired(item);
                               return (
-                                <label key={idx} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors ${selectedFeeIndex === globalIdx ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary)/.05)]' : 'border-[hsl(var(--border))] hover:border-[hsl(var(--primary)/.5)]'}`}>
+                                <label key={idx} className={`flex items-center justify-between p-3 rounded-xl border transition-colors ${expired ? 'opacity-50 cursor-not-allowed border-[hsl(var(--border))] bg-[hsl(var(--muted)/.15)]' : selectedFeeIndex === globalIdx ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary)/.05)] cursor-pointer' : 'border-[hsl(var(--border))] hover:border-[hsl(var(--primary)/.5)] cursor-pointer'}`}>
                                   <div className="flex items-center gap-3">
-                                    <input type="radio" name="feeSelect" checked={selectedFeeIndex === globalIdx} onChange={() => setSelectedFeeIndex(globalIdx)} required className="h-4 w-4" />
-                                    <span className="text-sm font-medium text-[hsl(var(--foreground))]">{item.dateLabel || 'Standard'}</span>
+                                    <input type="radio" name="feeSelect" checked={selectedFeeIndex === globalIdx} onChange={() => setSelectedFeeIndex(globalIdx)} required disabled={expired} className="h-4 w-4" />
+                                    <span className={`text-sm font-medium text-[hsl(var(--foreground))] ${expired ? 'line-through' : ''}`}>{item.dateLabel || 'Standard'}</span>
                                   </div>
-                                  <span className="text-base font-bold text-[hsl(var(--secondary))]">{sym}{Number(price).toLocaleString()}</span>
+                                  <span className={`text-base font-bold text-[hsl(var(--secondary))] ${expired ? 'line-through' : ''}`}>{sym}{Number(price).toLocaleString()}</span>
                                 </label>
                               );
                             })}

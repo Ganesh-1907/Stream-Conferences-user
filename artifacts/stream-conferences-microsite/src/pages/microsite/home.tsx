@@ -387,6 +387,21 @@ export function HomePage({ event }: { event: EventData }) {
       </section>
 
 
+      {/* Centered Banner Carousel Section */}
+      {headerBanners.length > 0 && (
+        <section className="container-wide py-10 md:py-14 border-b border-[hsl(var(--border))]">
+          <div className="max-w-[1350px] w-full mx-auto flex flex-col items-center justify-center">
+            <div className="w-full">
+              <HeaderBannerCarousel
+                banners={headerBanners}
+                title={event.title}
+                location={event.venue || event.location || ''}
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Welcome Message Banner Section */}
       {(event.welcomeBannerTitle || event.welcomeBannerDescription) && (
         <section className="container-wide py-8">
@@ -402,21 +417,6 @@ export function HomePage({ event }: { event: EventData }) {
                 dangerouslySetInnerHTML={{ __html: event.welcomeBannerDescription }}
               />
             )}
-          </div>
-        </section>
-      )}
-
-      {/* Centered Banner Carousel Section */}
-      {headerBanners.length > 0 && (
-        <section className="container-wide py-10 md:py-14 border-b border-[hsl(var(--border))]">
-          <div className="max-w-[1350px] w-full mx-auto flex flex-col items-center justify-center">
-            <div className="w-full">
-              <HeaderBannerCarousel
-                banners={headerBanners}
-                title={event.title}
-                location={event.venue || event.location || ''}
-              />
-            </div>
           </div>
         </section>
       )}

@@ -149,9 +149,7 @@ export function EventMicrosite({ subdomain, customBase }: { subdomain: string; c
         <Switch>
           <Route path="/" component={() => <HomePage event={displayEvent} />} />
           <Route path="/about" component={() => <AboutPage event={displayEvent} />} />
-          <Route path="/program" component={() => <ProgramPage event={displayEvent} />} />
           <Route path="/speakers" component={() => <SpeakersPage event={displayEvent} />} />
-          <Route path="/itinerary" component={() => <ProgramPage event={displayEvent} />} />
           <Route path="/sponsors" component={() => <SponsorsPage event={displayEvent} />} />
           <Route path="/media-partners" component={() => <MediaPartnersPage event={displayEvent} />} />
           <Route path="/exhibitors" component={() => <SponsorsPage event={displayEvent} />} />

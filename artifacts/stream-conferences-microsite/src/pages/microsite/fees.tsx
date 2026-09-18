@@ -3,7 +3,13 @@ import { Link } from 'wouter';
 import type { EventData } from './layout';
 import { MicrositeHero } from '@/components/microsite-hero';
 
-type FeeItem = { type: string; dateLabel: string; usd: number; gbp: number; eur: number };
+type FeeItem = { type: string; dateLabel: string; deadline?: string | Date; usd: number; gbp: number; eur: number };
+
+export function isFeeDateExpired(item: FeeItem): boolean {
+  if (!item.deadline) return false;
+  const d = new Date(item.deadline);
+  return !isNaN(d.getTime()) && d < new Date();
+}
 
 export function FeesPage({ event }: { event: EventData }) {
   const fees = Array.isArray(event.fees) ? (event.fees as FeeItem[]) : [];
@@ -49,14 +55,17 @@ export function FeesPage({ event }: { event: EventData }) {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[hsl(var(--border))]">
-                      {items.map((item, i) => (
-                        <tr key={i} className="hover:bg-[hsl(var(--muted)/.3)] transition-colors">
-                          <td className="px-6 py-4 font-semibold text-[hsl(var(--foreground))]">{item.dateLabel || 'Standard'}</td>
-                          <td className="px-6 py-4 text-center font-mono font-bold text-[hsl(var(--foreground))]">€{Number(item.eur || 0).toLocaleString()}</td>
-                          <td className="px-6 py-4 text-center font-mono font-bold text-[hsl(var(--foreground))]">${Number(item.usd || 0).toLocaleString()}</td>
-                          <td className="px-6 py-4 text-center font-mono font-bold text-[hsl(var(--foreground))]">£{Number(item.gbp || 0).toLocaleString()}</td>
-                        </tr>
-                      ))}
+                      {items.map((item, i) => {
+                        const expired = isFeeDateExpired(item);
+                        return (
+                          <tr key={i} className={`transition-colors ${expired ? 'bg-[hsl(var(--muted)/.15)] opacity-50' : 'hover:bg-[hsl(var(--muted)/.3)]'}`}>
+                            <td className={`px-6 py-4 font-semibold text-[hsl(var(--foreground))] ${expired ? 'line-through' : ''}`}>{item.dateLabel || 'Standard'}</td>
+                            <td className={`px-6 py-4 text-center font-mono font-bold text-[hsl(var(--foreground))] ${expired ? 'line-through' : ''}`}>€{Number(item.eur || 0).toLocaleString()}</td>
+                            <td className={`px-6 py-4 text-center font-mono font-bold text-[hsl(var(--foreground))] ${expired ? 'line-through' : ''}`}>${Number(item.usd || 0).toLocaleString()}</td>
+                            <td className={`px-6 py-4 text-center font-mono font-bold text-[hsl(var(--foreground))] ${expired ? 'line-through' : ''}`}>£{Number(item.gbp || 0).toLocaleString()}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

@@ -247,7 +247,7 @@ type EventItem = {
   logoUrl?: string;
   bannerUrl?: string;
   brochureUrl?: string;
-  fees?: { type: string; dateLabel: string; usd: number; gbp: number; eur: number }[];
+  fees?: { type: string; dateLabel: string; deadline?: string | Date; usd: number; gbp: number; eur: number }[];
   organizerContact?: { name: string; email: string; phone: string };
   tracks?: { title: string; description: string; image: string; referenceLinks: { label: string; url: string }[] }[];
 };
@@ -1100,9 +1100,9 @@ function Footer() {
           </div>
         </div>
 
-        {/* Column 4: Delegate desk only */}
+        {/* Column 4: Help desk only */}
         <div className="content-start">
-          <p className="label text-[hsl(var(--accent))] text-xs font-bold uppercase tracking-wider">Delegate desk</p>
+          <p className="label text-[hsl(var(--accent))] text-xs font-bold uppercase tracking-wider">Help desk</p>
           <div className="mt-3 grid gap-2.5 text-sm text-[hsl(var(--primary-foreground)/.75)]">
             <a href="mailto:info@streamconferences.com" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-email">info@streamconferences.com</a>
             <a href="mailto:abstracts@streamconferences.com" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-abstracts">abstracts@streamconferences.com</a>
@@ -1301,7 +1301,7 @@ function HomeFaqSection() {
                 </button>
                 {isOpen && (
                   <div
-                    className="border-t border-[hsl(var(--border))] px-6 pb-6 pt-4 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]"
+                    className="border-t border-[hsl(var(--border))] px-6 pb-6 pt-4 text-base sm:text-lg leading-8 text-[hsl(var(--foreground)/.85)]"
                     data-testid={`text-home-faq-answer-${index}`}
                   >
                     {answer}
@@ -1759,7 +1759,7 @@ function Home() {
         <section className="section-pad bg-[hsl(var(--card))]"><div className="container-wide grid gap-10 md:grid-cols-[.7fr_1.3fr]"><div><SectionTitle eyebrow="From the Stream Conferences blog" title="Notes for the in-between." /><Link href="/blog" className="btn-main btn-quiet mt-8" data-testid="link-home-insights">Read the blog <ArrowRight size={16} /></Link></div><div className="grid gap-6 sm:grid-cols-3">{insightsList.slice(0, 3).map((insight, index) => <div key={insight.id || insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full shadow-sm"><div className="p-6 flex-1"><div className="aspect-video w-full rounded-xl overflow-hidden mb-4 bg-[hsl(var(--muted)/.25)] flex items-center justify-center relative">{insight.bannerUrl ? <img src={mediaUrl(insight.bannerUrl)} alt={insight.title} className="h-full w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} /> : <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center"><BookOpen className="text-[hsl(var(--primary-foreground))] opacity-65" size={32} /></div>}</div><span className="text-xs font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">{insight.label}</span><h3 className="display mt-2 text-xl font-bold leading-snug line-clamp-2 text-[hsl(var(--foreground))]">{insight.title}</h3><p className="mt-3 text-base leading-7 text-[hsl(var(--muted-foreground))] line-clamp-3">{insight.copy}</p></div><div className="px-6 pb-6 pt-0"><Link href={`/blog/${encodeURIComponent(insight.id)}`} className="inline-flex items-center gap-1.5 text-base font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition" data-testid={`link-home-blog-${index}`}>Read field note <ArrowRight size={15} /></Link></div></div>)}</div></div></section>
       )}
       <HomeFaqSection />
-      <section className="bg-[hsl(var(--primary))] py-12 text-[hsl(var(--primary-foreground))]"><div className="container-wide flex flex-col justify-between gap-6 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--accent))]">Delegate desk</p><p className="display mt-2 text-2xl font-bold text-[hsl(var(--primary-foreground))]">Have a question before you arrive?</p><div className="mt-3 flex flex-wrap gap-4 text-sm text-[hsl(var(--primary-foreground)/.85)]"><a href="mailto:info@streamconferences.com" className="flex items-center gap-2 font-semibold hover:text-[hsl(var(--accent))]" data-testid="link-home-email"><Mail size={16} /> info@streamconferences.com</a><span className="flex items-center gap-2"><Phone size={16} /> +1 (617) 555-0199</span></div></div><Link href="/contact" className="btn-main bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:brightness-110 shadow-lg border-0" data-testid="link-home-contact">Contact us <ArrowUpRight size={16} /></Link></div></section>
+      <section className="bg-[hsl(var(--primary))] py-12 text-[hsl(var(--primary-foreground))]"><div className="container-wide flex flex-col justify-between gap-6 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--accent))]">Help desk</p><p className="display mt-2 text-2xl font-bold text-[hsl(var(--primary-foreground))]">Have a question before you arrive?</p><div className="mt-3 flex flex-wrap gap-4 text-sm text-[hsl(var(--primary-foreground)/.85)]"><a href="mailto:info@streamconferences.com" className="flex items-center gap-2 font-semibold hover:text-[hsl(var(--accent))]" data-testid="link-home-email"><Mail size={16} /> info@streamconferences.com</a><span className="flex items-center gap-2"><Phone size={16} /> +1 (617) 555-0199</span></div></div><Link href="/contact" className="btn-main bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:brightness-110 shadow-lg border-0" data-testid="link-home-contact">Contact us <ArrowUpRight size={16} /></Link></div></section>
     </main>
   </Layout>;
 }
@@ -3055,16 +3055,17 @@ function FAQPage() {
   const [open, setOpen] = useState<number | null>(0);
   const [query, setQuery] = useState('');
   const filtered = useMemo(() => faqs.filter(([question, answer]) => `${question} ${answer}`.toLowerCase().includes(query.toLowerCase())), [query]);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80" eyebrow="Delegate desk" title="The questions worth answering early." body="Find practical guidance on eligibility, submission, review, presentation formats, registration, and joining from abroad." /><main className="section-pad"><div className="container-wide max-w-4xl"><div className="relative mb-10"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] pointer-events-none z-10" size={19} /><input className="form-field !pl-12 pr-4 py-3.5 text-base shadow-sm rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]" style={{ paddingLeft: '48px' }} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the delegate desk" aria-label="Search FAQs" data-testid="input-faq-search" /></div><div className="grid gap-3">{filtered.map(([question, answer], index) => { const actualIndex = faqs.findIndex(([item]) => item === question); const isOpen = open === actualIndex; return <div key={question} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"><button type="button" onClick={() => setOpen(isOpen ? null : actualIndex)} className="flex w-full items-center justify-between gap-5 p-5 text-left font-bold text-base sm:text-lg" aria-expanded={isOpen} data-testid={`button-faq-${actualIndex}`}><span>{question}</span><ChevronDown size={18} className={`shrink-0 text-[hsl(var(--secondary))] transition-transform ${isOpen ? 'rotate-180' : ''}`} /></button>{isOpen && <div className="border-t border-[hsl(var(--border))] px-6 pb-6 pt-4 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]" data-testid={`text-faq-answer-${actualIndex}`}>{answer}</div>}</div>; })}</div>{filtered.length === 0 && <div className="rounded-2xl border border-dashed border-[hsl(var(--border))] p-10 text-center"><CircleHelp className="mx-auto text-[hsl(var(--secondary))]" /><p className="mt-4 font-bold text-lg">No matching questions</p><p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Try a shorter search, or email the scientific coordination team.</p></div>}<div className="mt-16 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm"><p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">Need further assistance?</p><p className="mt-3 max-w-2xl text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">For questions regarding abstract guidelines or technical issues, contact <a href="mailto:abstracts@streamconferences.com" className="font-bold text-[hsl(var(--secondary))]" data-testid="link-faq-email">abstracts@streamconferences.com</a>.</p><Link href="/contact" className="btn-main btn-quiet mt-6" data-testid="link-faq-contact">Contact us <ArrowUpRight size={16} /></Link></div></div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80" eyebrow="Help desk" title="The questions worth answering early." body="Find practical guidance on eligibility, submission, review, presentation formats, registration, and joining from abroad." /><main className="section-pad"><div className="container-wide max-w-4xl"><div className="relative mb-10"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] pointer-events-none z-10" size={19} /><input className="form-field !pl-12 pr-4 py-3.5 text-base shadow-sm rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]" style={{ paddingLeft: '48px' }} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the help desk" aria-label="Search FAQs" data-testid="input-faq-search" /></div><div className="grid gap-3">{filtered.map(([question, answer], index) => { const actualIndex = faqs.findIndex(([item]) => item === question); const isOpen = open === actualIndex; return <div key={question} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"><button type="button" onClick={() => setOpen(isOpen ? null : actualIndex)} className="flex w-full items-center justify-between gap-5 p-5 text-left font-bold text-base sm:text-lg" aria-expanded={isOpen} data-testid={`button-faq-${actualIndex}`}><span>{question}</span><ChevronDown size={18} className={`shrink-0 text-[hsl(var(--secondary))] transition-transform ${isOpen ? 'rotate-180' : ''}`} /></button>{isOpen && <div className="border-t border-[hsl(var(--border))] px-6 pb-6 pt-4 text-base sm:text-lg leading-8 text-[hsl(var(--foreground)/.85)]" data-testid={`text-faq-answer-${actualIndex}`}>{answer}</div>}</div>; })}</div>{filtered.length === 0 && <div className="rounded-2xl border border-dashed border-[hsl(var(--border))] p-10 text-center"><CircleHelp className="mx-auto text-[hsl(var(--secondary))]" /><p className="mt-4 font-bold text-lg">No matching questions</p><p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Try a shorter search, or email the scientific coordination team.</p></div>}<div className="mt-16 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm"><p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">Need further assistance?</p><p className="mt-3 max-w-2xl text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">For questions regarding abstract guidelines or technical issues, contact <a href="mailto:abstracts@streamconferences.com" className="font-bold text-[hsl(var(--secondary))]" data-testid="link-faq-email">abstracts@streamconferences.com</a>.</p><Link href="/contact" className="btn-main btn-quiet mt-6" data-testid="link-faq-contact">Contact us <ArrowUpRight size={16} /></Link></div></div></main></Layout>;
 }
 
 function AbstractSubmissionGuidelinesPage() {
   const tracks = [
-    'Medical & Clinical Sciences',
-    'Pharmaceutical & Life Sciences',
-    'Engineering & Technology',
-    'Academic & Research',
-    'Science & Medical Technologies',
+    { letter: 'S', title: 'Sciences' },
+    { letter: 'T', title: 'Technology' },
+    { letter: 'R', title: 'Research' },
+    { letter: 'E', title: 'Engineering' },
+    { letter: 'A', title: 'Academic' },
+    { letter: 'M', title: 'Medical' },
   ];
 
   const presentationFormats = [
@@ -3179,9 +3180,9 @@ function AbstractSubmissionGuidelinesPage() {
               </p>
               <div className="mt-6 grid sm:grid-cols-2 gap-4">
                 {tracks.map((track) => (
-                  <div key={track} className="flex items-center gap-3.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-base font-semibold text-[hsl(var(--foreground))]">
+                  <div key={track.letter} className="flex items-center gap-3.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-base font-semibold text-[hsl(var(--foreground))]">
                     <CheckCircle2 size={18} className="text-[hsl(var(--secondary))] shrink-0" />
-                    <span>{track}</span>
+                    <span><strong className="text-[hsl(var(--secondary))] font-bold">{track.letter}</strong> - {track.title}</span>
                   </div>
                 ))}
               </div>
@@ -3224,7 +3225,7 @@ function AbstractSubmissionGuidelinesPage() {
                 <div className="grid gap-4">
                   {coreStructure.map((cs) => (
                     <div key={cs.title} className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-base leading-7">
-                      <span className="font-bold text-base sm:text-lg text-[hsl(var(--secondary))]">{cs.title}: </span>
+                      <span className="font-bold text-base sm:text-lg text-[hsl(var(--foreground))]">{cs.title}: </span>
                       <span className="text-[hsl(var(--muted-foreground))]">{cs.desc}</span>
                     </div>
                   ))}

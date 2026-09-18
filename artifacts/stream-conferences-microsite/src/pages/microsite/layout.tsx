@@ -6,7 +6,7 @@ import {
   Menu, X, FileText, MapPin, MessageSquare,
   Sun, Moon, Layers, Presentation, Users, CalendarDays,
   Award, Building, FileCheck, HelpCircle, BookOpen, Download,
-  History, ArrowRight,
+  History, ArrowRight, Facebook, Twitter, Linkedin, Instagram, Youtube,
 } from 'lucide-react';
 
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
@@ -44,7 +44,7 @@ export interface EventData {
   bannerUrl?: string;
   logoUrl?: string;
   headerBanners?: string[];
-  fees?: { type: string; dateLabel: string; usd: number; gbp: number; eur: number }[];
+  fees?: { type: string; dateLabel: string; deadline?: string | Date; usd: number; gbp: number; eur: number }[];
   tracks?: { title: string; description?: string; image?: string; referenceLinks?: { label: string; url: string }[] }[];
   organizerContact?: { name?: string; email?: string; phone?: string; website?: string; address?: string; country?: string };
   speakers?: { name: string; degree?: string; designation?: string; organization?: string; bio?: string; avatar?: string; linkedin?: string; twitter?: string; website?: string; topic?: string; isKeynote?: boolean }[];
@@ -57,7 +57,7 @@ export interface EventData {
   guidelines?: string;
   scientificProgramUrl?: string;
   termsAndConditions?: string;
-  venueDetails?: { name?: string; address?: string; city?: string; state?: string; country?: string; pincode?: string; description?: string; images?: string[]; mapUrl?: string; directions?: string; parking?: string; accommodation?: string };
+  venueDetails?: { name?: string; address?: string; city?: string; state?: string; country?: string; pincode?: string; description?: string; mainImage?: string; subImages?: string[]; images?: string[]; mapUrl?: string; directions?: string; parking?: string; accommodation?: string; nearestAirport?: string };
   organizingCommittee?: { name?: string; image?: string; degree?: string; specialization?: string; country?: string; biography?: string; researchArea?: string }[];
   itinerary?: any[];
   cohorts?: Cohort[];
@@ -169,15 +169,8 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
       : base + 'text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-white/10';
   };
 
-  // Program dropdown items: Program (/program), Speakers, Tracks, Committee, FAQ, Terms
+  // Program dropdown items: Speakers, Tracks, Committee, FAQ, Terms
   const programItems: NavItem[] = [
-    {
-      id: 'program',
-      label: 'Program Schedule',
-      path: '/program',
-      icon: <CalendarDays size={18} />,
-      show: true,
-    },
     {
       id: 'speakers',
       label: 'Speakers',
@@ -253,18 +246,6 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
       show: true,
     },
   ];
-
-  // Add Scientific Program if available
-  if (event?.scientificProgramUrl) {
-    moreItems.splice(3, 0, {
-      id: 'scientific-program',
-      label: 'Scientific Program',
-      path: `${SERVER_ORIGIN}${event.scientificProgramUrl}`,
-      icon: <Download size={18} />,
-      show: true,
-      isExternal: true,
-    });
-  }
 
   const isProgramActive = programItems.some((item) => isActive(item.path)) || location === '/program';
   const isMoreActive = moreItems.some((item) => isActive(item.path));
@@ -683,11 +664,11 @@ function MicrositeFooter({ event, navItems }: { event: EventData; navItems: NavI
             {/* Social Media Links */}
             {socials && (socials.facebook || socials.twitter || socials.linkedin || socials.instagram || socials.youtube) && (
               <div className="flex items-center gap-2.5 mt-4 pt-2">
-                {socials.facebook && <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="Facebook"><Globe size={15} /></a>}
-                {socials.twitter && <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="Twitter / X"><Globe size={15} /></a>}
-                {socials.linkedin && <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="LinkedIn"><Globe size={15} /></a>}
-                {socials.instagram && <a href={socials.instagram} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="Instagram"><Globe size={15} /></a>}
-                {socials.youtube && <a href={socials.youtube} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="YouTube"><Globe size={15} /></a>}
+                {socials.facebook && <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="Facebook"><Facebook size={15} /></a>}
+                {socials.twitter && <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="Twitter / X"><Twitter size={15} /></a>}
+                {socials.linkedin && <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="LinkedIn"><Linkedin size={15} /></a>}
+                {socials.instagram && <a href={socials.instagram} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="Instagram"><Instagram size={15} /></a>}
+                {socials.youtube && <a href={socials.youtube} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="YouTube"><Youtube size={15} /></a>}
               </div>
             )}
           </div>

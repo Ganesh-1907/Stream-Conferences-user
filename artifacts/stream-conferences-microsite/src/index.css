@@ -58,7 +58,7 @@
   --secondary: 172 75% 40%;
   --secondary-foreground: 0 0% 100%;
   --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
+  --muted-foreground: 222 47% 11%;
   --accent: 174 72% 48%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
@@ -88,7 +88,7 @@
   --secondary: 172 75% 40%;
   --secondary-foreground: 0 0% 100%;
   --muted: 217 33% 12%;
-  --muted-foreground: 215 20% 70%;
+  --muted-foreground: 210 40% 90%;
   --accent: 174 72% 48%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 63% 31%;
@@ -114,23 +114,23 @@
 
 /* Typography & Prose Theme Styles */
 .prose {
-  --tw-prose-body: hsl(var(--foreground) / 0.85);
+  --tw-prose-body: hsl(var(--foreground));
   --tw-prose-headings: hsl(var(--foreground));
-  --tw-prose-lead: hsl(var(--muted-foreground));
+  --tw-prose-lead: hsl(var(--foreground));
   --tw-prose-links: hsl(var(--accent));
   --tw-prose-bold: hsl(var(--foreground));
-  --tw-prose-counters: hsl(var(--muted-foreground));
+  --tw-prose-counters: hsl(var(--foreground));
   --tw-prose-bullets: hsl(var(--accent));
   --tw-prose-hr: hsl(var(--border));
   --tw-prose-quotes: hsl(var(--foreground));
   --tw-prose-quote-borders: hsl(var(--accent));
-  --tw-prose-captions: hsl(var(--muted-foreground));
+  --tw-prose-captions: hsl(var(--foreground));
   --tw-prose-code: hsl(var(--foreground));
   --tw-prose-pre-code: hsl(var(--foreground));
   --tw-prose-pre-bg: hsl(var(--muted));
   --tw-prose-th-borders: hsl(var(--border));
   --tw-prose-td-borders: hsl(var(--border));
-  color: hsl(var(--foreground) / 0.85);
+  color: hsl(var(--foreground));
 }
 
 .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
@@ -146,7 +146,7 @@
 }
 
 .prose p, .prose li, .prose td {
-  color: hsl(var(--foreground) / 0.85);
+  color: hsl(var(--foreground));
 }
 
 .prose a {
