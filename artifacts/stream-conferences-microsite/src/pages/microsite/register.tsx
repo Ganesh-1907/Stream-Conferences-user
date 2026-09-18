@@ -1,6 +1,7 @@
 import { useState, useMemo, type FormEvent } from 'react';
 import { CalendarDays, MapPin, ChevronDown, ArrowUpRight, ArrowRight, Check } from 'lucide-react';
 import type { EventData } from './layout';
+import { MicrositeHero } from '@/components/microsite-hero';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
 
@@ -177,19 +178,19 @@ export function RegisterPage({ event }: { event: EventData }) {
       : [
           'Registration is mandatory for all participants.',
           'Carry a valid photo ID at the venue.',
-          'Early-bird pricing ends 30 days before the event.',
           'Virtual attendees receive access links 24 hours before the event.',
         ];
 
   const sym = CURRENCY_SYMBOL[currency];
 
   return (
-    <div className="container-wide py-12 max-w-6xl">
-      <div className="mb-8 text-center md:text-left">
-        <span className="section-eyebrow">Event Registration Gateway</span>
-        <h1 className="mt-3 text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">{event.title}</h1>
-        <p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Complete your registration in two simple steps</p>
-      </div>
+    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      <MicrositeHero
+        badge="EVENT REGISTRATION"
+        title="Register For Conference"
+        tagline="Complete your registration in simple steps to confirm your attendance and participation."
+      />
+      <div className="container-wide py-10 sm:py-14 max-w-6xl">
 
       <div className="flex items-center justify-center md:justify-start gap-3 mb-8">
         <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${step === 1 ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : 'bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))]'}`}>
@@ -391,30 +392,7 @@ export function RegisterPage({ event }: { event: EventData }) {
                   </div>
                 )}
               </div>
-              <div className="border-b border-[hsl(var(--border)]/60 pb-3">
-                <button type="button" onClick={() => setOpenAccordion(openAccordion === 'fees' ? null : 'fees')} className="w-full flex items-center justify-between font-semibold text-sm text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors">
-                  <span className="uppercase tracking-wider">Fee Details</span>
-                  <ChevronDown size={14} className={`transform transition-transform ${openAccordion === 'fees' ? 'rotate-180' : ''}`} />
-                </button>
-                {openAccordion === 'fees' && (
-                  <div className="mt-2 pl-1 space-y-2 text-sm text-[hsl(var(--muted-foreground))]">
-                    {groupedFees.map(([type, items]) => (
-                      <div key={type} className="mb-2">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">{type}</p>
-                        {items.map((item, i) => {
-                          const price = currency === 'USD' ? item.usd : currency === 'EUR' ? item.eur : item.gbp;
-                          return (
-                            <div key={i} className="flex justify-between items-center border-b border-[hsl(var(--border))]/30 pb-1.5 last:border-0 last:pb-0">
-                              <span className="font-medium text-[hsl(var(--foreground))] text-xs">{item.dateLabel || 'Standard'}</span>
-                              <span className="font-bold text-[hsl(var(--secondary))]">{sym}{Number(price).toLocaleString()}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+
               <div className="border-b border-[hsl(var(--border)]/60 pb-3">
                 <button type="button" onClick={() => setOpenAccordion(openAccordion === 'organizer' ? null : 'organizer')} className="w-full flex items-center justify-between font-semibold text-sm text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors">
                   <span className="uppercase tracking-wider">Organizer Contact</span>
@@ -436,5 +414,6 @@ export function RegisterPage({ event }: { event: EventData }) {
         </div>
       </div>
     </div>
+  </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, useMemo, type FormEvent } from 'react';
 import { CalendarDays, MapPin, ChevronDown, FileText, ArrowRight, Check } from 'lucide-react';
 import type { EventData } from './layout';
+import { MicrositeHero } from '@/components/microsite-hero';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
 
@@ -99,13 +100,13 @@ export function AbstractPage({ event }: { event: EventData }) {
   };
 
   return (
-    <div className="container-wide py-12 max-w-6xl">
-      {/* Title above the grid */}
-      <div className="mb-8 text-center md:text-left">
-        <span className="section-eyebrow">Abstract Submission Gateway</span>
-        <h1 className="mt-3 text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">Submit an Abstract</h1>
-        <p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Share your research with the global scientific community</p>
-      </div>
+    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      <MicrositeHero
+        badge="ABSTRACT SUBMISSION"
+        title="Submit an Abstract"
+        tagline="Share your original research findings and connect with leading international scholars."
+      />
+      <div className="container-wide py-10 sm:py-14 max-w-6xl">
 
       {/* Step indicators above the grid */}
       <div className="flex items-center justify-center md:justify-start gap-3 mb-8">
@@ -312,5 +313,6 @@ export function AbstractPage({ event }: { event: EventData }) {
         </div>
       </div>
     </div>
+  </div>
   );
 }

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link } from 'wouter';
 import { Mail, Phone, Globe, MapPin, Check, ExternalLink, Building, Send } from 'lucide-react';
 import type { EventData } from './layout';
+import { MicrositeHero } from '@/components/microsite-hero';
 import { getNameInitials } from '@/lib/utils';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
@@ -60,17 +61,13 @@ export function ContactPage({ event }: { event: EventData }) {
   };
 
   return (
-    <div className="container-wide py-12 md:py-16">
-      {/* Page Header */}
-      <div className="mb-10 md:mb-12">
-        <span className="section-eyebrow">Contact</span>
-        <h1 className="mt-3 text-3xl md:text-4xl lg:text-5xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">
-          Contact us
-        </h1>
-        <p className="mt-2 text-base md:text-lg text-[hsl(var(--muted-foreground))]">
-          Get in touch with the organizers
-        </p>
-      </div>
+    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      <MicrositeHero
+        badge="GET IN TOUCH"
+        title="Contact Us"
+        tagline="Get in touch with the conference organizing team for attendee support, queries, and assistance."
+      />
+      <div className="container-wide py-10 sm:py-14">
 
       {/* Two-Column Layout */}
       <div className="grid gap-8 lg:grid-cols-2 items-stretch">
@@ -156,6 +153,20 @@ export function ContactPage({ event }: { event: EventData }) {
                   </div>
                   <ExternalLink size={14} className="text-[hsl(var(--muted-foreground))] opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mr-1" />
                 </a>
+              )}
+
+              {(contact?.country || event?.country) && (
+                <div className="group flex items-center gap-4 p-3.5 rounded-2xl bg-[hsl(var(--background))] border border-[hsl(var(--border)/0.7)]">
+                  <div className="w-11 h-11 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                    <MapPin size={19} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Country</p>
+                    <p className="text-sm sm:text-base font-semibold text-[hsl(var(--foreground))] truncate">
+                      {contact?.country || event?.country}
+                    </p>
+                  </div>
+                </div>
               )}
 
               {conferenceLocation && (
@@ -313,5 +324,6 @@ export function ContactPage({ event }: { event: EventData }) {
         </div>
       </div>
     </div>
+  </div>
   );
 }

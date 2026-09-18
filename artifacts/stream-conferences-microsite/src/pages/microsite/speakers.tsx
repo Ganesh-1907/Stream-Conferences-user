@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { MicrositeHero } from '@/components/microsite-hero';
 import { getNameInitials } from '@/lib/utils';
 
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
@@ -27,8 +28,25 @@ export function SpeakersPage({ event }: { event: EventData }) {
 
   if (speakers.length === 0) {
     return (
-      <div className="container-wide py-16 text-center">
-        <p className="text-[hsl(var(--muted-foreground))]">No speakers announced yet for this event.</p>
+      <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+        <MicrositeHero
+          badge="KEYNOTE & SPEAKERS"
+          title="Speakers & Presenters"
+          tagline="Meet the distinguished lineup of keynote experts, global researchers, and industry leaders."
+        />
+        <div className="container-wide py-16 text-center">
+          <div className="max-w-2xl mx-auto bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-3xl p-8 sm:p-12 shadow-xl space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-[hsl(var(--primary)/0.12)] text-[hsl(var(--primary))] flex items-center justify-center mx-auto">
+              <Award size={32} />
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold font-['Space_Grotesk'] text-[hsl(var(--foreground))]">
+              Speakers & Panelists To Be Announced Soon
+            </h2>
+            <p className="text-sm sm:text-base text-[hsl(var(--muted-foreground))] leading-relaxed max-w-lg mx-auto">
+              Our distinguished lineup of keynote experts, global researchers, and industry leaders for {event.title} will be announced shortly.
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -174,16 +192,13 @@ export function SpeakersPage({ event }: { event: EventData }) {
   };
 
   return (
-    <div className="container-wide py-12">
-      <div className="mb-10">
-        <span className="section-eyebrow">Speakers</span>
-        <h1 className="mt-3 text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">
-          Meet our speakers
-        </h1>
-        <p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">
-          Esteemed speakers and keynote presenters
-        </p>
-      </div>
+    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      <MicrositeHero
+        badge="KEYNOTE & SPEAKERS"
+        title="Meet Our Speakers"
+        tagline="Discover the visionary keynote presenters and global researchers driving scientific advancement."
+      />
+      <div className="container-wide py-10 sm:py-14">
 
       {keynoteSpeakers.length > 0 && (
         <div className="mb-12">
@@ -305,6 +320,7 @@ export function SpeakersPage({ event }: { event: EventData }) {
         )}
       </Dialog>
     </div>
+  </div>
   );
 }
 

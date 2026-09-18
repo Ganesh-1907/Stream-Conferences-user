@@ -142,7 +142,7 @@
 
 .prose strong, .prose b, .prose th {
   color: hsl(var(--foreground));
-  font-weight: 600;
+  font-weight: 700 !important;
 }
 
 .prose p, .prose li, .prose td {

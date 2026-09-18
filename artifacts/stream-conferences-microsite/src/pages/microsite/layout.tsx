@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, type ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
+import { LiveChatWidget } from '../../components/live-chat-widget';
 import {
   Mail, Phone, Globe, ExternalLink, ChevronDown,
   Menu, X, FileText, MapPin, MessageSquare,
@@ -19,6 +20,10 @@ export interface EventData {
   slug?: string;
   subdomain?: string;
   description?: string;
+  welcomeBannerTitle?: string;
+  welcomeBannerDescription?: string;
+  socialLinks?: { facebook?: string; twitter?: string; linkedin?: string; instagram?: string; youtube?: string };
+  country?: string;
   theme?: string;
   themeColor?: string;
   primaryColor?: string;
@@ -41,19 +46,20 @@ export interface EventData {
   headerBanners?: string[];
   fees?: { type: string; dateLabel: string; usd: number; gbp: number; eur: number }[];
   tracks?: { title: string; description?: string; image?: string; referenceLinks?: { label: string; url: string }[] }[];
-  organizerContact?: { name?: string; email?: string; phone?: string; website?: string; address?: string };
-  itinerary?: { time: string; title: string; description?: string; speaker?: string; track?: string; type?: string }[];
+  organizerContact?: { name?: string; email?: string; phone?: string; website?: string; address?: string; country?: string };
   speakers?: { name: string; degree?: string; designation?: string; organization?: string; bio?: string; avatar?: string; linkedin?: string; twitter?: string; website?: string; topic?: string; isKeynote?: boolean }[];
   program?: { dayNumber: number; date?: string; title?: string; description?: string; sessions: any[] }[];
   faqs?: { question: string; answer: string; category?: string; order?: number }[];
   partners?: { title: string; order?: number }[];
-  sponsors?: { title: string; order?: number }[];
+  sponsors?: { name?: string; logo?: string; title?: string; order?: number }[];
+  mediaPartners?: { name?: string; logo?: string }[];
   exhibitors?: { title: string; order?: number }[];
   guidelines?: string;
   scientificProgramUrl?: string;
   termsAndConditions?: string;
   venueDetails?: { name?: string; address?: string; city?: string; state?: string; country?: string; pincode?: string; description?: string; images?: string[]; mapUrl?: string; directions?: string; parking?: string; accommodation?: string };
   organizingCommittee?: { name?: string; image?: string; degree?: string; specialization?: string; country?: string; biography?: string; researchArea?: string }[];
+  itinerary?: any[];
   cohorts?: Cohort[];
   currentCohort?: Cohort | null;
   activeCohort?: Cohort | null;
@@ -112,10 +118,10 @@ export function buildNavItems(event: EventData): NavItem[] {
     { id: 'about', label: 'About', path: '/about', icon: <Layers size={16} />, show: Boolean(event.description) },
     { id: 'program', label: 'Program', path: '/program', icon: <Presentation size={16} />, show: Boolean(event.program?.length) },
     { id: 'speakers', label: 'Speakers', path: '/speakers', icon: <Users size={16} />, show: Boolean(event.speakers?.length) },
-    { id: 'itinerary', label: 'Itinerary', path: '/itinerary', icon: <CalendarDays size={16} />, show: Boolean(event.itinerary?.length) },
     { id: 'sponsors', label: 'Sponsors/Exhibitors', path: '/sponsors', icon: <Award size={16} />, show: true },
     { id: 'fees', label: 'Fees', path: '/fees', icon: <FileText size={16} />, show: Boolean(event.fees?.length) },
     { id: 'tracks', label: 'Tracks', path: '/tracks', icon: <Layers size={16} />, show: Boolean(event.tracks?.length) },
+    { id: 'media-partners', label: 'Media Partners', path: '/media-partners', icon: <Award size={16} />, show: Boolean(event.mediaPartners?.length) },
     { id: 'faq', label: 'FAQ', path: '/faq', icon: <HelpCircle size={16} />, show: Boolean(event.faqs?.length) },
     { id: 'guidelines', label: 'Guidelines', path: '/guidelines', icon: <BookOpen size={16} />, show: Boolean(event.guidelines) },
     { id: 'venue', label: 'Venue', path: '/venue', icon: <MapPin size={16} />, show: Boolean(event.venueDetails?.name || event.venue || event.location) },
@@ -135,7 +141,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 300) {
+      if (window.scrollY > 40) {
         setScrolled(true);
       } else {
         setScrolled(false);
@@ -150,25 +156,25 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
   const isHomeTop = location === '/' && !scrolled;
 
   const navLinkCls = (path: string) => {
-    const base = 'flex items-center gap-2 px-3.5 py-2 text-base sm:text-lg font-bold transition-all ';
+    const base = 'flex items-center gap-2 px-4 py-2 text-sm sm:text-base font-bold transition-all rounded-full ';
     return isActive(path)
-      ? base + 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-black shadow-lg rounded-full px-5 py-2.5'
-      : base + 'text-white/90 hover:text-white hover:bg-white/15 rounded-xl drop-shadow-sm';
+      ? base + 'bg-[hsl(var(--primary))] text-white font-black shadow-md'
+      : base + 'text-slate-800 dark:text-slate-100 hover:text-[hsl(var(--primary))] hover:bg-slate-100 dark:hover:bg-white/10';
   };
 
   const mobileLinkCls = (path: string) => {
     const base = 'w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-base font-bold transition-all ';
     return isActive(path)
-      ? base + 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-black shadow-md'
-      : base + 'text-white/90 hover:text-white hover:bg-white/15';
+      ? base + 'bg-[hsl(var(--primary))] text-white font-black shadow-md'
+      : base + 'text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-white/10';
   };
 
-  // Program dropdown items: Itinerary (/program), Speakers, Tracks, Committee, FAQ, Terms
+  // Program dropdown items: Program (/program), Speakers, Tracks, Committee, FAQ, Terms
   const programItems: NavItem[] = [
     {
-      id: 'itinerary',
-      label: 'Itinerary',
-      path: (event.program && event.program.length > 0) ? '/program' : (event.itinerary && event.itinerary.length > 0 ? '/itinerary' : '/program'),
+      id: 'program',
+      label: 'Program Schedule',
+      path: '/program',
       icon: <CalendarDays size={18} />,
       show: true,
     },
@@ -209,12 +215,19 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
     },
   ];
 
-  // More dropdown items: Sponsors/Exhibitors, Venue, Guidelines, Contact
+  // More dropdown items: Sponsors & Exhibitors, Media Partners, Venue, Guidelines, Contact
   const moreItems: NavItem[] = [
     {
       id: 'sponsors',
-      label: 'Sponsors/Exhibitors',
+      label: 'Sponsors & Exhibitors',
       path: '/sponsors',
+      icon: <Award size={18} />,
+      show: true,
+    },
+    {
+      id: 'media-partners',
+      label: 'Media Partners',
+      path: '/media-partners',
       icon: <Award size={18} />,
       show: true,
     },
@@ -243,7 +256,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
 
   // Add Scientific Program if available
   if (event?.scientificProgramUrl) {
-    moreItems.splice(2, 0, {
+    moreItems.splice(3, 0, {
       id: 'scientific-program',
       label: 'Scientific Program',
       path: `${SERVER_ORIGIN}${event.scientificProgramUrl}`,
@@ -253,39 +266,22 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
     });
   }
 
-  const isProgramActive = programItems.some((item) => isActive(item.path)) || location === '/program' || location === '/itinerary';
+  const isProgramActive = programItems.some((item) => isActive(item.path)) || location === '/program';
   const isMoreActive = moreItems.some((item) => isActive(item.path));
 
   return (
     <header className={`z-40 transition-all duration-300 text-white ${
-      location === '/'
-        ? isHomeTop
-          ? 'absolute top-0 left-0 right-0 bg-transparent border-b-0 shadow-none'
-          : 'fixed top-0 left-0 right-0 bg-[#0b0f19]/95 border-b border-white/10 backdrop-blur-xl shadow-2xl'
-        : 'sticky top-0 bg-[#0b0f19]/95 border-b border-white/10 backdrop-blur-xl shadow-2xl'
+      !scrolled
+        ? 'absolute top-0 left-0 right-0 bg-transparent border-b-0 shadow-none'
+        : 'fixed top-0 left-0 right-0 bg-[hsl(var(--primary))]/95 border-b border-white/15 backdrop-blur-xl shadow-lg'
     }`}>
       <div className="container-wide flex items-center justify-between gap-4 py-3">
-        <Link href="/" className="flex items-center gap-3 min-w-0">
-          {isHomeTop ? (
-            <>
-              <img src="/logo.jpg" alt="Stream Conferences" className="h-11 w-11 rounded-xl object-cover shadow-lg border border-white/20 shrink-0" />
-              <span className="truncate font-['Space_Grotesk'] font-black tracking-tight text-base md:text-xl text-white">Stream Conferences</span>
-            </>
-          ) : (
-            <>
-              {event?.logoUrl ? (
-                <img src={mediaUrl(event.logoUrl)} alt={event?.title || "Conference Logo"} className="h-11 w-11 rounded-xl object-contain bg-white/10 p-1 border border-white/20 shrink-0" />
-              ) : (
-                <img src="/logo.jpg" alt="Conference Logo" className="h-11 w-11 rounded-xl object-cover shadow-lg border border-white/20 shrink-0" />
-              )}
-              <span className="truncate font-['Space_Grotesk'] font-black tracking-tight text-base md:text-xl text-white max-w-[280px] sm:max-w-xs md:max-w-md" title={event?.title}>
-                {event?.title || 'Stream Conferences'}
-              </span>
-            </>
-          )}
+        <Link href="/" className="flex items-center gap-3 min-w-0 shrink-0">
+          <img src="/logo.jpg" alt="Stream Conferences" className="h-11 w-11 rounded-xl object-cover shadow-lg border border-white/20 shrink-0" />
+          <span className="truncate font-['Space_Grotesk'] font-black tracking-tight text-base md:text-xl text-white">Stream Conferences</span>
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-1.5">
+        <nav className="hidden lg:flex items-center gap-1 bg-white/95 dark:bg-[#0f172a]/95 text-slate-800 dark:text-white shadow-xl backdrop-blur-xl border border-white/30 dark:border-white/20 rounded-full p-1.5 mx-auto">
           <Link href="/" className={navLinkCls('/')}>
             <Globe size={18} />Home
           </Link>
@@ -294,14 +290,14 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
             <Layers size={18} />About
           </Link>
 
-          {/* Program Dropdown (Itinerary, Speakers, Tracks, Committee, FAQ, Terms) */}
+          {/* Program Dropdown */}
           <div className="relative group">
             <button
               type="button"
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-base sm:text-lg font-bold transition-colors cursor-pointer ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm sm:text-base font-bold transition-all cursor-pointer ${
                 isProgramActive
-                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-black shadow-lg rounded-full px-5 py-2.5'
-                  : 'text-white/90 hover:text-white hover:bg-white/15 drop-shadow-sm'
+                  ? 'bg-[hsl(var(--primary))] text-white font-black shadow-md'
+                  : 'text-slate-800 dark:text-slate-100 hover:text-[hsl(var(--primary))] hover:bg-slate-100 dark:hover:bg-white/10'
               }`}
             >
               <Presentation size={18} />
@@ -316,7 +312,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
                     href={item.path}
                     className={`flex items-center gap-3 px-4 py-2.5 text-base font-bold transition-colors ${
                       isActive(item.path)
-                        ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-extrabold'
+                        ? 'bg-[hsl(var(--primary))] text-white font-extrabold'
                         : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/90 dark:text-white/90 dark:hover:text-white dark:hover:bg-white/15'
                     }`}
                   >
@@ -332,15 +328,15 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
             <FileText size={18} />Fees
           </Link>
 
-          {/* More Dropdown (Sponsors/Exhibitors, Venue, Guidelines, Contact) */}
+          {/* More Dropdown */}
           {moreItems.length > 0 && (
             <div className="relative group">
               <button
                 type="button"
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-base sm:text-lg font-bold transition-colors cursor-pointer ${
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm sm:text-base font-bold transition-all cursor-pointer ${
                   isMoreActive
-                    ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-black shadow-lg rounded-full px-5 py-2.5'
-                    : 'text-white/90 hover:text-white hover:bg-white/15 drop-shadow-sm'
+                    ? 'bg-[hsl(var(--primary))] text-white font-black shadow-md'
+                    : 'text-slate-800 dark:text-slate-100 hover:text-[hsl(var(--primary))] hover:bg-slate-100 dark:hover:bg-white/10'
                 }`}
               >
                 <span>More</span>
@@ -366,7 +362,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
                         href={item.path}
                         className={`flex items-center gap-3 px-4 py-2.5 text-base font-bold transition-colors ${
                           isActive(item.path)
-                            ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-extrabold'
+                            ? 'bg-[hsl(var(--primary))] text-white font-extrabold'
                             : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/90 dark:text-white/90 dark:hover:text-white dark:hover:bg-white/15'
                         }`}
                       >
@@ -379,38 +375,37 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
               </div>
             </div>
           )}
+
+          <Link href="/brochure" className={navLinkCls('/brochure')}>
+            <Download size={18} />Brochure
+          </Link>
+
+          <Link href="/submit-abstract" className={navLinkCls('/submit-abstract')}>
+            <FileText size={18} />Submit Abstract
+          </Link>
+
+          <Link href="/register" className={navLinkCls('/register')}>
+            <FileText size={18} />Register
+          </Link>
         </nav>
 
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="hidden lg:flex items-center gap-1">
-            <Link href="/brochure" className={navLinkCls('/brochure')}>
-              <Download size={18} />Brochure
-            </Link>
-            <Link href="/submit-abstract" className={navLinkCls('/submit-abstract')}>
-              <FileText size={18} />Submit Abstract
-            </Link>
-            <Link href="/register" className={navLinkCls('/register')}>
-              <FileText size={18} />Register
-            </Link>
-            <div className="w-px h-6 bg-white/20 mx-2" />
-          </div>
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
 
-          {/* Explicit Light/Dark Theme Toggle Capsule Pill */}
           <button
             type="button"
             onClick={toggle}
             aria-label="Toggle dark/light theme"
             title={dark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 text-white font-extrabold text-xs sm:text-sm shadow-md backdrop-blur-md transition-all cursor-pointer active:scale-95"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/95 dark:bg-[#0f172a]/95 hover:bg-white dark:hover:bg-[#1e293b] border border-white/30 dark:border-white/20 text-slate-800 dark:text-white font-extrabold text-xs sm:text-sm shadow-xl backdrop-blur-xl transition-all cursor-pointer active:scale-95"
           >
             {dark ? (
               <>
-                <Sun size={18} className="text-amber-300" />
+                <Sun size={18} className="text-amber-400" />
                 <span>Light</span>
               </>
             ) : (
               <>
-                <Moon size={18} className="text-slate-100" />
+                <Moon size={18} className="text-slate-700" />
                 <span>Dark</span>
               </>
             )}
@@ -432,7 +427,6 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
               <Layers size={16} />About
             </Link>
 
-            {/* Program Section */}
             <div className="pt-2 pb-1">
               <p className="px-3 text-[10px] font-mono uppercase tracking-wider text-[hsl(var(--muted-foreground))] font-bold">Program</p>
               <div className="mt-1 space-y-1 pl-2 border-l-2 border-[hsl(var(--border))] ml-3">
@@ -448,30 +442,34 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
               <FileText size={16} />Fees
             </Link>
 
-            {/* More Section */}
-            {moreItems.length > 0 && (
-              <div className="pt-2 pb-1">
-                <p className="px-3 text-[10px] font-mono uppercase tracking-wider text-[hsl(var(--muted-foreground))] font-bold">More</p>
-                <div className="mt-1 space-y-1 pl-2 border-l-2 border-[hsl(var(--border))] ml-3">
-                  {moreItems.map((item) => (
-                    item.isExternal ? (
-                      <a key={item.id} href={item.path} target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls(item.path)}>
-                        {item.icon}{item.label}
-                      </a>
-                    ) : (
-                      <Link key={item.id} href={item.path} onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls(item.path)}>
-                        {item.icon}{item.label}
-                      </Link>
-                    )
-                  ))}
-                </div>
+            <div className="pt-2 pb-1">
+              <p className="px-3 text-[10px] font-mono uppercase tracking-wider text-[hsl(var(--muted-foreground))] font-bold">More</p>
+              <div className="mt-1 space-y-1 pl-2 border-l-2 border-[hsl(var(--border))] ml-3">
+                {moreItems.map((item) => (
+                  item.isExternal ? (
+                    <a key={item.id} href={item.path} target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls(item.path)}>
+                      {item.icon}{item.label}
+                    </a>
+                  ) : (
+                    <Link key={item.id} href={item.path} onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls(item.path)}>
+                      {item.icon}{item.label}
+                    </Link>
+                  )
+                ))}
               </div>
-            )}
+            </div>
 
-            <div className="h-px bg-[hsl(var(--border))] my-2" />
-            <Link href="/brochure" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls('/brochure')}><Download size={16} />Brochure</Link>
-            <Link href="/submit-abstract" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls('/submit-abstract')}><FileText size={16} />Submit Abstract</Link>
-            <Link href="/register" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls('/register')}><FileText size={16} />Register</Link>
+            <div className="pt-3 border-t border-[hsl(var(--border))] space-y-2">
+              <Link href="/brochure" onClick={() => setMobileMenuOpen(false)} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm">
+                <Download size={16} />Download Brochure
+              </Link>
+              <Link href="/submit-abstract" onClick={() => setMobileMenuOpen(false)} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-sm">
+                <FileText size={16} />Submit Abstract
+              </Link>
+              <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-black text-sm shadow-md">
+                <FileText size={16} />Register Now
+              </Link>
+            </div>
           </nav>
         </div>
       )}
@@ -663,6 +661,8 @@ function PreviousCohortsStrip({ event }: { event: EventData }) {
 }
 
 function MicrositeFooter({ event, navItems }: { event: EventData; navItems: NavItem[] }) {
+  const socials = event?.socialLinks;
+
   return (
     <footer className="relative overflow-hidden border-t border-[hsl(var(--border))] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white py-12">
       <div className="absolute inset-0 hero-grid-b opacity-60" />
@@ -679,6 +679,17 @@ function MicrositeFooter({ event, navItems }: { event: EventData; navItems: NavI
             </div>
             {event?.organizerContact?.name && <p className="mt-3 text-base text-white/90">{event.organizerContact.name}</p>}
             {event?.organizerContact?.address && <p className="mt-1 text-base text-white/90">{event.organizerContact.address}</p>}
+
+            {/* Social Media Links */}
+            {socials && (socials.facebook || socials.twitter || socials.linkedin || socials.instagram || socials.youtube) && (
+              <div className="flex items-center gap-2.5 mt-4 pt-2">
+                {socials.facebook && <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="Facebook"><Globe size={15} /></a>}
+                {socials.twitter && <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="Twitter / X"><Globe size={15} /></a>}
+                {socials.linkedin && <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="LinkedIn"><Globe size={15} /></a>}
+                {socials.instagram && <a href={socials.instagram} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="Instagram"><Globe size={15} /></a>}
+                {socials.youtube && <a href={socials.youtube} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="YouTube"><Globe size={15} /></a>}
+              </div>
+            )}
           </div>
           <div>
             <h4 className="font-semibold mb-4 !text-white">Navigate</h4>
@@ -694,6 +705,7 @@ function MicrositeFooter({ event, navItems }: { event: EventData; navItems: NavI
             <div className="space-y-3 text-base text-white/85">
               {event?.organizerContact?.email && <a href={`mailto:${event.organizerContact.email}`} className="flex items-center gap-2 text-white/85 hover:text-white transition-colors"><Mail size={15} />{event.organizerContact.email}</a>}
               {event?.organizerContact?.phone && <p className="flex items-center gap-2 text-white/85"><Phone size={15} />{event.organizerContact.phone}</p>}
+              {(event?.organizerContact?.country || event?.country) && <p className="flex items-center gap-2 text-white/85"><MapPin size={15} />{event.organizerContact?.country || event.country}</p>}
               {event?.organizerContact?.website && <a href={event.organizerContact.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-white/85 hover:text-white transition-colors"><ExternalLink size={15} />Website</a>}
             </div>
           </div>
@@ -705,6 +717,8 @@ function MicrositeFooter({ event, navItems }: { event: EventData; navItems: NavI
     </footer>
   );
 }
+
+
 
 function parseColorToHsl(colorInput?: string): { h: number; s: number; l: number } | null {
   if (!colorInput || typeof colorInput !== 'string') return null;
@@ -824,12 +838,13 @@ export function MicrositeLayout({ event, navItems, children }: { event: EventDat
   }, [event?.themeColor, event?.primaryColor, event?.colorTheme]);
 
   return (
-    <div className="min-h-[100dvh] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] flex flex-col">
+    <div className="min-h-[100dvh] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] flex flex-col relative">
       <MicrositeHeader event={event} navItems={navItems} />
       <main className="flex-1">{children}</main>
       {!hideContactFooter && <PersistentContactFooter event={event} />}
       <PreviousCohortsStrip event={event} />
       <MicrositeFooter event={event} navItems={navItems} />
+      <LiveChatWidget event={event} />
     </div>
   );
 }

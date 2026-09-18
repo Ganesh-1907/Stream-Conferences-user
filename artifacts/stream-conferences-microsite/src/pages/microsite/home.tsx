@@ -7,6 +7,7 @@ import {
   GraduationCap, Building2, Presentation, ExternalLink, Linkedin, Twitter, Globe, Check
 } from 'lucide-react';
 import type { EventData } from './layout';
+import { PartnerLogoCard } from '@/components/partner-logo-card';
 import {
   Dialog,
   DialogContent,
@@ -386,6 +387,25 @@ export function HomePage({ event }: { event: EventData }) {
       </section>
 
 
+      {/* Welcome Message Banner Section */}
+      {(event.welcomeBannerTitle || event.welcomeBannerDescription) && (
+        <section className="container-wide py-8">
+          <div className="rounded-3xl border border-[hsl(var(--primary)/0.3)] bg-gradient-to-br from-[hsl(var(--primary)/0.08)] to-[hsl(var(--secondary)/0.08)] p-6 sm:p-8 shadow-lg">
+            {event.welcomeBannerTitle && (
+              <h2 className="text-2xl sm:text-3xl font-black font-['Space_Grotesk'] text-[hsl(var(--primary))] mb-3">
+                {event.welcomeBannerTitle}
+              </h2>
+            )}
+            {event.welcomeBannerDescription && (
+              <div
+                className="prose dark:prose-invert max-w-none text-base text-[hsl(var(--foreground))] leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: event.welcomeBannerDescription }}
+              />
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Centered Banner Carousel Section */}
       {headerBanners.length > 0 && (
         <section className="container-wide py-10 md:py-14 border-b border-[hsl(var(--border))]">
@@ -401,8 +421,8 @@ export function HomePage({ event }: { event: EventData }) {
         </section>
       )}
 
-      {/* Featured Speakers Section (Before FAQs) */}
-      {featuredSpeakers.length > 0 && (
+      {/* Featured Speakers Section */}
+      {featuredSpeakers.length > 0 ? (
         <section className="container-wide py-14 md:py-20 border-b border-[hsl(var(--border))]">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
@@ -435,10 +455,8 @@ export function HomePage({ event }: { event: EventData }) {
                 onClick={() => setSelectedSpeaker(speaker)}
                 className="group relative flex flex-col items-center text-center rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-6 shadow-sm hover:shadow-xl hover:border-[hsl(var(--primary)/.5)] transition-all duration-300 cursor-pointer overflow-hidden"
               >
-                {/* Lanyard Notch / ID Badge Slot */}
                 <div className="w-12 h-1.5 rounded-full bg-[hsl(var(--border))] mb-4 group-hover:bg-[hsl(var(--primary)/.4)] transition-colors shadow-inner shrink-0" />
 
-                {/* Top-Right Keynote Badge */}
                 {speaker.isKeynote && (
                   <div className="absolute top-3.5 right-3.5">
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm">
@@ -447,7 +465,6 @@ export function HomePage({ event }: { event: EventData }) {
                   </div>
                 )}
 
-                {/* Top Center Circular Image */}
                 <div className="relative mb-4 w-28 h-28 sm:w-32 sm:h-32 rounded-full ring-4 ring-[hsl(var(--border))] group-hover:ring-[hsl(var(--primary)/.5)] transition-all duration-300 overflow-hidden bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] shadow-md flex items-center justify-center shrink-0">
                   {speaker.avatar ? (
                     <img
@@ -467,12 +484,10 @@ export function HomePage({ event }: { event: EventData }) {
                   )}
                 </div>
 
-                {/* Speaker Name */}
                 <h3 className="font-['Space_Grotesk'] font-bold text-lg sm:text-xl text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 w-full px-1">
                   {speaker.name}
                 </h3>
 
-                {/* Degree */}
                 {speaker.degree && (
                   <div className="mt-1">
                     <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[hsl(var(--primary))] uppercase tracking-wider bg-[hsl(var(--primary)/0.1)] px-2.5 py-0.5 rounded-full">
@@ -482,14 +497,12 @@ export function HomePage({ event }: { event: EventData }) {
                   </div>
                 )}
 
-                {/* Designation */}
                 {speaker.designation && (
                   <p className="text-sm font-semibold text-[hsl(var(--primary))] mt-1.5 line-clamp-1 w-full px-1">
                     {speaker.designation}
                   </p>
                 )}
 
-                {/* Organization */}
                 {speaker.organization && (
                   <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1 flex items-center justify-center gap-1.5 line-clamp-1 w-full px-1">
                     <Building2 size={12} className="shrink-0 opacity-70" />
@@ -497,7 +510,6 @@ export function HomePage({ event }: { event: EventData }) {
                   </p>
                 )}
 
-                {/* Topic Pill */}
                 {speaker.topic && (
                   <div className="mt-3 w-full">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[hsl(var(--primary)/.08)] border border-[hsl(var(--primary)/.15)] text-[hsl(var(--primary))] text-xs font-medium max-w-full">
@@ -507,14 +519,12 @@ export function HomePage({ event }: { event: EventData }) {
                   </div>
                 )}
 
-                {/* Bio Excerpt */}
                 {speaker.bio && (
                   <p className="mt-3 text-xs text-[hsl(var(--muted-foreground))] line-clamp-2 leading-relaxed px-1">
                     {speaker.bio}
                   </p>
                 )}
 
-                {/* Footer */}
                 <div className="mt-auto pt-4 w-full flex items-center justify-between border-t border-[hsl(var(--border)/.6)] text-xs">
                   <span className="text-[11px] font-medium text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(var(--foreground))] transition-colors flex items-center gap-1">
                     View Profile <ExternalLink size={11} className="opacity-70" />
@@ -558,13 +568,11 @@ export function HomePage({ event }: { event: EventData }) {
                   )}
                 </div>
 
-                {/* Decorative ID bottom stripe */}
                 <div className="w-full h-1 bg-gradient-to-r from-transparent via-[hsl(var(--primary)/.4)] to-transparent absolute bottom-0 left-0" />
               </div>
             ))}
           </div>
 
-          {/* Bottom View All CTA */}
           <div className="mt-10 text-center">
             <Link
               href="/speakers"
@@ -573,6 +581,133 @@ export function HomePage({ event }: { event: EventData }) {
               <span>View All Speakers</span>
               <ArrowRight size={16} />
             </Link>
+          </div>
+        </section>
+      ) : (
+        <section className="container-wide py-14 border-b border-[hsl(var(--border))] text-center">
+          <div className="max-w-2xl mx-auto bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-3xl p-8 sm:p-10 shadow-lg space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-[hsl(var(--primary)/0.12)] text-[hsl(var(--primary))] flex items-center justify-center mx-auto">
+              <Users size={32} />
+            </div>
+            <h3 className="text-2xl font-bold font-['Space_Grotesk'] text-[hsl(var(--foreground))]">
+              Keynote Speakers & Panelists To Be Announced Soon
+            </h3>
+            <p className="text-sm sm:text-base text-[hsl(var(--muted-foreground))] leading-relaxed">
+              Stay tuned! Our distinguished lineup of global leaders, keynote speakers, and pioneering researchers for {event.title} will be announced shortly.
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* Top 5 Tracks Section */}
+      {Array.isArray(event.tracks) && event.tracks.length > 0 && (
+        <section className="container-wide py-14 border-b border-[hsl(var(--border))]">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+            <div>
+              <span className="section-eyebrow">Tracks</span>
+              <h2 className="mt-3 text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">
+                Conference Tracks & Scientific Themes
+              </h2>
+              <p className="mt-2 text-sm md:text-base text-[hsl(var(--muted-foreground))]">
+                Explore key research tracks presented at {event.title}
+              </p>
+            </div>
+            <Link
+              href="/tracks"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[hsl(var(--primary))] text-white font-bold text-sm shadow-md hover:shadow-lg transition-all cursor-pointer shrink-0"
+            >
+              <span>View All Tracks</span>
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+
+          <div className="space-y-6">
+            {event.tracks.slice(0, 5).map((track, i) => (
+              <div key={i} className="flex gap-4 pb-6 border-b border-[hsl(var(--border))] last:border-0 last:pb-0">
+                {track.image ? (
+                  <img src={mediaUrl(track.image)} alt={track.title} className="w-16 h-16 shrink-0 rounded-xl object-cover" />
+                ) : (
+                  <div className="w-16 h-16 shrink-0 rounded-xl bg-[hsl(var(--primary)/.1)] flex items-center justify-center text-xl font-bold text-[hsl(var(--primary))] font-['Space_Grotesk']">
+                    {(i + 1).toString().padStart(2, '0')}
+                  </div>
+                )}
+                <div>
+                  <h3 className="font-bold text-xl text-[hsl(var(--foreground))]">{track.title}</h3>
+                  {track.description && (
+                    <p className="mt-1 text-base text-[hsl(var(--muted-foreground))] leading-relaxed">
+                      {track.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <Link
+              href="/tracks"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white font-bold text-sm transition-all cursor-pointer"
+            >
+              <span>View All Tracks ({event.tracks.length})</span>
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* Sponsors Preview Section */}
+      {Array.isArray(event.sponsors) && event.sponsors.length > 0 && (
+        <section className="container-wide py-12 border-b border-[hsl(var(--border))]">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+            <div>
+              <span className="section-eyebrow">Sponsors</span>
+              <h2 className="mt-3 text-3xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">
+                Event Sponsors & Exhibitors
+              </h2>
+            </div>
+            <Link
+              href="/sponsors"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--foreground))] font-semibold text-xs transition-all shadow-sm shrink-0"
+            >
+              <span>View All Sponsors</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {event.sponsors.slice(0, 5).map((s, idx) => (
+              <PartnerLogoCard key={idx} item={s} defaultType={`Sponsor ${idx + 1}`} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Media Partners Section (Directly Above FAQs) */}
+      {Array.isArray(event.mediaPartners) && event.mediaPartners.length > 0 && (
+        <section className="container-wide py-12 border-b border-[hsl(var(--border))]">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+            <div>
+              <span className="section-eyebrow">Collaboration</span>
+              <h2 className="mt-3 text-3xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">
+                Media Partners
+              </h2>
+              <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+                Official press and publishing collaborators supporting {event.title}
+              </p>
+            </div>
+            <Link
+              href="/media-partners"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--foreground))] font-semibold text-xs transition-all shadow-sm shrink-0"
+            >
+              <span>View All Media Partners</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {event.mediaPartners.slice(0, 5).map((partner, idx) => (
+              <PartnerLogoCard key={idx} item={partner} defaultType={`Media Partner ${idx + 1}`} />
+            ))}
           </div>
         </section>
       )}

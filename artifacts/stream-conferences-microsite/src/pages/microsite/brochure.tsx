@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Download, ArrowRight, Check, FileText } from 'lucide-react';
 import type { EventData } from './layout';
+import { MicrositeHero } from '@/components/microsite-hero';
 
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
@@ -58,19 +59,18 @@ export function BrochurePage({ event }: { event: EventData }) {
       a.href = brochureUrl;
       a.download = `${event.title || 'event'}-brochure.pdf`;
       a.target = '_blank';
-      document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
     }
   };
 
   return (
-    <div className="container-wide py-12 max-w-3xl">
-      <div className="mb-8 text-center">
-        <span className="section-eyebrow">Brochure</span>
-        <h1 className="mt-3 text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">Download Event Brochure</h1>
-        <p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Fill in your details to download the official event brochure</p>
-      </div>
+    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      <MicrositeHero
+        badge="OFFICIAL BROCHURE"
+        title="Download Event Brochure"
+        tagline="Fill in your details to access the complete official conference prospectus and program guide."
+      />
+      <div className="container-wide py-10 sm:py-14 max-w-3xl">
 
       {/* Step indicator */}
       <div className="flex items-center justify-center gap-3 mb-10">
@@ -162,6 +162,7 @@ export function BrochurePage({ event }: { event: EventData }) {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

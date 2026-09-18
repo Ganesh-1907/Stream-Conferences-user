@@ -45,7 +45,11 @@ function getSavedVisitorDetails(): VisitorDetails | null {
   return null;
 }
 
-export function LiveChatWidget() {
+interface LiveChatWidgetProps {
+  event?: any;
+}
+
+export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
   const [isOpen, setIsOpen] = useState(false);
   const [visitorDetails, setVisitorDetails] = useState<VisitorDetails | null>(() => getSavedVisitorDetails());
   const [step, setStep] = useState<'form' | 'chat'>(() => (getSavedVisitorDetails() ? 'chat' : 'form'));
@@ -215,20 +219,39 @@ export function LiveChatWidget() {
     setStep('chat');
   };
 
-  const sendMessage = (textToSend?: string) => {
+  const sendMessage = async (textToSend?: string) => {
     const text = (textToSend || input).trim();
-    if (!text || !socketRef.current) return;
+    if (!text) return;
 
     const saved = visitorDetails || formState;
-    const socket = socketRef.current;
-    socket.emit('visitor:message', {
-      visitorId: visitorIdRef.current,
-      text,
-      visitorName: saved.name || 'Visitor',
-      visitorEmail: saved.email || '',
-      visitorPhone: saved.phone || '',
-      visitorCountry: saved.country || '',
-    });
+    if (socketRef.current) {
+      socketRef.current.emit('visitor:message', {
+        visitorId: visitorIdRef.current,
+        text,
+        visitorName: saved.name || 'Visitor',
+        visitorEmail: saved.email || '',
+        visitorPhone: saved.phone || '',
+        visitorCountry: saved.country || '',
+      });
+    }
+
+    try {
+      const confId = event?._id || (window as any).__EVENT_ID__ || 'default';
+      await fetch(`${SERVER_ORIGIN}/api/chat-messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conferenceId: confId,
+          senderName: saved.name || 'Visitor',
+          senderEmail: saved.email || '',
+          senderPhone: saved.phone || '',
+          senderCountry: saved.country || '',
+          senderRole: 'attendee',
+          message: text,
+        }),
+      });
+    } catch { /* ignore */ }
+
     setInput('');
   };
 

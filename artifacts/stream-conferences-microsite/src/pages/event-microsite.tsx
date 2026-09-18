@@ -66,6 +66,9 @@ function parseCohortPath(pathname: string): { year: string; batch: string | null
   return null;
 }
 
+import { MediaPartnersPage } from './microsite/media-partners';
+import { SponsorsPage } from './microsite/sponsors';
+
 export function EventMicrosite({ subdomain, customBase }: { subdomain: string; customBase?: string }) {
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -148,11 +151,12 @@ export function EventMicrosite({ subdomain, customBase }: { subdomain: string; c
           <Route path="/about" component={() => <AboutPage event={displayEvent} />} />
           <Route path="/program" component={() => <ProgramPage event={displayEvent} />} />
           <Route path="/speakers" component={() => <SpeakersPage event={displayEvent} />} />
-          <Route path="/itinerary" component={() => <ItineraryPage event={displayEvent} />} />
-          <Route path="/sponsors" component={() => <SponsorsExhibitorsPage event={displayEvent} />} />
-          <Route path="/exhibitors" component={() => <SponsorsExhibitorsPage event={displayEvent} />} />
-          <Route path="/sponsors-exhibitors" component={() => <SponsorsExhibitorsPage event={displayEvent} />} />
-          <Route path="/partners" component={() => <SponsorsExhibitorsPage event={displayEvent} />} />
+          <Route path="/itinerary" component={() => <ProgramPage event={displayEvent} />} />
+          <Route path="/sponsors" component={() => <SponsorsPage event={displayEvent} />} />
+          <Route path="/media-partners" component={() => <MediaPartnersPage event={displayEvent} />} />
+          <Route path="/exhibitors" component={() => <SponsorsPage event={displayEvent} />} />
+          <Route path="/sponsors-exhibitors" component={() => <SponsorsPage event={displayEvent} />} />
+          <Route path="/partners" component={() => <SponsorsPage event={displayEvent} />} />
           <Route path="/resources" component={() => <ResourcesPage event={displayEvent} />} />
           <Route path="/fees" component={() => <FeesPage event={displayEvent} />} />
           <Route path="/tracks" component={() => <TracksPage event={displayEvent} />} />

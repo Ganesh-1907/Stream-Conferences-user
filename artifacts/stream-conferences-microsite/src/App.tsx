@@ -101,12 +101,16 @@ function detectSubdomainInfo(hostname: string, pathname: string, search: string)
     return { subdomain: sub, customBase };
   }
 
-  // Check hostname subdomains: e.g. scc00006.streamconferences.com
+  // Check hostname subdomains: e.g. scc00006.streamconferences.com or icmlhs.localhost
   const root = ROOT_DOMAIN.toLowerCase();
-  const host = hostname.toLowerCase();
+  const host = hostname.toLowerCase().split(':')[0];
+  if (host.endsWith('.localhost')) {
+    const sub = host.slice(0, host.length - '.localhost'.length);
+    if (sub && sub !== 'www') return { subdomain: sub };
+  }
   if (root && host !== root && host.endsWith('.' + root)) {
     const sub = host.slice(0, host.length - root.length - 1);
-    if (sub) return { subdomain: sub };
+    if (sub && sub !== 'www') return { subdomain: sub };
   }
 
   return null;
@@ -812,13 +816,13 @@ function SiteHeader() {
           </Link>
 
           {/* Center Navigation Options: White floating pill navigation menu bar on all pages */}
-          <nav className="hidden lg:flex items-center gap-2 bg-white/95 dark:bg-slate-900/90 backdrop-blur-xl px-4 py-2 rounded-full shadow-2xl border border-white/40 text-slate-800 dark:text-white" aria-label="Primary">
+          <nav className="hidden lg:flex items-center gap-1 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl p-1.5 rounded-full shadow-2xl border border-white/40 dark:border-white/20 text-slate-800 dark:text-white" aria-label="Primary">
             <Link
               href="/"
               className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
                 location === '/'
-                  ? 'bg-[hsl(var(--primary))] text-white shadow-sm'
-                  : 'text-slate-700 dark:text-slate-200 hover:text-[hsl(var(--primary))]'
+                  ? 'bg-[hsl(var(--primary))] text-white shadow-md font-black'
+                  : 'text-slate-800 dark:text-slate-100 hover:text-[hsl(var(--primary))] hover:bg-slate-100 dark:hover:bg-white/10'
               }`}
               data-testid="link-nav-home"
             >
@@ -828,8 +832,8 @@ function SiteHeader() {
               href="/about"
               className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
                 location === '/about'
-                  ? 'bg-[hsl(var(--primary))] text-white shadow-sm'
-                  : 'text-slate-700 dark:text-slate-200 hover:text-[hsl(var(--primary))]'
+                  ? 'bg-[hsl(var(--primary))] text-white shadow-md font-black'
+                  : 'text-slate-800 dark:text-slate-100 hover:text-[hsl(var(--primary))] hover:bg-slate-100 dark:hover:bg-white/10'
               }`}
               data-testid="link-nav-about"
             >
@@ -851,10 +855,10 @@ function SiteHeader() {
                       e.stopPropagation();
                       setOpenDropdown(isOpen ? null : group.id);
                     }}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer ${
                       isGroupActive
-                        ? 'bg-[hsl(var(--primary)/0.15)] text-[hsl(var(--primary))] font-bold'
-                        : 'text-slate-700 dark:text-slate-200 hover:text-[hsl(var(--primary))]'
+                        ? 'bg-[hsl(var(--primary))] text-white shadow-md font-black'
+                        : 'text-slate-800 dark:text-slate-100 hover:text-[hsl(var(--primary))] hover:bg-slate-100 dark:hover:bg-white/10'
                     }`}
                     aria-expanded={isOpen}
                     data-testid={`button-nav-group-${group.id}`}
@@ -897,12 +901,12 @@ function SiteHeader() {
                   event.stopPropagation();
                   setColorPickerOpen((value) => !value);
                 }}
-                className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white backdrop-blur transition-all"
+                className="grid h-10 w-10 place-items-center rounded-full border border-white/40 dark:border-white/20 bg-white/95 dark:bg-[#0f172a]/95 hover:bg-white dark:hover:bg-[#1e293b] text-slate-800 dark:text-white backdrop-blur-xl shadow-xl transition-all"
                 aria-label="Choose color theme"
                 aria-expanded={colorPickerOpen}
                 data-testid="button-color-theme"
               >
-                <Palette size={16} />
+                <Palette size={18} />
               </button>
               {colorPickerOpen && (
                 <div
@@ -939,11 +943,11 @@ function SiteHeader() {
             <button
               type="button"
               onClick={toggleTheme}
-              className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white backdrop-blur transition-all"
+              className="grid h-10 w-10 place-items-center rounded-full border border-white/40 dark:border-white/20 bg-white/95 dark:bg-[#0f172a]/95 hover:bg-white dark:hover:bg-[#1e293b] text-slate-800 dark:text-white backdrop-blur-xl shadow-xl transition-all"
               aria-label={dark ? 'Use light theme' : 'Use dark theme'}
               data-testid="button-theme-toggle"
             >
-              {dark ? <Sun size={16} /> : <Moon size={16} />}
+              {dark ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-slate-700" />}
             </button>
 
             {/* Primary Action Button (Matching Build Your Vision "Start Project" style) */}

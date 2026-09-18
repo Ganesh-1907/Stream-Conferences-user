@@ -19,7 +19,7 @@ export function ItineraryPage({ event }: { event: EventData }) {
       </div>
 
       <div>
-        {itinerary.map((item, idx) => (
+        {itinerary.map((item: any, idx: number) => (
           <div key={idx} className="timeline-item">
             <div className="flex items-center gap-3">
               <span className="session-time">{item.time}</span>

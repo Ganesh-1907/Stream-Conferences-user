@@ -4,6 +4,8 @@ import {
   Send, Sparkles, Store, ShieldCheck, ChevronRight, CheckCircle2
 } from 'lucide-react';
 import type { EventData } from './layout';
+import { MicrositeHero } from '@/components/microsite-hero';
+import { PartnerLogoCard } from '@/components/partner-logo-card';
 
 export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
   const [formSent, setFormSent] = useState(false);
@@ -13,6 +15,8 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
   const [phone, setPhone] = useState('');
   const [selectedTier, setSelectedTier] = useState('Elite Sponsor');
   const [message, setMessage] = useState('');
+
+  const sponsorsList = Array.isArray(event?.sponsors) ? event.sponsors : [];
 
   const handleEnquiry = (e: FormEvent) => {
     e.preventDefault();
@@ -93,15 +97,52 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
   const conferenceTitle = event.title || 'Conference';
 
   return (
-    <div className="py-10 md:py-14">
-      {/* Header Banner - Centered Conference Title */}
-      <div className="container-wide mb-10 md:mb-14">
-        <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))] text-balance leading-tight">
-            {conferenceTitle}
-          </h1>
+    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      <MicrositeHero
+        badge="SPONSORS & EXHIBITORS"
+        title="Sponsor Guidelines & Opportunities"
+        tagline="Explore sponsorship packages, exhibition booth options, and brand partnership opportunities."
+      />
+      <div className="py-10 md:py-14">
+
+      {/* Official Event Sponsors Section */}
+      <section className="container-wide mb-12">
+        <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-7 md:p-10 shadow-sm space-y-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <span className="section-eyebrow">Official Event Partners</span>
+              <h2 className="mt-2 text-2xl md:text-3xl font-['Space_Grotesk'] font-bold text-[hsl(var(--foreground))]">
+                Our Esteemed Event Sponsors
+              </h2>
+              <p className="mt-1 text-xs md:text-sm text-[hsl(var(--muted-foreground))]">
+                Recognizing the leading organizations and industry leaders supporting {conferenceTitle}
+              </p>
+            </div>
+            <a
+              href="#enquire"
+              className="btn-main btn-primary text-xs py-2.5 px-5 self-start md:self-auto shrink-0"
+            >
+              Become a Sponsor
+            </a>
+          </div>
+
+          {sponsorsList.length === 0 ? (
+            <div className="text-center py-10 bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-2xl p-6 space-y-2">
+              <Award size={36} className="mx-auto text-[hsl(var(--primary))]" />
+              <h4 className="text-lg font-bold font-['Space_Grotesk']">Official Sponsors To Be Announced</h4>
+              <p className="text-xs text-[hsl(var(--muted-foreground))] max-w-md mx-auto">
+                Confirmed sponsors and exhibiting companies for {conferenceTitle} will be showcased here.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 pt-2">
+              {sponsorsList.map((sponsor, idx) => (
+                <PartnerLogoCard key={idx} item={sponsor} defaultType={`Sponsor ${idx + 1}`} />
+              ))}
+            </div>
+          )}
         </div>
-      </div>
+      </section>
 
       {/* Why With Us Section */}
       <section className="container-wide">
@@ -537,5 +578,8 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
         </div>
       </section>
     </div>
+  </div>
   );
 }
+
+export { SponsorsExhibitorsPage as SponsorsPage };
