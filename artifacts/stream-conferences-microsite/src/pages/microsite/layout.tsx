@@ -47,7 +47,7 @@ export interface EventData {
   fees?: { type: string; dateLabel: string; deadline?: string | Date; usd: number; gbp: number; eur: number }[];
   tracks?: { title: string; description?: string; image?: string; referenceLinks?: { label: string; url: string }[] }[];
   organizerContact?: { name?: string; email?: string; phone?: string; website?: string; address?: string; country?: string };
-  speakers?: { name: string; degree?: string; designation?: string; organization?: string; bio?: string; avatar?: string; linkedin?: string; twitter?: string; website?: string; topic?: string; isKeynote?: boolean }[];
+  speakers?: { name: string; degree?: string; designation?: string; organization?: string; bio?: string; avatar?: string; linkedin?: string; twitter?: string; website?: string; topic?: string; isKeynote?: boolean; category?: string }[];
   program?: { dayNumber: number; date?: string; title?: string; description?: string; sessions: any[] }[];
   faqs?: { question: string; answer: string; category?: string; order?: number }[];
   partners?: { title: string; order?: number }[];
@@ -305,11 +305,23 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
             </div>
           </div>
 
+          <Link href="/brochure" className={navLinkCls('/brochure')}>
+            <Download size={18} />Brochure
+          </Link>
+
+          <Link href="/submit-abstract" className={navLinkCls('/submit-abstract')}>
+            <FileText size={18} />Submit Abstract
+          </Link>
+
+          <Link href="/register" className={navLinkCls('/register')}>
+            <FileText size={18} />Register
+          </Link>
+
           <Link href="/fees" className={navLinkCls('/fees')}>
             <FileText size={18} />Fees
           </Link>
 
-          {/* More Dropdown */}
+          {/* Info Dropdown */}
           {moreItems.length > 0 && (
             <div className="relative group">
               <button
@@ -320,7 +332,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
                     : 'text-slate-800 dark:text-slate-100 hover:text-[hsl(var(--primary))] hover:bg-slate-100 dark:hover:bg-white/10'
                 }`}
               >
-                <span>More</span>
+                <span>Info</span>
                 <ChevronDown size={16} className="group-hover:rotate-180 transition-transform duration-200" />
               </button>
               <div className="absolute right-0 top-full pt-1.5 hidden group-hover:block z-50 w-56">
@@ -356,18 +368,6 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
               </div>
             </div>
           )}
-
-          <Link href="/brochure" className={navLinkCls('/brochure')}>
-            <Download size={18} />Brochure
-          </Link>
-
-          <Link href="/submit-abstract" className={navLinkCls('/submit-abstract')}>
-            <FileText size={18} />Submit Abstract
-          </Link>
-
-          <Link href="/register" className={navLinkCls('/register')}>
-            <FileText size={18} />Register
-          </Link>
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -419,12 +419,24 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
               </div>
             </div>
 
+            <Link href="/brochure" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls('/brochure')}>
+              <Download size={16} />Brochure
+            </Link>
+
+            <Link href="/submit-abstract" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls('/submit-abstract')}>
+              <FileText size={16} />Submit Abstract
+            </Link>
+
+            <Link href="/register" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls('/register')}>
+              <FileText size={16} />Register
+            </Link>
+
             <Link href="/fees" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls('/fees')}>
               <FileText size={16} />Fees
             </Link>
 
             <div className="pt-2 pb-1">
-              <p className="px-3 text-[10px] font-mono uppercase tracking-wider text-[hsl(var(--muted-foreground))] font-bold">More</p>
+              <p className="px-3 text-[10px] font-mono uppercase tracking-wider text-[hsl(var(--muted-foreground))] font-bold">Info</p>
               <div className="mt-1 space-y-1 pl-2 border-l-2 border-[hsl(var(--border))] ml-3">
                 {moreItems.map((item) => (
                   item.isExternal ? (
@@ -642,13 +654,30 @@ function PreviousCohortsStrip({ event }: { event: EventData }) {
 }
 
 function MicrositeFooter({ event, navItems }: { event: EventData; navItems: NavItem[] }) {
-  const socials = event?.socialLinks;
+  const socials = event?.socialLinks || event?.organizerContact?.socials;
+
+  const navigateLinks = [
+    { id: 'home', label: 'Home', path: '/' },
+    { id: 'about', label: 'About', path: '/about', show: Boolean(event.description) },
+    { id: 'fees', label: 'Fees', path: '/fees', show: Boolean(event.fees?.length) },
+    { id: 'brochure', label: 'Brochure', path: '/brochure', show: Boolean(event.brochureUrl) },
+    { id: 'submit-abstract', label: 'Submit Abstract', path: '/submit-abstract', show: true },
+    { id: 'register', label: 'Register', path: '/register', show: true },
+  ].filter((item) => item.show);
+
+  const quickLinks = [
+    { id: 'organizing-committee', label: 'Committee', path: '/organizing-committee', show: Boolean(event.organizingCommittee?.length) },
+    { id: 'terms', label: 'Terms', path: '/terms', show: true },
+    { id: 'sponsors', label: 'Sponsors/Exhibitors', path: '/sponsors', show: true },
+    { id: 'venue', label: 'Venue', path: '/venue', show: Boolean(event.venueDetails?.name || event.venue || event.location) },
+    { id: 'guidelines', label: 'Guidelines', path: '/guidelines', show: Boolean(event.guidelines) },
+  ].filter((item) => item.show);
 
   return (
-    <footer className="relative overflow-hidden border-t border-[hsl(var(--border))] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white py-12">
+    <footer className="relative overflow-hidden border-t border-[hsl(var(--border))] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white py-14">
       <div className="absolute inset-0 hero-grid-b opacity-60" />
       <div className="relative container-wide">
-        <div className="grid gap-10 md:grid-cols-3">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <div className="flex items-center gap-3">
               {event?.logoUrl ? (
@@ -673,16 +702,23 @@ function MicrositeFooter({ event, navItems }: { event: EventData; navItems: NavI
             )}
           </div>
           <div>
-            <h4 className="font-semibold mb-4 !text-white">Navigate</h4>
-            <div className="grid grid-cols-2 gap-2">
-              <Link href="/" className="block text-base text-white/85 hover:text-white transition-colors">Home</Link>
-              {navItems.map((item) => (
+            <h4 className="font-semibold mb-4 !text-white text-base">Navigate</h4>
+            <div className="space-y-2.5">
+              {navigateLinks.map((item) => (
                 <Link key={item.id} href={item.path} className="block text-base text-white/85 hover:text-white transition-colors">{item.label}</Link>
               ))}
             </div>
           </div>
           <div>
-            <h4 className="font-semibold mb-4 !text-white">Contact</h4>
+            <h4 className="font-semibold mb-4 !text-white text-base">Quick Links</h4>
+            <div className="space-y-2.5">
+              {quickLinks.map((item) => (
+                <Link key={item.id} href={item.path} className="block text-base text-white/85 hover:text-white transition-colors">{item.label}</Link>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-4 !text-white text-base">Contact</h4>
             <div className="space-y-3 text-base text-white/85">
               {event?.organizerContact?.email && <a href={`mailto:${event.organizerContact.email}`} className="flex items-center gap-2 text-white/85 hover:text-white transition-colors"><Mail size={15} />{event.organizerContact.email}</a>}
               {event?.organizerContact?.phone && <p className="flex items-center gap-2 text-white/85"><Phone size={15} />{event.organizerContact.phone}</p>}

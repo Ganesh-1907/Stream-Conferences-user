@@ -16,7 +16,7 @@ export function GuidelinesPage({ event }: { event: EventData }) {
             <p className="text-[hsl(var(--muted-foreground))] font-medium">No detailed guidelines available for this event yet.</p>
           </div>
         ) : (
-          <div className="max-w-4xl">
+          <div className="max-w-4xl mx-auto">
             <div
               className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-['Space_Grotesk'] prose-headings:text-[hsl(var(--foreground))] prose-p:text-[hsl(var(--foreground)/0.85)] prose-strong:text-[hsl(var(--foreground))] prose-li:text-[hsl(var(--foreground)/0.85)] font-normal"
               dangerouslySetInnerHTML={{ __html: event.guidelines }}

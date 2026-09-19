@@ -7,7 +7,7 @@ export function MediaPartnersPage({ event }: { event: EventData }) {
   const mediaPartners = Array.isArray(event?.mediaPartners) ? event.mediaPartners : [];
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+    <div className="bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
       <MicrositeHero
         badge="OFFICIAL COLLABORATION"
         title="Media Partners"
@@ -24,9 +24,11 @@ export function MediaPartnersPage({ event }: { event: EventData }) {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          <div className="flex flex-wrap gap-6 sm:gap-8 items-start">
             {mediaPartners.map((partner, idx) => (
-              <PartnerLogoCard key={idx} item={partner} defaultType={`Media Partner ${idx + 1}`} />
+              <div key={idx} className="w-56 sm:w-64 md:w-72 shrink-0">
+                <PartnerLogoCard item={partner} defaultType={`Media Partner ${idx + 1}`} />
+              </div>
             ))}
           </div>
         )}

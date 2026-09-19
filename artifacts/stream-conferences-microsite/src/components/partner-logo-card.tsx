@@ -24,47 +24,27 @@ export function PartnerLogoCard({
   const logoUrl = item.logo ? mediaUrl(item.logo) : '';
 
   const cardContent = (
-    <div className="group relative w-full h-full p-5 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm hover:shadow-xl hover:border-[hsl(var(--primary))] transition-all duration-300 flex flex-col items-center justify-between text-center min-h-[220px]">
-      {/* Top Tag/Badge if tier or website is present */}
-      <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-        {(item.tier || item.package) && (
-          <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-[hsl(var(--primary)/0.15)] text-[hsl(var(--primary))] font-bold uppercase tracking-wider">
-            {item.tier || item.package}
-          </span>
-        )}
-        {item.website && (
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
-            Visit →
-          </span>
-        )}
-      </div>
-
-      {/* Inner Container dedicated for high logo visibility */}
-      <div className="w-full h-32 sm:h-36 flex items-center justify-center p-4 rounded-xl bg-white dark:bg-slate-900/80 border border-slate-100 dark:border-slate-800/80 shadow-inner group-hover:scale-[1.03] transition-transform duration-300">
+    <div className="group flex flex-col items-center justify-center w-full cursor-pointer transition-all duration-300">
+      {/* Direct Logo Card Container */}
+      <div className="relative w-full h-36 sm:h-40 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm group-hover:shadow-xl group-hover:border-[hsl(var(--primary)/0.5)] transition-all duration-300 transform group-hover:-translate-y-1 p-3 flex items-center justify-center overflow-hidden">
         {logoUrl ? (
           <img
             src={logoUrl}
             alt={displayName}
-            className="max-h-24 sm:max-h-28 w-auto max-w-full object-contain filter drop-shadow-sm transition-all"
+            className="w-full h-full object-contain filter drop-shadow-sm group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
-          <div className="w-16 h-16 rounded-2xl bg-[hsl(var(--primary)/0.12)] text-[hsl(var(--primary))] flex items-center justify-center font-bold text-2xl font-['Space_Grotesk'] shadow-sm">
-            {displayName[0]?.toUpperCase() || <Award size={28} />}
+          <div className="w-full h-full bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--primary))] flex items-center justify-center font-bold text-base rounded-xl gap-2 p-2">
+            <Award size={24} />
+            <span className="font-['Space_Grotesk'] line-clamp-1">{displayName}</span>
           </div>
         )}
       </div>
 
-      {/* Partner/Sponsor Name Label */}
-      <div className="mt-4 flex flex-col items-center w-full">
-        <h4 className="font-bold text-base sm:text-lg text-[hsl(var(--foreground))] font-['Space_Grotesk'] tracking-wide group-hover:text-[hsl(var(--primary))] transition-colors line-clamp-2">
-          {displayName}
-        </h4>
-        {item.description && (
-          <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))] line-clamp-1 max-w-[220px]">
-            {item.description}
-          </p>
-        )}
-      </div>
+      {/* Name Label */}
+      <h4 className="mt-2.5 text-sm sm:text-base font-extrabold text-[hsl(var(--foreground))] text-center line-clamp-1 group-hover:text-[hsl(var(--primary))] transition-colors font-['Space_Grotesk']">
+        {displayName}
+      </h4>
     </div>
   );
 
@@ -74,12 +54,12 @@ export function PartnerLogoCard({
         href={item.website.startsWith('http') ? item.website : `https://${item.website}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="block h-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] rounded-2xl"
+        className="block w-full focus:outline-none"
       >
         {cardContent}
       </a>
     );
   }
 
-  return <div className="h-full">{cardContent}</div>;
+  return <div className="w-full">{cardContent}</div>;
 }

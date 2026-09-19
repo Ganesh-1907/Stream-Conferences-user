@@ -12,7 +12,7 @@ export function AboutPage({ event }: { event: EventData }) {
 
       {/* Main Content Body Container */}
       <div className="container-wide py-10 sm:py-14">
-        <div className="max-w-4xl">
+        <div className="max-w-4xl mx-auto">
           {event?.description ? (
             <div
               className="prose prose-lg dark:prose-invert max-w-none text-[hsl(var(--foreground))] leading-relaxed text-base sm:text-lg prose-strong:font-bold prose-strong:text-[hsl(var(--foreground))]"

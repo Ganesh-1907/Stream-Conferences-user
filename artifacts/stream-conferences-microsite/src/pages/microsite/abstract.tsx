@@ -17,6 +17,14 @@ function formatDateRange(event: EventData): string {
   return startD.toLocaleDateString(undefined, opts);
 }
 
+type FeeItem = { type: string; dateLabel: string; deadline?: string | Date; usd: number; gbp: number; eur: number };
+
+function isFeeDateExpired(item: FeeItem): boolean {
+  if (!item.deadline) return false;
+  const d = new Date(item.deadline);
+  return !isNaN(d.getTime()) && d < new Date();
+}
+
 export function AbstractPage({ event }: { event: EventData }) {
   const [step, setStep] = useState<1 | 2>(1);
   const [firstName, setFirstName] = useState('');
@@ -31,6 +39,36 @@ export function AbstractPage({ event }: { event: EventData }) {
   const [sent, setSent] = useState(false);
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  const fees = useMemo(() => (Array.isArray(event.fees) ? (event.fees as FeeItem[]) : []), [event.fees]);
+
+  const groupedFees = useMemo(() => {
+    const map = new Map<string, FeeItem[]>();
+    for (const f of fees) {
+      const key = f.type || 'General';
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(f);
+    }
+    return Array.from(map.entries());
+  }, [fees]);
+
+  const importantDates = useMemo(() => {
+    const list: { label: string; expired: boolean }[] = [];
+    const seen = new Set<string>();
+    if (Array.isArray(event.fees)) {
+      for (const f of event.fees as FeeItem[]) {
+        const label = (f.dateLabel || '').trim();
+        if (label && !seen.has(label.toLowerCase())) {
+          seen.add(label.toLowerCase());
+          list.push({
+            label,
+            expired: isFeeDateExpired(f),
+          });
+        }
+      }
+    }
+    return list;
+  }, [event.fees]);
 
   const guidelines = Array.isArray(event.guidelines)
     ? event.guidelines.length ? event.guidelines : []
@@ -109,7 +147,7 @@ export function AbstractPage({ event }: { event: EventData }) {
       <div className="container-wide py-10 sm:py-14 max-w-6xl">
 
       {/* Step indicators above the grid */}
-      <div className="flex items-center justify-center md:justify-start gap-3 mb-8">
+      <div className="flex items-center justify-center gap-3 mb-8">
         <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${step === 1 ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : 'bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))]'}`}>
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-current text-[hsl(var(--background))] text-xs font-bold">1</span>
           Your Details
@@ -138,7 +176,7 @@ export function AbstractPage({ event }: { event: EventData }) {
             <form onSubmit={handleStep1} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-5">
                  <div>
                   <p className="label text-[hsl(var(--primary))]">Step 1 of 2</p>
-                  <h3 className="display mt-2 text-xl font-bold text-[hsl(var(--foreground))]">Author Information</h3>
+                  <h3 className="display mt-2 text-xl font-bold text-[hsl(var(--foreground))]">Personal Information</h3>
                   <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Tell us about yourself before uploading</p>
                 </div>
 
@@ -231,74 +269,89 @@ export function AbstractPage({ event }: { event: EventData }) {
               <span className={`inline-block mb-3 rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${event.eventType === 'webinar' ? 'bg-orange-500/10 text-orange-600 border border-orange-500/20' : 'bg-green-500/10 text-green-600 border border-green-500/20'}`}>{event.eventType}</span>
               <h2 className="display text-xl font-bold tracking-tight text-[hsl(var(--foreground))]">{event.title}</h2>
             </div>
-            <div className="space-y-4 pt-2 border-t border-[hsl(var(--border))]">
+            <div className="space-y-4 pt-3 border-t border-[hsl(var(--border))]">
               <div className="flex items-start gap-3">
-                <CalendarDays className="mt-0.5 text-[hsl(var(--secondary))] shrink-0" size={16} />
-                <div><p className="font-semibold text-[hsl(var(--foreground))] text-xs">Date</p><p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">{formatDateRange(event)}</p></div>
+                <CalendarDays className="mt-0.5 text-[hsl(var(--secondary))] shrink-0" size={18} />
+                <div><p className="font-bold text-[hsl(var(--foreground))] text-sm">Date</p><p className="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">{formatDateRange(event)}</p></div>
               </div>
               <div className="flex items-start gap-3">
-                <MapPin className="mt-0.5 text-[hsl(var(--primary))] shrink-0" size={16} />
-                <div><p className="font-semibold text-[hsl(var(--foreground))] text-xs">Location</p><p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">{event.location || 'Online / Virtual'}</p></div>
+                <MapPin className="mt-0.5 text-[hsl(var(--primary))] shrink-0" size={18} />
+                <div><p className="font-bold text-[hsl(var(--foreground))] text-sm">Location</p><p className="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">{event.location || 'Online / Virtual'}</p></div>
               </div>
             </div>
             <div className="border-t border-[hsl(var(--border))] pt-4 space-y-2">
-              {/* Guidelines accordion */}
+
+              {/* Important Dates Accordion */}
               <div className="border-b border-[hsl(var(--border)]/60 pb-3">
-                <button type="button" onClick={() => setOpenAccordion(openAccordion === 'guidelines' ? null : 'guidelines')} className="w-full flex items-center justify-between font-semibold text-sm text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors">
-                  <span className="uppercase tracking-wider">Submission Guidelines</span>
-                  <ChevronDown size={14} className={`transform transition-transform ${openAccordion === 'guidelines' ? 'rotate-180' : ''}`} />
+                <button
+                  type="button"
+                  onClick={() => setOpenAccordion(openAccordion === 'dates' ? null : 'dates')}
+                  className="w-full flex items-center justify-between font-bold text-sm text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors cursor-pointer"
+                >
+                  <span className="uppercase tracking-wider">Important Dates</span>
+                  <ChevronDown size={16} className={`transform transition-transform ${openAccordion === 'dates' ? 'rotate-180' : ''}`} />
                 </button>
-                {openAccordion === 'guidelines' && (
-                  <div className="mt-2 pl-1 space-y-2 text-sm text-[hsl(var(--muted-foreground))]">
-                    {guidelines.length > 0 ? guidelines.map((g: string, i: number) => (
-                      <div key={i} className="flex items-start gap-1.5">
-                        <Check size={12} className="mt-0.5 text-[hsl(var(--primary))] shrink-0" />
-                        <span dangerouslySetInnerHTML={{ __html: g.replace(/\n/g, '<br/>') }} />
-                      </div>
-                    )) : (
-                      <p className="text-xs opacity-60">No guidelines available.</p>
+                {openAccordion === 'dates' && (
+                  <div className="mt-2.5 pl-1 space-y-2.5 text-sm text-[hsl(var(--muted-foreground))]">
+                    {importantDates.length > 0 ? (
+                      importantDates.map((d, i) => (
+                        <div key={i} className={`flex items-center justify-between gap-3 border-b border-[hsl(var(--border)/0.4)] pb-2 last:border-0 ${d.expired ? 'opacity-50 line-through' : ''}`}>
+                          <span className="font-semibold text-[hsl(var(--foreground))] text-sm">{d.label}</span>
+                          {d.expired && <span className="text-xs font-bold text-red-500 uppercase shrink-0">Expired</span>}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm opacity-60">No important dates available.</p>
                     )}
                   </div>
                 )}
               </div>
-              {/* Important Dates accordion */}
+
+              {/* Fee Levels Accordion */}
               <div className="border-b border-[hsl(var(--border)]/60 pb-3">
-                <button type="button" onClick={() => setOpenAccordion(openAccordion === 'dates' ? null : 'dates')} className="w-full flex items-center justify-between font-semibold text-sm text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors">
-                  <span className="uppercase tracking-wider">Important Dates</span>
-                  <ChevronDown size={14} className={`transform transition-transform ${openAccordion === 'dates' ? 'rotate-180' : ''}`} />
-                </button>
-                {openAccordion === 'dates' && (
-                  <div className="mt-2 pl-1 space-y-1.5 text-sm text-[hsl(var(--muted-foreground))]">
-                    <p><span className="font-medium text-[hsl(var(--foreground))]">Deadline:</span> {event.endDate ? new Date(event.endDate).toLocaleDateString() : '—'}</p>
-                    <p><span className="font-medium text-[hsl(var(--foreground))]">Notification:</span> Within 5-7 business days</p>
-                  </div>
-                )}
-              </div>
-              {/* Fee Details accordion */}
-              <div className="border-b border-[hsl(var(--border)]/60 pb-3">
-                <button type="button" onClick={() => setOpenAccordion(openAccordion === 'fees' ? null : 'fees')} className="w-full flex items-center justify-between font-semibold text-sm text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors">
-                  <span className="uppercase tracking-wider">Fee Details</span>
-                  <ChevronDown size={14} className={`transform transition-transform ${openAccordion === 'fees' ? 'rotate-180' : ''}`} />
+                <button
+                  type="button"
+                  onClick={() => setOpenAccordion(openAccordion === 'fees' ? null : 'fees')}
+                  className="w-full flex items-center justify-between font-bold text-sm text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors cursor-pointer"
+                >
+                  <span className="uppercase tracking-wider">Fee Levels</span>
+                  <ChevronDown size={16} className={`transform transition-transform ${openAccordion === 'fees' ? 'rotate-180' : ''}`} />
                 </button>
                 {openAccordion === 'fees' && (
-                  <div className="mt-2 pl-1 space-y-2 text-sm text-[hsl(var(--muted-foreground))]">
-                    {eventPrices.map(([catLabel, earlyPrice, regularPrice]: string[]) => (
-                      <div key={catLabel} className="flex justify-between items-center border-b border-[hsl(var(--border))]/30 pb-1.5 last:border-0 last:pb-0">
-                        <span className="font-medium text-[hsl(var(--foreground))]">{catLabel}</span>
-                        <div className="text-right"><span className="font-bold text-[hsl(var(--secondary))]">{earlyPrice}</span><span className="block text-[10px] line-through opacity-60">{regularPrice}</span></div>
-                      </div>
-                    ))}
+                  <div className="mt-2.5 pl-1 space-y-3.5 text-sm text-[hsl(var(--muted-foreground))]">
+                    {groupedFees.length > 0 ? (
+                      groupedFees.map(([type, items]) => (
+                        <div key={type} className="space-y-2 border-b border-[hsl(var(--border)/0.3)] pb-3 last:border-0 last:pb-0">
+                          <p className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--primary))]">{type}</p>
+                          <div className="space-y-2">
+                            {items.map((item, idx) => {
+                              const price = item.usd;
+                              const expired = isFeeDateExpired(item);
+                              return (
+                                <div key={idx} className={`flex items-center justify-between text-sm ${expired ? 'opacity-50 line-through' : ''}`}>
+                                  <span className="font-semibold text-[hsl(var(--foreground))] text-sm">{item.dateLabel || 'Standard'}</span>
+                                  <span className="font-bold text-[hsl(var(--secondary))] text-sm">${Number(price).toLocaleString()}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm opacity-60">No fee levels configured.</p>
+                    )}
                   </div>
                 )}
               </div>
+
               {/* Organizer Contact accordion */}
               <div className="border-b border-[hsl(var(--border)]/60 pb-3">
-                <button type="button" onClick={() => setOpenAccordion(openAccordion === 'contact' ? null : 'contact')} className="w-full flex items-center justify-between font-semibold text-sm text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors">
+                <button type="button" onClick={() => setOpenAccordion(openAccordion === 'contact' ? null : 'contact')} className="w-full flex items-center justify-between font-bold text-sm text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors cursor-pointer">
                   <span className="uppercase tracking-wider">Organizer Contact</span>
-                  <ChevronDown size={14} className={`transform transition-transform ${openAccordion === 'contact' ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={16} className={`transform transition-transform ${openAccordion === 'contact' ? 'rotate-180' : ''}`} />
                 </button>
                 {openAccordion === 'contact' && (
-                  <div className="mt-2 pl-1 space-y-1.5 text-sm text-[hsl(var(--muted-foreground))]">
+                  <div className="mt-2.5 pl-1 space-y-2 text-sm text-[hsl(var(--muted-foreground))]">
                     <p><span className="font-medium text-[hsl(var(--foreground))]">Name:</span> {event.organizerContact?.name || '—'}</p>
                     <p><span className="font-medium text-[hsl(var(--foreground))]">Email:</span> {event.organizerContact?.email || '—'}</p>
                     <p><span className="font-medium text-[hsl(var(--foreground))]">Phone:</span> {event.organizerContact?.phone || '—'}</p>

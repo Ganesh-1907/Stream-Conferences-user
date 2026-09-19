@@ -1,7 +1,7 @@
 import { type FormEvent, type ReactNode, useEffect, useMemo, useRef, useState, createContext, useContext } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { getNameInitials } from '@/lib/utils';
+import { getNameInitials, formatTime12h } from '@/lib/utils';
 import {
   ArrowDownRight,
   ArrowLeft,
@@ -437,7 +437,7 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
                             {(e.startTime || e.endTime) && (
                               <div className="flex items-center gap-2.5 text-base font-semibold text-[hsl(var(--foreground)/.88)]">
                                 <Clock3 size={16} className="shrink-0 text-[hsl(var(--secondary))]" />
-                                <span>{e.startTime || '—'} – {e.endTime || '—'}</span>
+                                <span>{formatTime12h(e.startTime) || '—'} – {formatTime12h(e.endTime) || '—'}</span>
                               </div>
                             )}
                           </>
@@ -496,13 +496,15 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
 }
 
 
-function useCountdown() {
+function useCountdown(targetDate?: string | Date) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const interval = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(interval);
   }, []);
-  const target = new Date('2027-03-12T09:00:00-05:00').getTime();
+  if (!targetDate) return null;
+  const target = new Date(targetDate).getTime();
+  if (isNaN(target)) return null;
   const distance = Math.max(0, target - now);
   const totalSeconds = Math.floor(distance / 1000);
   return {
@@ -510,8 +512,8 @@ function useCountdown() {
     hours: Math.floor((totalSeconds % 86400) / 3600),
     minutes: Math.floor((totalSeconds % 3600) / 60),
     seconds: totalSeconds % 60,
-    concluded: now > new Date('2027-03-14T18:00:00-05:00').getTime(),
-    live: now >= target && now <= new Date('2027-03-14T18:00:00-05:00').getTime(),
+    concluded: now > target + 86400000 * 2,
+    live: now >= target && now <= target + 86400000 * 2,
   };
 }
 
@@ -1178,9 +1180,9 @@ function PageHero({ eyebrow, title, body, variant = 'wave' }: { eyebrow: string;
         {/* Hero Content */}
         <div className="container-wide relative z-10 reveal">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[hsl(var(--accent))] text-xs font-extrabold uppercase tracking-widest mb-4">
-              <span className="h-2 w-2 rounded-full bg-[hsl(var(--accent))] animate-pulse" />
-              {eyebrow}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-xs font-extrabold uppercase tracking-widest mb-4 shadow-sm">
+              <span className="h-2 w-2 rounded-full bg-amber-300 animate-pulse" />
+              <span>{eyebrow}</span>
             </div>
             <h1 className="display text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white leading-tight">
               {title}
@@ -1226,10 +1228,11 @@ function Ticker() {
   return <div className="overflow-hidden border-y border-[hsl(var(--primary-foreground)/.15)] bg-[hsl(var(--secondary))] py-3 text-[hsl(var(--secondary-foreground))]"><div className="flex w-max gap-8 whitespace-nowrap" style={{ animation: 'ticker 28s linear infinite' }}><span className="label text-[10px]">Connecting Minds · Advancing Science</span><span>/</span><span className="label text-[10px]">Uniting Academia, Industry & Clinical Excellence</span><span>/</span><span className="label text-[10px]">Connecting Minds · Advancing Science</span><span>/</span><span className="label text-[10px]">Uniting Academia, Industry & Clinical Excellence</span></div></div>;
 }
 
-function Countdown() {
-  const countdown = useCountdown();
+function Countdown({ targetDate, locationStr }: { targetDate?: string; locationStr?: string }) {
+  const countdown = useCountdown(targetDate);
+  if (!countdown) return null;
   const items = [['days', countdown.days], ['hours', countdown.hours], ['minutes', countdown.minutes], ['seconds', countdown.seconds]];
-  return <section className="border-b border-[hsl(var(--border))] bg-[hsl(var(--primary))] py-14 text-[hsl(var(--primary-foreground))]"><div className="container-wide text-center"><p className="label text-[hsl(var(--accent))]">The summit begins in</p>{countdown.live || countdown.concluded ? <h2 className="display mt-5 text-4xl font-bold">{countdown.live ? 'Conference is live' : 'Conference concluded'}</h2> : <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">{items.map(([label, value]) => <div key={label as string} className="rounded-xl border border-[hsl(var(--primary-foreground)/.15)] bg-[hsl(var(--primary-foreground)/.06)] px-4 py-5"><strong className="display block text-4xl font-bold tracking-[-.06em] text-[hsl(var(--accent))] md:text-5xl">{String(value).padStart(2, '0')}</strong><span className="label mt-2 block text-[9px] text-[hsl(var(--primary-foreground)/.6)]">{label}</span></div>)}</div>}<p className="mt-6 text-sm text-[hsl(var(--primary-foreground)/.55)]">March 12–14, 2027 · Boston, Massachusetts</p></div></section>;
+  return <section className="border-b border-[hsl(var(--border))] bg-[hsl(var(--primary))] py-14 text-[hsl(var(--primary-foreground))]"><div className="container-wide text-center"><p className="label text-[hsl(var(--accent))]">The summit begins in</p>{countdown.live || countdown.concluded ? <h2 className="display mt-5 text-4xl font-bold">{countdown.live ? 'Conference is live' : 'Conference concluded'}</h2> : <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">{items.map(([label, value]) => <div key={label as string} className="rounded-xl border border-[hsl(var(--primary-foreground)/.15)] bg-[hsl(var(--primary-foreground)/.06)] px-4 py-5"><strong className="display block text-4xl font-bold tracking-[-.06em] text-[hsl(var(--accent))] md:text-5xl">{String(value).padStart(2, '0')}</strong><span className="label mt-2 block text-[9px] text-[hsl(var(--primary-foreground)/.6)]">{label}</span></div>)}</div>}{locationStr && <p className="mt-6 text-sm text-[hsl(var(--primary-foreground)/.55)]">{locationStr}</p>}</div></section>;
 }
 
 function TrackGrid() {
@@ -1703,7 +1706,7 @@ function Home() {
                               {(item.startTime || item.endTime) && (
                                 <div className="flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
                                   <Clock3 size={15} className="shrink-0 text-[hsl(var(--secondary))]" />
-                                  <span>{item.startTime || '—'} – {item.endTime || '—'}</span>
+                                  <span>{formatTime12h(item.startTime) || '—'} – {formatTime12h(item.endTime) || '—'}</span>
                                 </div>
                               )}
                             </>
@@ -2278,7 +2281,7 @@ function RegisterPage() {
   const [error, setError] = useState('');
   const [eventInfo, setEventInfo] = useState<any>(null);
   const [eventLoading, setEventLoading] = useState(Boolean(eventSlug));
-  const [openAccordion, setOpenAccordion] = useState<string | null>('datetime');
+  const [openAccordion, setOpenAccordion] = useState<string | null>(null);
 
   const prices = [['Student', '$245', '$320'], ['Academic', '$395', '$480'], ['Industry Delegate', '$520', '$640'], ['Virtual Attendee', '$145', '$190']];
 
@@ -2691,10 +2694,6 @@ function RegisterPage() {
                         <input type="checkbox" className="mt-0.5 rounded border-[hsl(var(--border))] text-[hsl(var(--secondary))] focus:ring-[hsl(var(--secondary))]" />
                         <span>Billing to Company / Organization</span>
                       </label>
-                      <label className="flex items-start gap-2.5 text-xs text-[hsl(var(--muted-foreground))] cursor-pointer select-none">
-                        <input type="checkbox" className="mt-0.5 rounded border-[hsl(var(--border))] text-[hsl(var(--secondary))] focus:ring-[hsl(var(--secondary))]" defaultChecked />
-                        <span>I would like to receive updates on products, services, news and surveys.</span>
-                      </label>
                     </div>
 
                     {error && (
@@ -2864,8 +2863,8 @@ function RegisterPage() {
                             <div className="mt-2 pl-1 space-y-1.5 text-xs text-[hsl(var(--muted-foreground))]">
                               <p><span className="font-medium text-[hsl(var(--foreground))]">Start Date:</span> {startFormatted}</p>
                               <p><span className="font-medium text-[hsl(var(--foreground))]">End Date:</span> {endFormatted || startFormatted}</p>
-                              <p><span className="font-medium text-[hsl(var(--foreground))]">Start Time:</span> {fullEvent.startTime || '—'}</p>
-                              <p><span className="font-medium text-[hsl(var(--foreground))]">End Time:</span> {fullEvent.endTime || '—'}</p>
+                              <p><span className="font-medium text-[hsl(var(--foreground))]">Start Time:</span> {formatTime12h(fullEvent.startTime) || '—'}</p>
+                              <p><span className="font-medium text-[hsl(var(--foreground))]">End Time:</span> {formatTime12h(fullEvent.endTime) || '—'}</p>
                             </div>
                           );
                         })()}
@@ -3591,7 +3590,7 @@ function EventDetailsPage({ type }: { type: 'conference' | 'webinar' }) {
                 <span className="inline-flex items-center gap-1.5"><CalendarDays size={15} />{startFormatted}{endFormatted ? ` – ${endFormatted}` : ''}</span>
               );
             })()}
-            {item.startTime || item.endTime ? <span className="inline-flex items-center gap-1.5"><Clock3 size={15} />{item.startTime || '—'} – {item.endTime || '—'}</span> : null}
+            {item.startTime || item.endTime ? <span className="inline-flex items-center gap-1.5"><Clock3 size={15} />{formatTime12h(item.startTime) || '—'} – {formatTime12h(item.endTime) || '—'}</span> : null}
             <span className="inline-flex items-center gap-1.5"><MapPin size={15} />{item.location}</span>
             {item.speaker ? <span className="inline-flex items-center gap-1.5"><Users size={15} />Speaker: {item.speaker}</span> : null}
           </div>
@@ -3734,7 +3733,7 @@ function EventDetailsPage({ type }: { type: 'conference' | 'webinar' }) {
                     <Clock3 size={16} className="mt-0.5 shrink-0 text-[hsl(var(--secondary))]" />
                     <div>
                       <p className="font-semibold text-[hsl(var(--foreground))]">Start Time</p>
-                      <p>{item.startTime}</p>
+                      <p>{formatTime12h(item.startTime)}</p>
                     </div>
                   </div>
                 )}
@@ -3743,7 +3742,7 @@ function EventDetailsPage({ type }: { type: 'conference' | 'webinar' }) {
                     <Clock3 size={16} className="mt-0.5 shrink-0 text-[hsl(var(--secondary))]" />
                     <div>
                       <p className="font-semibold text-[hsl(var(--foreground))]">End Time</p>
-                      <p>{item.endTime}</p>
+                      <p>{formatTime12h(item.endTime)}</p>
                     </div>
                   </div>
                 )}
@@ -3947,7 +3946,7 @@ function AbstractSubmissionPage() {
   const [abstractFile, setAbstractFile] = useState<File | null>(null);
   const [eventInfo, setEventInfo] = useState<any>(null);
   const [eventLoading, setEventLoading] = useState(Boolean(eventSlug));
-  const [openAccordion, setOpenAccordion] = useState<string | null>('datetime');
+  const [openAccordion, setOpenAccordion] = useState<string | null>(null);
 
   const { conferences, webinars } = useContext(APIContext);
 
@@ -4291,8 +4290,8 @@ function AbstractSubmissionPage() {
                             <div className="mt-2 pl-1 space-y-1.5 text-xs text-[hsl(var(--muted-foreground))]">
                               <p><span className="font-medium text-[hsl(var(--foreground))]">Start Date:</span> {startFormatted}</p>
                               <p><span className="font-medium text-[hsl(var(--foreground))]">End Date:</span> {endFormatted || startFormatted}</p>
-                              <p><span className="font-medium text-[hsl(var(--foreground))]">Start Time:</span> {fullEvent.startTime || '—'}</p>
-                              <p><span className="font-medium text-[hsl(var(--foreground))]">End Time:</span> {fullEvent.endTime || '—'}</p>
+                              <p><span className="font-medium text-[hsl(var(--foreground))]">Start Time:</span> {formatTime12h(fullEvent.startTime) || '—'}</p>
+                              <p><span className="font-medium text-[hsl(var(--foreground))]">End Time:</span> {formatTime12h(fullEvent.endTime) || '—'}</p>
                             </div>
                           );
                         })()}

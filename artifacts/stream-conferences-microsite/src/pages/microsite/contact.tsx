@@ -30,7 +30,7 @@ export function ContactPage({ event }: { event: EventData }) {
     ? `${venueName}, ${venueFullAddress}`
     : (venueFullAddress || venueName || '100 Convention Boulevard');
 
-  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', country: '', subject: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -227,7 +227,7 @@ export function ContactPage({ event }: { event: EventData }) {
                 <button
                   type="button"
                   onClick={() => {
-                    setFormData({ name: '', email: '', subject: '', message: '' });
+                    setFormData({ name: '', email: '', phone: '', country: '', subject: '', message: '' });
                     setSubmitted(false);
                   }}
                   className="mt-6 inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-[hsl(var(--primary)/0.12)] hover:bg-[hsl(var(--primary)/0.2)] text-[hsl(var(--primary))] font-semibold text-xs uppercase tracking-wider transition-colors"
@@ -263,6 +263,32 @@ export function ContactPage({ event }: { event: EventData }) {
                       className="form-field mt-1.5 w-full bg-[hsl(var(--background))] border border-[hsl(var(--border))] focus:border-[hsl(var(--primary))] rounded-xl px-3.5 py-2.5 text-sm transition-colors"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-[hsl(var(--foreground))] flex items-center gap-1">
+                      <span>Phone Number</span>
+                    </label>
+                    <input
+                      type="tel"
+                      placeholder="e.g. +1 555 010 0000"
+                      className="form-field mt-1.5 w-full bg-[hsl(var(--background))] border border-[hsl(var(--border))] focus:border-[hsl(var(--primary))] rounded-xl px-3.5 py-2.5 text-sm transition-colors"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-[hsl(var(--foreground))] flex items-center gap-1">
+                      <span>Country</span>
+                    </label>
+                    <input
+                      placeholder="Country of residence"
+                      className="form-field mt-1.5 w-full bg-[hsl(var(--background))] border border-[hsl(var(--border))] focus:border-[hsl(var(--primary))] rounded-xl px-3.5 py-2.5 text-sm transition-colors"
+                      value={formData.country}
+                      onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                     />
                   </div>
                 </div>

@@ -127,18 +127,69 @@ export function EventMicrosite({ subdomain, customBase }: { subdomain: string; c
     return <CohortNotFound subdomain={subdomain} />;
   }
 
-  const displayEvent: EventData = {
-    ...event,
-    cohorts,
-    currentCohort,
-    activeCohort,
-  };
-  if (activeCohort) {
-    Object.assign(displayEvent, activeCohort.content || {});
-    displayEvent.startDate = displayEvent.startDate || event.startDate;
-    displayEvent.endDate = displayEvent.endDate || event.endDate;
-    displayEvent.eventDate = displayEvent.eventDate || event.eventDate;
-  }
+  const displayEvent: EventData = activeCohort
+    ? {
+        ...event,
+        cohorts,
+        currentCohort,
+        activeCohort,
+        title: activeCohort.title || event.title,
+        subdomain: activeCohort.subdomain || event.subdomain,
+        startDate: activeCohort.startDate || '',
+        endDate: activeCohort.endDate || '',
+        eventDate: activeCohort.startDate || '',
+        description: activeCohort.content?.description ?? '',
+        theme: activeCohort.content?.theme ?? '',
+        themeColor: activeCohort.content?.themeColor ?? '',
+        primaryColor: activeCohort.content?.primaryColor ?? '',
+        colorTheme: activeCohort.content?.colorTheme ?? '',
+        day: activeCohort.content?.day ?? '',
+        month: activeCohort.content?.month ?? '',
+        location: activeCohort.content?.location ?? '',
+        venue: activeCohort.content?.venue ?? '',
+        venueAddress: activeCohort.content?.venueAddress ?? '',
+        venueMapUrl: activeCohort.content?.venueMapUrl ?? '',
+        startTime: activeCohort.content?.startTime ?? '',
+        endTime: activeCohort.content?.endTime ?? '',
+        speaker: activeCohort.content?.speaker ?? '',
+        speakers: activeCohort.content?.speakers ?? [],
+        tracks: activeCohort.content?.tracks ?? [],
+        faqs: activeCohort.content?.faqs ?? [],
+        fees: activeCohort.content?.fees ?? [],
+        sponsors: activeCohort.content?.sponsors ?? [],
+        partners: activeCohort.content?.partners ?? [],
+        mediaPartners: activeCohort.content?.mediaPartners ?? [],
+        exhibitors: activeCohort.content?.exhibitors ?? [],
+        guidelines: activeCohort.content?.guidelines ?? '',
+        organizingCommittee: activeCohort.content?.organizingCommittee ?? [],
+        venueDetails: activeCohort.content?.venueDetails ?? null,
+        program: activeCohort.content?.program ?? [],
+        headerBanners: activeCohort.content?.headerBanners ?? [],
+        welcomeBannerTitle: activeCohort.content?.welcomeBannerTitle ?? '',
+        welcomeBannerDescription: activeCohort.content?.welcomeBannerDescription ?? '',
+        brochureUrl: activeCohort.content?.brochureUrl ?? '',
+        bannerUrl: activeCohort.content?.bannerUrl ?? '',
+        logoUrl: activeCohort.content?.logoUrl ?? '',
+        scientificProgramUrl: activeCohort.content?.scientificProgramUrl ?? '',
+        termsAndConditions: activeCohort.content?.termsAndConditions ?? '',
+        about: activeCohort.content?.about ?? '',
+        terms: activeCohort.content?.terms ?? '',
+        privacy: activeCohort.content?.privacy ?? '',
+        registerSteps: activeCohort.content?.registerSteps ?? [],
+        brochure: activeCohort.content?.brochure ?? null,
+        feeLevels: activeCohort.content?.feeLevels ?? [],
+        gtmCode: activeCohort.content?.gtmCode ?? '',
+        gaCode: activeCohort.content?.gaCode ?? '',
+        mcCode: activeCohort.content?.mcCode ?? '',
+        metaTitle: activeCohort.content?.metaTitle ?? '',
+        metaDescription: activeCohort.content?.metaDescription ?? '',
+      }
+    : {
+        ...event,
+        cohorts,
+        currentCohort,
+        activeCohort,
+      };
 
   const navItems = buildNavItems(displayEvent);
 

@@ -97,3 +97,34 @@ export const compressImage = async (
 
   return file;
 };
+
+export function formatTime12h(timeStr?: string): string {
+  if (!timeStr || !timeStr.trim()) return '';
+  const trimmed = timeStr.trim();
+
+  if (/[-–—]/.test(trimmed) && !/am|pm/i.test(trimmed)) {
+    const parts = trimmed.split(/[-–—]/).map((p) => p.trim());
+    if (parts.length === 2 && /^\d{1,2}:\d{2}/.test(parts[0]) && /^\d{1,2}:\d{2}/.test(parts[1])) {
+      return `${formatTime12h(parts[0])} – ${formatTime12h(parts[1])}`;
+    }
+  }
+
+  if (/am|pm/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  const match = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (!match) return trimmed;
+
+  let hours = parseInt(match[1], 10);
+  const minutes = match[2];
+  if (isNaN(hours) || hours < 0 || hours > 23) return trimmed;
+
+  const period = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+
+  const formattedHours = hours < 10 ? `0${hours}` : `${hours}`;
+  return `${formattedHours}:${minutes} ${period}`;
+}
+

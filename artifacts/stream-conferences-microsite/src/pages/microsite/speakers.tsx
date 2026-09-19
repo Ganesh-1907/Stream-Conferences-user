@@ -22,9 +22,44 @@ import { getNameInitials } from '@/lib/utils';
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
 const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
 
+export const SPEAKER_CATEGORIES = [
+  { key: 'keynote', label: 'Keynote Speaker', title: 'Keynote Speakers', icon: Award, badgeClass: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white' },
+  { key: 'speaker', label: 'Speaker', title: 'Speakers', icon: Presentation, badgeClass: 'bg-blue-50 text-blue-700 border border-blue-200/80' },
+  { key: 'poster', label: 'Poster Presentation', title: 'Poster Presentations', icon: Presentation, badgeClass: 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white' },
+  { key: 'yrf', label: 'YRF', title: 'YRF (Young Researchers Forum)', icon: Award, badgeClass: 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white' },
+  { key: 'student', label: 'Student', title: 'Student Speakers', icon: GraduationCap, badgeClass: 'bg-gradient-to-r from-sky-600 to-cyan-600 text-white' },
+] as const;
+
+export function getSpeakerCategoryKey(speaker: any): string {
+  if (speaker?.category) {
+    const c = String(speaker.category).toLowerCase().trim();
+    if (['keynote', 'speaker', 'poster', 'yrf', 'student'].includes(c)) return c;
+  }
+  if (speaker?.isKeynote) return 'keynote';
+  return 'speaker';
+}
+
 export function SpeakersPage({ event }: { event: EventData }) {
   const speakers = event.speakers || [];
   const [selectedSpeaker, setSelectedSpeaker] = useState<any | null>(null);
+
+  const OTHER_CATEGORY_RANK: Record<string, number> = {
+    speaker: 1,
+    poster: 2,
+    yrf: 3,
+    student: 4,
+  };
+
+  const keynoteSpeakers = speakers.filter((s) => getSpeakerCategoryKey(s) === 'keynote');
+  const otherSpeakers = [...speakers]
+    .filter((s) => getSpeakerCategoryKey(s) !== 'keynote')
+    .sort((a, b) => {
+      const catA = getSpeakerCategoryKey(a);
+      const catB = getSpeakerCategoryKey(b);
+      const rankA = OTHER_CATEGORY_RANK[catA] ?? 99;
+      const rankB = OTHER_CATEGORY_RANK[catB] ?? 99;
+      return rankA - rankB;
+    });
 
   if (speakers.length === 0) {
     return (
@@ -51,11 +86,11 @@ export function SpeakersPage({ event }: { event: EventData }) {
     );
   }
 
-  const keynoteSpeakers = speakers.filter((s) => s.isKeynote);
-  const otherSpeakers = speakers.filter((s) => !s.isKeynote);
-
-  const SpeakerCard = ({ speaker, isKeynote = false }: { speaker: any; isKeynote?: boolean }) => {
+  const SpeakerCard = ({ speaker }: { speaker: any }) => {
     const hasSocials = Boolean(speaker.linkedin || speaker.twitter || speaker.website);
+    const categoryKey = getSpeakerCategoryKey(speaker);
+    const categoryConfig = SPEAKER_CATEGORIES.find((c) => c.key === categoryKey) || SPEAKER_CATEGORIES[1];
+    const isKeynote = categoryKey === 'keynote';
 
     return (
       <div
@@ -65,14 +100,13 @@ export function SpeakersPage({ event }: { event: EventData }) {
         {/* Lanyard Notch / ID Badge Slot */}
         <div className="w-12 h-1.5 rounded-full bg-[hsl(var(--border))] mb-4 group-hover:bg-[hsl(var(--primary)/.4)] transition-colors shadow-inner shrink-0" />
 
-        {/* Top-Right Keynote Badge */}
-        {isKeynote && (
-          <div className="absolute top-3.5 right-3.5">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm">
-              <Award size={12} /> Keynote
-            </span>
-          </div>
-        )}
+        {/* Top-Right Category Badge */}
+        <div className="absolute top-3.5 right-3.5">
+          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${categoryConfig.badgeClass} shadow-sm`}>
+            {isKeynote && <Award size={12} />}
+            {categoryConfig.label}
+          </span>
+        </div>
 
         {/* Top Center Circular Image */}
         <div className="relative mb-4 w-28 h-28 sm:w-32 sm:h-32 rounded-full ring-4 ring-[hsl(var(--border))] group-hover:ring-[hsl(var(--primary)/.5)] transition-all duration-300 overflow-hidden bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] shadow-md flex items-center justify-center shrink-0">
@@ -198,32 +232,43 @@ export function SpeakersPage({ event }: { event: EventData }) {
         title="Meet Our Speakers"
         tagline="Discover the visionary keynote presenters and global researchers driving scientific advancement."
       />
-      <div className="container-wide py-10 sm:py-14">
-
-      {keynoteSpeakers.length > 0 && (
-        <div className="mb-12">
-          <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-[hsl(var(--foreground))]">
-            <Award size={20} className="text-amber-500" />
-            Keynote Speakers
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {keynoteSpeakers.map((speaker, idx) => (
-              <SpeakerCard key={speaker.name || idx} speaker={speaker} isKeynote />
-            ))}
+      <div className="container-wide py-10 sm:py-14 space-y-12">
+        {/* Keynote Speakers Section */}
+        {keynoteSpeakers.length > 0 && (
+          <div className="space-y-6">
+            <h3 className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-[hsl(var(--foreground))] border-b border-[hsl(var(--border))] pb-3 font-['Space_Grotesk']">
+              <Award size={22} className="text-amber-500" />
+              <span>Keynote Speakers</span>
+              <span className="ml-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                {keynoteSpeakers.length}
+              </span>
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {keynoteSpeakers.map((speaker, idx) => (
+                <SpeakerCard key={speaker.name || idx} speaker={speaker} />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {otherSpeakers.length > 0 && (
-        <div>
-          <h3 className="text-xl font-bold mb-6 text-[hsl(var(--foreground))]">Speakers</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {otherSpeakers.map((speaker, idx) => (
-              <SpeakerCard key={speaker.name || idx} speaker={speaker} />
-            ))}
+        {/* All Other Speakers & Presenters Section */}
+        {otherSpeakers.length > 0 && (
+          <div className="space-y-6">
+            <h3 className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-[hsl(var(--foreground))] border-b border-[hsl(var(--border))] pb-3 font-['Space_Grotesk']">
+              <Presentation size={22} className="text-[hsl(var(--primary))]" />
+              <span>Speakers</span>
+              <span className="ml-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))] border border-[hsl(var(--primary)/.2)]">
+                {otherSpeakers.length}
+              </span>
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {otherSpeakers.map((speaker, idx) => (
+                <SpeakerCard key={speaker.name || idx} speaker={speaker} />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Speaker Details Modal */}
       <Dialog open={Boolean(selectedSpeaker)} onOpenChange={(open) => !open && setSelectedSpeaker(null)}>
@@ -320,7 +365,6 @@ export function SpeakersPage({ event }: { event: EventData }) {
         )}
       </Dialog>
     </div>
-  </div>
   );
 }
 

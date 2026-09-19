@@ -94,22 +94,22 @@ export function VenuePage({ event }: { event: EventData }) {
             <section className="grid gap-8 lg:grid-cols-2 items-start">
               {/* Left Column: Featured Main Image */}
               <div className="space-y-4">
-                <div className="relative rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-md group">
+                <div className="relative overflow-hidden group">
                   {mainImage ? (
                     <img
                       src={mediaUrl(mainImage)}
                       alt={venueName || 'Venue'}
-                      className="w-full h-80 sm:h-[400px] object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-80 sm:h-[400px] object-contain group-hover:scale-105 transition-transform duration-500 rounded-2xl"
                     />
                   ) : venue.mapUrl ? (
                     <iframe
                       src={venue.mapUrl}
-                      className="w-full h-80 sm:h-[400px] border-0"
+                      className="w-full h-80 sm:h-[400px] border-0 rounded-2xl"
                       loading="lazy"
                       title="Venue Map"
                     />
                   ) : (
-                    <div className="w-full h-80 sm:h-[400px] bg-gradient-to-br from-[hsl(var(--secondary)/.1)] to-[hsl(var(--primary)/.1)] flex flex-col items-center justify-center p-6 text-center">
+                    <div className="w-full h-80 sm:h-[400px] bg-gradient-to-br from-[hsl(var(--secondary)/.1)] to-[hsl(var(--primary)/.1)] flex flex-col items-center justify-center p-6 text-center rounded-2xl">
                       <Building size={64} className="text-[hsl(var(--secondary))] mb-3 opacity-80" />
                       <p className="font-bold text-xl text-[hsl(var(--foreground))]">{venueName || 'Conference Venue'}</p>
                       {venueAddress && <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">{venueAddress}</p>}
@@ -136,7 +136,7 @@ export function VenuePage({ event }: { event: EventData }) {
               </div>
 
               {/* Right Column: Venue Description & Additional Notes */}
-              <div className="space-y-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-sm">
+              <div className="space-y-6">
                 <div>
                   <h3 className="text-xl sm:text-2xl font-bold text-[hsl(var(--foreground))] font-['Space_Grotesk'] pb-4 border-b border-[hsl(var(--border))]">
                     About the Venue
@@ -210,19 +210,14 @@ export function VenuePage({ event }: { event: EventData }) {
                   {subImages.map((imgUrl, idx) => (
                     <div
                       key={idx}
-                      className="group rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm hover:shadow-md transition-all"
+                      className="group rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm hover:shadow-md transition-all p-4"
                     >
-                      <div className="aspect-[4/3] w-full overflow-hidden bg-[hsl(var(--muted))]">
+                      <div className="aspect-[4/3] h-56 sm:h-64 w-full overflow-hidden flex items-center justify-center bg-[hsl(var(--card))]">
                         <img
                           src={mediaUrl(imgUrl)}
                           alt={`Venue Photo ${idx + 1}`}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                         />
-                      </div>
-                      <div className="p-3 text-center border-t border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-                        <span className="text-xs font-bold text-[hsl(var(--foreground))]">
-                          Sub Image 0{idx + 1}
-                        </span>
                       </div>
                     </div>
                   ))}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'wouter';
 import {
   CalendarDays, Clock3, MapPin, Download, Users, ArrowUpRight, ArrowRight, FileText,
@@ -7,6 +7,7 @@ import {
   GraduationCap, Building2, Presentation, ExternalLink, Linkedin, Twitter, Globe, Check
 } from 'lucide-react';
 import type { EventData } from './layout';
+import { SPEAKER_CATEGORIES, getSpeakerCategoryKey } from './speakers';
 import { PartnerLogoCard } from '@/components/partner-logo-card';
 import {
   Dialog,
@@ -14,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { getNameInitials } from '@/lib/utils';
+import { getNameInitials, formatTime12h } from '@/lib/utils';
 
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
 const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
@@ -49,7 +50,7 @@ function useCountdown(targetDate: string | Date | undefined) {
   };
 }
 
-function createCalendarReminder(event: EventData) {
+function createGoogleCalendarReminder(event: EventData) {
   const title = encodeURIComponent(event.title || 'Conference');
   const details = encodeURIComponent(event.description || event.theme || '');
   const location = encodeURIComponent(event.venue || event.location || '');
@@ -58,6 +59,48 @@ function createCalendarReminder(event: EventData) {
   const end = event.endDate ? new Date(event.endDate).toISOString().replace(/-|:|\.\d+/g, '') : start;
   const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${start}/${end}`;
   window.open(googleUrl, '_blank');
+}
+
+function downloadIcsCalendarReminder(event: EventData) {
+  const title = event.title || 'Conference';
+  const description = (event.description || event.theme || '').replace(/<[^>]*>?/gm, '');
+  const location = event.venue || event.location || '';
+  const startD = event.startDate || event.eventDate;
+  
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? '' : d.toISOString().replace(/-|:|\.\d+/g, '');
+  };
+
+  const start = formatDate(startD) || new Date().toISOString().replace(/-|:|\.\d+/g, '');
+  const end = formatDate(event.endDate) || start;
+
+  const icsData = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Stream Conferences//Event Reminder//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `SUMMARY:${title.replace(/\n/g, ' ')}`,
+    `DESCRIPTION:${description.replace(/\n/g, ' ')}`,
+    `LOCATION:${location.replace(/\n/g, ' ')}`,
+    `DTSTART:${start}`,
+    `DTEND:${end}`,
+    'STATUS:CONFIRMED',
+    'SEQUENCE:0',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n');
+
+  const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = window.URL.createObjectURL(blob);
+  link.setAttribute('download', `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_reminder.ics`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 function HeaderBannerCarousel({ banners, title, location }: { banners: string[]; title: string; location: string }) {
@@ -157,10 +200,32 @@ export function HomePage({ event }: { event: EventData }) {
   const isExpired = startDate ? new Date(startDate).getTime() < Date.now() : false;
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [selectedSpeaker, setSelectedSpeaker] = useState<any | null>(null);
+  const [calendarMenuOpen, setCalendarMenuOpen] = useState(false);
+  const calendarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (calendarRef.current && !calendarRef.current.contains(e.target as Node)) {
+        setCalendarMenuOpen(false);
+      }
+    }
+    if (calendarMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [calendarMenuOpen]);
 
   const featuredSpeakers = useMemo(() => {
     const list = Array.isArray(event.speakers) ? [...event.speakers] : [];
-    list.sort((a, b) => (b.isKeynote ? 1 : 0) - (a.isKeynote ? 1 : 0));
+    list.sort((a, b) => {
+      const keyA = getSpeakerCategoryKey(a);
+      const keyB = getSpeakerCategoryKey(b);
+      const idxA = SPEAKER_CATEGORIES.findIndex((c) => c.key === keyA);
+      const idxB = SPEAKER_CATEGORIES.findIndex((c) => c.key === keyB);
+      return (idxA !== -1 ? idxA : 99) - (idxB !== -1 ? idxB : 99);
+    });
     return list.slice(0, 4);
   }, [event.speakers]);
 
@@ -257,13 +322,7 @@ export function HomePage({ event }: { event: EventData }) {
                     Theme: {event.theme}
                   </p>
                 )}
-                {event.activeCohort && (
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 text-white text-xs sm:text-sm font-semibold backdrop-blur-md border border-white/25 shadow-sm">
-                    <span>{event.activeCohort.isCurrent ? 'Current Cohort' : 'Cohort'}</span>
-                    <span>·</span>
-                    <span>{event.activeCohort.label || `${event.activeCohort.year} Batch ${event.activeCohort.batchNo}`}</span>
-                  </div>
-                )}
+
               </div>
 
               {/* Meta Info Line */}
@@ -272,7 +331,7 @@ export function HomePage({ event }: { event: EventData }) {
                 {(event.startTime || event.endTime) && (
                   <>
                     <span>·</span>
-                    <span>{event.startTime || '—'} – {event.endTime || '—'}</span>
+                    <span>{formatTime12h(event.startTime) || '—'} – {formatTime12h(event.endTime) || '—'}</span>
                   </>
                 )}
                 {(event.venue || event.location) && (
@@ -339,17 +398,69 @@ export function HomePage({ event }: { event: EventData }) {
                 </div>
               )}
 
-              {/* Action Button: Reminder to Join !! (White Theme) */}
-              <div className="pt-2 sm:pt-4">
+              {/* Action Button: Reminder to Join !! (White Theme with Dropdown) */}
+              <div ref={calendarRef} className="pt-2 sm:pt-4 relative inline-block text-left">
                 <button
                   type="button"
-                  onClick={() => createCalendarReminder(event)}
+                  onClick={() => setCalendarMenuOpen((prev) => !prev)}
                   className="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full bg-white text-[hsl(var(--primary))] font-extrabold text-sm uppercase tracking-wider shadow-2xl hover:bg-white/90 hover:scale-105 transition-all transform cursor-pointer border border-white/40 whitespace-nowrap"
                   title="Add to Calendar"
                 >
-                  <Calendar size={16} className="text-[hsl(var(--primary))]" />
+                  <Calendar size={18} className="text-[hsl(var(--primary))]" />
                   <span>Reminder to Join !!</span>
+                  <ChevronDown size={16} className={`transition-transform duration-200 ${calendarMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
+
+                {calendarMenuOpen && (
+                  <div className="absolute right-0 sm:left-0 mt-2 w-56 sm:w-60 rounded-2xl bg-white shadow-2xl border border-gray-200 py-1.5 z-50 overflow-hidden">
+                    <div className="px-3.5 py-1.5 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100 bg-gray-50">
+                      Select Calendar Platform
+                    </div>
+
+                    {/* Google Calendar Option */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        createGoogleCalendarReminder(event);
+                        setCalendarMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3.5 py-2.5 text-sm font-bold text-gray-900 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2.5 transition-colors cursor-pointer border-b border-gray-100"
+                    >
+                      <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                          <path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" stroke="#4285F4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="#4285F4" fillOpacity="0.1"/>
+                          <path d="M16 2V6M8 2V6M3 10H21" stroke="#4285F4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <rect x="7" y="13" width="4" height="4" rx="1" fill="#EA4335" />
+                          <rect x="13" y="13" width="4" height="4" rx="1" fill="#FBBC04" />
+                        </svg>
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs sm:text-sm font-extrabold text-gray-900 leading-tight">Google Calendar</span>
+                        <span className="text-[10px] font-medium text-gray-500">Opens in web browser</span>
+                      </div>
+                    </button>
+
+                    {/* Apple / Mac Calendar Option */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        downloadIcsCalendarReminder(event);
+                        setCalendarMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3.5 py-2.5 text-sm font-bold text-gray-900 hover:bg-slate-100 hover:text-black flex items-center gap-2.5 transition-colors cursor-pointer"
+                    >
+                      <div className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
+                        <svg className="w-4 h-4 fill-current text-slate-900" viewBox="0 0 24 24">
+                          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.09c.68-.82 1.14-1.96.99-3.09-.98.04-2.18.66-2.88 1.47-.63.73-1.18 1.89-1.03 3.01 1.09.09 2.22-.55 2.92-1.39z"/>
+                        </svg>
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs sm:text-sm font-extrabold text-gray-900 leading-tight">Apple / Mac Calendar</span>
+                        <span className="text-[10px] font-medium text-gray-500">Opens Mac Calendar app</span>
+                      </div>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -389,8 +500,8 @@ export function HomePage({ event }: { event: EventData }) {
 
       {/* Centered Banner Carousel Section */}
       {headerBanners.length > 0 && (
-        <section className="container-wide py-10 md:py-14 border-b border-[hsl(var(--border))]">
-          <div className="max-w-[1350px] w-full mx-auto flex flex-col items-center justify-center">
+        <section className="container-wide py-8 md:py-10 border-b border-[hsl(var(--border))]">
+          <div className="max-w-[1220px] w-full mx-auto flex flex-col items-center justify-center">
             <div className="w-full">
               <HeaderBannerCarousel
                 banners={headerBanners}
@@ -449,40 +560,44 @@ export function HomePage({ event }: { event: EventData }) {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {featuredSpeakers.map((speaker, idx) => (
-              <div
-                key={speaker.name || idx}
-                onClick={() => setSelectedSpeaker(speaker)}
-                className="group relative flex flex-col items-center text-center rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-6 shadow-sm hover:shadow-xl hover:border-[hsl(var(--primary)/.5)] transition-all duration-300 cursor-pointer overflow-hidden"
-              >
-                <div className="w-12 h-1.5 rounded-full bg-[hsl(var(--border))] mb-4 group-hover:bg-[hsl(var(--primary)/.4)] transition-colors shadow-inner shrink-0" />
+            {featuredSpeakers.map((speaker, idx) => {
+              const categoryKey = getSpeakerCategoryKey(speaker);
+              const categoryConfig = SPEAKER_CATEGORIES.find((c) => c.key === categoryKey) || SPEAKER_CATEGORIES[1];
+              const isKeynote = categoryKey === 'keynote';
 
-                {speaker.isKeynote && (
+              return (
+                <div
+                  key={speaker.name || idx}
+                  onClick={() => setSelectedSpeaker(speaker)}
+                  className="group relative flex flex-col items-center text-center rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-6 shadow-sm hover:shadow-xl hover:border-[hsl(var(--primary)/.5)] transition-all duration-300 cursor-pointer overflow-hidden"
+                >
+                  <div className="w-12 h-1.5 rounded-full bg-[hsl(var(--border))] mb-4 group-hover:bg-[hsl(var(--primary)/.4)] transition-colors shadow-inner shrink-0" />
+
                   <div className="absolute top-3.5 right-3.5">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm">
-                      <Award size={12} /> Keynote
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${categoryConfig.badgeClass} shadow-sm`}>
+                      {isKeynote && <Award size={12} />}
+                      {categoryConfig.label}
                     </span>
                   </div>
-                )}
 
-                <div className="relative mb-4 w-28 h-28 sm:w-32 sm:h-32 rounded-full ring-4 ring-[hsl(var(--border))] group-hover:ring-[hsl(var(--primary)/.5)] transition-all duration-300 overflow-hidden bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] shadow-md flex items-center justify-center shrink-0">
-                  {speaker.avatar ? (
-                    <img
-                      src={mediaUrl(speaker.avatar)}
-                      alt={speaker.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-3xl font-['Space_Grotesk'] shadow-inner">
-                      {getNameInitials(speaker.name, 'S')}
-                    </div>
-                  )}
-                  {speaker.isKeynote && (
-                    <div className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md border-2 border-[hsl(var(--card))]">
-                      <Award size={13} />
-                    </div>
-                  )}
-                </div>
+                  <div className="relative mb-4 w-28 h-28 sm:w-32 sm:h-32 rounded-full ring-4 ring-[hsl(var(--border))] group-hover:ring-[hsl(var(--primary)/.5)] transition-all duration-300 overflow-hidden bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] shadow-md flex items-center justify-center shrink-0">
+                    {speaker.avatar ? (
+                      <img
+                        src={mediaUrl(speaker.avatar)}
+                        alt={speaker.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-3xl font-['Space_Grotesk'] shadow-inner">
+                        {getNameInitials(speaker.name, 'S')}
+                      </div>
+                    )}
+                    {isKeynote && (
+                      <div className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md border-2 border-[hsl(var(--card))]">
+                        <Award size={13} />
+                      </div>
+                    )}
+                  </div>
 
                 <h3 className="font-['Space_Grotesk'] font-bold text-lg sm:text-xl text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 w-full px-1">
                   {speaker.name}
@@ -570,7 +685,8 @@ export function HomePage({ event }: { event: EventData }) {
 
                 <div className="w-full h-1 bg-gradient-to-r from-transparent via-[hsl(var(--primary)/.4)] to-transparent absolute bottom-0 left-0" />
               </div>
-            ))}
+            );
+          })}
           </div>
 
           <div className="mt-10 text-center">
@@ -602,82 +718,65 @@ export function HomePage({ event }: { event: EventData }) {
       {/* Top 5 Tracks Section */}
       {Array.isArray(event.tracks) && event.tracks.length > 0 && (
         <section className="container-wide py-14 border-b border-[hsl(var(--border))]">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-            <div>
-              <span className="section-eyebrow">Tracks</span>
-              <h2 className="mt-3 text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">
-                Conference Tracks & Scientific Themes
-              </h2>
-              <p className="mt-2 text-sm md:text-base text-[hsl(var(--muted-foreground))]">
-                Explore key research tracks presented at {event.title}
-              </p>
-            </div>
-            <Link
-              href="/tracks"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[hsl(var(--primary))] text-white font-bold text-sm shadow-md hover:shadow-lg transition-all cursor-pointer shrink-0"
-            >
-              <span>View All Tracks</span>
-              <ArrowRight size={16} />
-            </Link>
+          <div className="mb-8">
+            <span className="section-eyebrow">Tracks</span>
+            <h2 className="mt-3 text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">
+              Conference Tracks & Scientific Themes
+            </h2>
+            <p className="mt-2 text-sm md:text-base text-[hsl(var(--muted-foreground))]">
+              Explore key research tracks presented at {event.title}
+            </p>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-6 sm:space-y-8">
             {event.tracks.slice(0, 5).map((track, i) => (
-              <div key={i} className="flex gap-4 pb-6 border-b border-[hsl(var(--border))] last:border-0 last:pb-0">
+              <div key={i} className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6 pb-6 sm:pb-8 border-b border-[hsl(var(--border))] last:border-0 last:pb-0">
                 {track.image ? (
-                  <img src={mediaUrl(track.image)} alt={track.title} className="w-16 h-16 shrink-0 rounded-xl object-cover" />
+                  <img
+                    src={mediaUrl(track.image)}
+                    alt={track.title}
+                    className="w-32 h-32 sm:w-48 sm:h-36 md:w-56 md:h-40 shrink-0 rounded-2xl object-cover border border-[hsl(var(--border))] shadow-md bg-[hsl(var(--card))]"
+                  />
                 ) : (
-                  <div className="w-16 h-16 shrink-0 rounded-xl bg-[hsl(var(--primary)/.1)] flex items-center justify-center text-xl font-bold text-[hsl(var(--primary))] font-['Space_Grotesk']">
+                  <div className="w-32 h-32 sm:w-48 sm:h-36 md:w-56 md:h-40 shrink-0 rounded-2xl bg-[hsl(var(--primary)/.1)] border border-[hsl(var(--primary)/.2)] flex items-center justify-center text-3xl sm:text-5xl font-black text-[hsl(var(--primary))] font-['Space_Grotesk'] shadow-sm">
                     {(i + 1).toString().padStart(2, '0')}
                   </div>
                 )}
-                <div>
-                  <h3 className="font-bold text-xl text-[hsl(var(--foreground))]">{track.title}</h3>
+                <div className="flex-1 pt-1">
+                  <h3 className="font-extrabold text-xl sm:text-2xl text-[hsl(var(--foreground))] font-['Space_Grotesk'] leading-snug">{track.title}</h3>
                   {track.description && (
-                    <p className="mt-1 text-base text-[hsl(var(--muted-foreground))] leading-relaxed">
+                    <p className="mt-2 text-base sm:text-lg text-[hsl(var(--muted-foreground))] leading-relaxed">
                       {track.description}
                     </p>
+                  )}
+                  {Array.isArray(track.referenceLinks) && track.referenceLinks.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {track.referenceLinks.map((link: any, li: number) => (
+                        <a
+                          key={li}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-3 py-1 text-xs font-semibold text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+                        >
+                          <ExternalLink size={12} /> {link.label || (link as any).title || link.url}
+                        </a>
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-8 text-center">
+          <div className="mt-8 sm:mt-10 text-center">
             <Link
               href="/tracks"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white font-bold text-sm transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.9)] text-white font-bold text-sm shadow-md hover:shadow-lg transition-all cursor-pointer"
             >
               <span>View All Tracks ({event.tracks.length})</span>
               <ArrowRight size={16} />
             </Link>
-          </div>
-        </section>
-      )}
-
-      {/* Sponsors Preview Section */}
-      {Array.isArray(event.sponsors) && event.sponsors.length > 0 && (
-        <section className="container-wide py-12 border-b border-[hsl(var(--border))]">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-            <div>
-              <span className="section-eyebrow">Sponsors</span>
-              <h2 className="mt-3 text-3xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">
-                Event Sponsors & Exhibitors
-              </h2>
-            </div>
-            <Link
-              href="/sponsors"
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--foreground))] font-semibold text-xs transition-all shadow-sm shrink-0"
-            >
-              <span>View All Sponsors</span>
-              <ArrowRight size={14} />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {event.sponsors.slice(0, 5).map((s, idx) => (
-              <PartnerLogoCard key={idx} item={s} defaultType={`Sponsor ${idx + 1}`} />
-            ))}
           </div>
         </section>
       )}
@@ -704,9 +803,11 @@ export function HomePage({ event }: { event: EventData }) {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          <div className="flex flex-wrap gap-6 sm:gap-8 items-start">
             {event.mediaPartners.slice(0, 5).map((partner, idx) => (
-              <PartnerLogoCard key={idx} item={partner} defaultType={`Media Partner ${idx + 1}`} />
+              <div key={idx} className="w-56 sm:w-64 md:w-72 shrink-0">
+                <PartnerLogoCard item={partner} defaultType={`Media Partner ${idx + 1}`} />
+              </div>
             ))}
           </div>
         </section>
