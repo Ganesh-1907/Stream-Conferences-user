@@ -1,5 +1,5 @@
 import { useState, useMemo, type FormEvent } from 'react';
-import { CalendarDays, MapPin, ChevronDown, ArrowUpRight, ArrowRight, Check } from 'lucide-react';
+import { CalendarDays, MapPin, ChevronDown, ArrowUpRight, ArrowRight, Check, Loader2 } from 'lucide-react';
 import type { EventData } from './layout';
 import { MicrositeHero } from '@/components/microsite-hero';
 import { isFeeDateExpired } from './fees';
@@ -35,6 +35,7 @@ export function RegisterPage({ event }: { event: EventData }) {
   const [selectedFeeIndex, setSelectedFeeIndex] = useState<number>(0);
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [paying, setPaying] = useState(false);
   const [pendingOrder, setPendingOrder] = useState<any>(null);
   const [mockPayment, setMockPayment] = useState<any>(null);
@@ -145,11 +146,8 @@ export function RegisterPage({ event }: { event: EventData }) {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!consent) {
-      setError('You must agree to the declaration before continuing.');
-      return;
-    }
     setError('');
+    setIsSubmitting(true);
     try {
       const regRes = await fetch(`${API_BASE}/registrations/register`, {
         method: 'POST',
@@ -163,11 +161,13 @@ export function RegisterPage({ event }: { event: EventData }) {
       if (!regRes.ok) throw new Error((await regRes.json()).error || 'Registration failed');
       const regData = await regRes.json();
 
+      const selectedPrice = currency === 'USD' ? selectedFee?.usd : currency === 'EUR' ? selectedFee?.eur : selectedFee?.gbp;
+
       const orderRes = await fetch(`${API_BASE}/orders/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name, email, phone, category, registrationId: regData._id,
+          name, email, phone, category, amount: selectedPrice || 245, currency, registrationId: regData._id,
           eventId: event._id, eventType: event.eventType, eventTitle: event.title, eventSlug: event.slug || event.subdomain || event.eventId,
           cohortId: event.activeCohort?.cohortId || null,
         }),
@@ -181,6 +181,8 @@ export function RegisterPage({ event }: { event: EventData }) {
       else { setPendingOrder(orderData.order); setMockPayment(null); }
     } catch (err: any) {
       setError(err.message || 'Registration failed');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -248,7 +250,7 @@ export function RegisterPage({ event }: { event: EventData }) {
                 <span className="text-xl font-bold text-[hsl(var(--secondary))]">{sym}{paymentAmount.toFixed(2)}</span>
               </div>
               {error && <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600">{error}</div>}
-              <button type="button" onClick={handlePayNow} disabled={paying} className="w-full btn-main btn-primary py-3">{paying ? 'Processing...' : `Pay Now · ${sym}${paymentAmount.toFixed(2)}`} <ArrowUpRight size={16} /></button>
+              <button type="button" onClick={handlePayNow} disabled={paying} className="w-full btn-main btn-primary py-3">{paying ? <span className="flex items-center justify-center gap-2"><Loader2 className="animate-spin" size={16} /> Processing payment...</span> : <>Pay Now · {sym}{paymentAmount.toFixed(2)} <ArrowUpRight size={16} /></>}</button>
               <p className="text-xs text-[hsl(var(--muted-foreground))] text-center">Secure payment via Razorpay. All major cards, UPI and net banking accepted.</p>
             </div>
           ) : (
@@ -349,19 +351,11 @@ export function RegisterPage({ event }: { event: EventData }) {
                     </div>
                   </div>
 
-                  <div className="space-y-3 pt-4 border-t border-[hsl(var(--border))]">
-                    <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Declaration</label>
-                    <label className="flex items-start gap-3 cursor-pointer p-4 bg-[hsl(var(--muted)/.3)] rounded-xl border border-[hsl(var(--border))]">
-                      <input type="checkbox" checked={consent} onChange={(e) => { setConsent(e.target.checked); if (e.target.checked) setError(''); }} className="mt-1 h-4 w-4" />
-                      <span className="text-xs leading-5">I have read and agree to the <span className="text-[hsl(var(--primary))] font-semibold">Health Declaration</span>, <span className="text-[hsl(var(--primary))] font-semibold">Program Participant Agreement</span> and <span className="text-[hsl(var(--primary))] font-semibold">Privacy Policy</span>.*</span>
-                    </label>
-                  </div>
-
                   {error && <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600">{error}</div>}
 
                   <div className="flex gap-4 pt-2">
                     <button type="button" onClick={() => { setStep(1); setError(''); }} className="btn-main border border-[hsl(var(--border))] bg-transparent text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] w-1/3 justify-center py-3">Back</button>
-                    <button type="submit" disabled={paying} className="btn-main btn-primary flex-1 justify-center py-3">{paying ? 'Processing...' : 'Proceed to payment'}</button>
+                    <button type="submit" disabled={isSubmitting || paying} className="btn-main btn-primary flex-1 justify-center py-3">{isSubmitting ? <span className="flex items-center gap-2"><Loader2 className="animate-spin" size={16} /> Creating Order...</span> : 'Proceed to payment'}</button>
                   </div>
                 </form>
               )}

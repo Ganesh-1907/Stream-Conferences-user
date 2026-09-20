@@ -1,5 +1,5 @@
 import { useState, useMemo, type FormEvent } from 'react';
-import { CalendarDays, MapPin, ChevronDown, FileText, ArrowRight, Check } from 'lucide-react';
+import { CalendarDays, MapPin, ChevronDown, FileText, ArrowRight, Check, Loader2 } from 'lucide-react';
 import type { EventData } from './layout';
 import { MicrositeHero } from '@/components/microsite-hero';
 
@@ -255,7 +255,7 @@ export function AbstractPage({ event }: { event: EventData }) {
 
                 <div className="flex gap-4 pt-2">
                   <button type="button" onClick={() => { setStep(1); setError(''); }} className="btn-main border border-[hsl(var(--border))] bg-transparent text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] w-1/3 justify-center py-3">Back</button>
-                  <button type="submit" disabled={submitting} className="btn-main btn-primary flex-1 justify-center py-3 disabled:opacity-50">{submitting ? 'Submitting...' : 'Submit Abstract'} <ArrowRight className="ml-1 inline" size={16} /></button>
+                  <button type="submit" disabled={submitting} className="btn-main btn-primary flex-1 justify-center py-3 disabled:opacity-50">{submitting ? <span className="flex items-center gap-2"><Loader2 className="animate-spin" size={16} /> Submitting...</span> : <>Submit Abstract <ArrowRight className="ml-1 inline" size={16} /></>}</button>
                 </div>
                 <p className="text-xs text-[hsl(var(--muted-foreground))] text-center">Your submission will be reviewed by our Scientific Advisory Board.</p>
               </form>

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'wouter';
-import { Mail, Phone, Globe, MapPin, Check, ExternalLink, Building, Send } from 'lucide-react';
+import { Mail, Phone, Globe, MapPin, Check, ExternalLink, Building, Send, Loader2 } from 'lucide-react';
 import type { EventData } from './layout';
 import { MicrositeHero } from '@/components/microsite-hero';
 import { getNameInitials } from '@/lib/utils';
@@ -335,7 +335,7 @@ export function ContactPage({ event }: { event: EventData }) {
                     className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-[#0f4c81] hover:bg-[#0c3c66] text-white font-bold text-xs uppercase tracking-wider shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 border-2 border-[#155e75]/40 disabled:opacity-50 disabled:pointer-events-none cursor-pointer group"
                   >
                     {submitting ? (
-                      <span>Sending Message...</span>
+                      <span className="flex items-center justify-center gap-2 font-bold"><Loader2 size={16} className="animate-spin text-white" /> Sending Message...</span>
                     ) : (
                       <>
                         <Send size={16} className="transition-transform group-hover:scale-110 text-[#38bdf8]" />

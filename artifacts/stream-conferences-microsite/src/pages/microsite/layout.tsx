@@ -46,7 +46,7 @@ export interface EventData {
   headerBanners?: string[];
   fees?: { type: string; dateLabel: string; deadline?: string | Date; usd: number; gbp: number; eur: number }[];
   tracks?: { title: string; description?: string; image?: string; referenceLinks?: { label: string; url: string }[] }[];
-  organizerContact?: { name?: string; email?: string; phone?: string; website?: string; address?: string; country?: string };
+  organizerContact?: { name?: string; email?: string; phone?: string; website?: string; address?: string; country?: string; socials?: any };
   speakers?: { name: string; degree?: string; designation?: string; organization?: string; bio?: string; avatar?: string; linkedin?: string; twitter?: string; website?: string; topic?: string; isKeynote?: boolean; category?: string }[];
   program?: { dayNumber: number; date?: string; title?: string; description?: string; sessions: any[] }[];
   faqs?: { question: string; answer: string; category?: string; order?: number }[];
@@ -60,6 +60,17 @@ export interface EventData {
   venueDetails?: { name?: string; address?: string; city?: string; state?: string; country?: string; pincode?: string; description?: string; mainImage?: string; subImages?: string[]; images?: string[]; mapUrl?: string; directions?: string; parking?: string; accommodation?: string; nearestAirport?: string };
   organizingCommittee?: { name?: string; image?: string; degree?: string; specialization?: string; country?: string; biography?: string; researchArea?: string }[];
   itinerary?: any[];
+  about?: string;
+  terms?: string;
+  privacy?: string;
+  registerSteps?: any[];
+  brochure?: any;
+  feeLevels?: any[];
+  gtmCode?: string;
+  gaCode?: string;
+  mcCode?: string;
+  metaTitle?: string;
+  metaDescription?: string;
   cohorts?: Cohort[];
   currentCohort?: Cohort | null;
   activeCohort?: Cohort | null;
