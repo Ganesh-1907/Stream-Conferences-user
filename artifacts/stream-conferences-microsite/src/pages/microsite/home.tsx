@@ -291,11 +291,8 @@ export function HomePage({ event }: { event: EventData }) {
 
   return (
     <>
-      {/* Full-Bleed Edge-to-Edge Dynamic Theme Hero Section with Ambient Glow & Grid Lines (Matching Selected Admin Theme) */}
+      {/* Full-Bleed Edge-to-Edge Dynamic Theme Hero Section with Ambient Glow (Plain Color) */}
       <section className="relative w-full hero-slant-bg text-white pt-20 sm:pt-24 md:pt-28 pb-10 sm:pb-14 border-b border-white/10 overflow-hidden flex flex-col justify-between min-h-screen">
-        {/* Subtle Grid Lines Overlay Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none z-0" />
-
         {/* Ambient Center & Corner Soft Glows */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[450px] bg-white/8 rounded-full blur-[140px] pointer-events-none" />
         <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-white/10 rounded-full blur-[120px] pointer-events-none" />
@@ -318,7 +315,7 @@ export function HomePage({ event }: { event: EventData }) {
                   {event.title}
                 </h1>
                 {event.theme && (
-                  <p className="text-base sm:text-xl md:text-2xl font-extrabold text-amber-300 tracking-wide italic drop-shadow-sm text-center lg:text-left">
+                  <p className="text-base sm:text-xl md:text-2xl font-extrabold text-white tracking-wide italic drop-shadow-sm text-center lg:text-left">
                     Theme: {event.theme}
                   </p>
                 )}

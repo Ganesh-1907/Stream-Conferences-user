@@ -1,9 +1,11 @@
-import { useState, useMemo, type FormEvent } from 'react';
-import { CalendarDays, MapPin, ChevronDown, FileText, ArrowRight, Check, Loader2 } from 'lucide-react';
+import { useState, useEffect, useMemo, type FormEvent } from 'react';
+import { CalendarDays, MapPin, ChevronDown, FileText, ArrowRight, Check, Loader2, Download } from 'lucide-react';
 import type { EventData } from './layout';
 import { MicrositeHero } from '@/components/microsite-hero';
 
+const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
+const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
 
 function formatDateRange(event: EventData): string {
   const start = event.startDate || event.eventDate;
@@ -39,6 +41,18 @@ export function AbstractPage({ event }: { event: EventData }) {
   const [sent, setSent] = useState(false);
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [templateData, setTemplateData] = useState<{ title: string; fileUrl: string; fileName: string } | null>(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/abstract-template/main`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.fileUrl) {
+          setTemplateData(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const fees = useMemo(() => (Array.isArray(event.fees) ? (event.fees as FeeItem[]) : []), [event.fees]);
 
@@ -281,6 +295,42 @@ export function AbstractPage({ event }: { event: EventData }) {
             </div>
             <div className="border-t border-[hsl(var(--border))] pt-4 space-y-2">
 
+              {/* Sample Template Accordion */}
+              <div className="border-b border-[hsl(var(--border)]/60 pb-3">
+                <button
+                  type="button"
+                  onClick={() => setOpenAccordion(openAccordion === 'template' ? null : 'template')}
+                  className="w-full flex items-center justify-between font-bold text-sm text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors cursor-pointer"
+                >
+                  <span className="uppercase tracking-wider">Sample Template</span>
+                  <ChevronDown size={16} className={`transform transition-transform ${openAccordion === 'template' ? 'rotate-180' : ''}`} />
+                </button>
+                {openAccordion === 'template' && (
+                  <div className="mt-2.5 pl-1 space-y-2.5 text-sm text-[hsl(var(--muted-foreground))]">
+                    {templateData?.fileUrl ? (
+                      <div className="space-y-2">
+                        <p className="text-xs text-[hsl(var(--muted-foreground))] font-medium">
+                          {templateData.title || 'Official Abstract Submission Template'}
+                        </p>
+                        <a
+                          href={mediaUrl(templateData.fileUrl)}
+                          download={templateData.fileName || 'Abstract-Template'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-semibold text-xs hover:opacity-90 transition shadow-xs cursor-pointer"
+                        >
+                          <Download size={14} /> Download Template
+                        </a>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-[hsl(var(--muted-foreground))] opacity-75">
+                        No template file available.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Important Dates Accordion */}
               <div className="border-b border-[hsl(var(--border)]/60 pb-3">
                 <button
@@ -302,43 +352,6 @@ export function AbstractPage({ event }: { event: EventData }) {
                       ))
                     ) : (
                       <p className="text-sm opacity-60">No important dates available.</p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Fee Levels Accordion */}
-              <div className="border-b border-[hsl(var(--border)]/60 pb-3">
-                <button
-                  type="button"
-                  onClick={() => setOpenAccordion(openAccordion === 'fees' ? null : 'fees')}
-                  className="w-full flex items-center justify-between font-bold text-sm text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors cursor-pointer"
-                >
-                  <span className="uppercase tracking-wider">Fee Levels</span>
-                  <ChevronDown size={16} className={`transform transition-transform ${openAccordion === 'fees' ? 'rotate-180' : ''}`} />
-                </button>
-                {openAccordion === 'fees' && (
-                  <div className="mt-2.5 pl-1 space-y-3.5 text-sm text-[hsl(var(--muted-foreground))]">
-                    {groupedFees.length > 0 ? (
-                      groupedFees.map(([type, items]) => (
-                        <div key={type} className="space-y-2 border-b border-[hsl(var(--border)/0.3)] pb-3 last:border-0 last:pb-0">
-                          <p className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--primary))]">{type}</p>
-                          <div className="space-y-2">
-                            {items.map((item, idx) => {
-                              const price = item.usd;
-                              const expired = isFeeDateExpired(item);
-                              return (
-                                <div key={idx} className={`flex items-center justify-between text-sm ${expired ? 'opacity-50 line-through' : ''}`}>
-                                  <span className="font-semibold text-[hsl(var(--foreground))] text-sm">{item.dateLabel || 'Standard'}</span>
-                                  <span className="font-bold text-[hsl(var(--secondary))] text-sm">${Number(price).toLocaleString()}</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm opacity-60">No fee levels configured.</p>
                     )}
                   </div>
                 )}

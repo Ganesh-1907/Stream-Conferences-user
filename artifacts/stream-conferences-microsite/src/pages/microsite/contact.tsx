@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'wouter';
-import { Mail, Phone, Globe, MapPin, Check, ExternalLink, Building, Send, Loader2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Check, ExternalLink, Building, Send, Loader2 } from 'lucide-react';
 import type { EventData } from './layout';
 import { MicrositeHero } from '@/components/microsite-hero';
 import { getNameInitials } from '@/lib/utils';
@@ -135,25 +135,6 @@ export function ContactPage({ event }: { event: EventData }) {
                 </a>
               )}
 
-              {website && (
-                <a
-                  href={website.startsWith('http') ? website : `https://${website}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-center gap-4 p-3.5 rounded-2xl bg-[hsl(var(--background))] border border-[hsl(var(--border)/0.7)] hover:border-cyan-500/50 hover:bg-cyan-500/[0.04] transition-all duration-200 cursor-pointer"
-                >
-                  <div className="w-11 h-11 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <Globe size={19} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Official Website</p>
-                    <p className="text-sm sm:text-base font-semibold text-[hsl(var(--foreground))] group-hover:text-cyan-600 dark:group-hover:text-cyan-400 truncate transition-colors">
-                      {website}
-                    </p>
-                  </div>
-                  <ExternalLink size={14} className="text-[hsl(var(--muted-foreground))] opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mr-1" />
-                </a>
-              )}
 
               {(contact?.country || event?.country) && (
                 <div className="group flex items-center gap-4 p-3.5 rounded-2xl bg-[hsl(var(--background))] border border-[hsl(var(--border)/0.7)]">

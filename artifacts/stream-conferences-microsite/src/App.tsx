@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
+  Award,
   BookOpen,
   CalendarDays,
   Check,
@@ -1643,7 +1644,25 @@ function Home() {
           </div>
         </div>
       </section>
-      
+
+      {/* About STREAM Conferences Introduction Section */}
+      <section className="section-pad bg-[hsl(var(--background))] border-b border-[hsl(var(--border))]">
+        <div className="container-wide w-full">
+          <SectionTitle 
+            eyebrow="About STREAM Conferences" 
+            title="Operating at the intersection of academic excellence and industry innovation." 
+          />
+          <div className="mt-8 grid gap-6 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full max-w-none">
+            <p>
+              STREAM Conferences is an established global architect of elite scientific, technical, research, engineering, academic, and medical summits. Operating at the dynamic intersection of rigorous scholarship and industrial execution, we engineer high-precision platforms designed to accelerate knowledge transfer, forge high-value cross-disciplinary synergies, and catalyse theoretical discoveries into transformative global solutions.
+            </p>
+            <p>
+              We redefine the international summit experience through focused, result-driven frameworks that convert intellectual capital into immediate market momentum. We deliberately cultivate environments where data scientists, clinical physicians, biotech innovators, and systems engineers converge to solve high-stakes global challenges.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Upcoming Conferences Section */}
       <section className="section-pad bg-[hsl(var(--card))]" id="upcoming-events-conferences">
         <div className="container-wide">
@@ -1855,6 +1874,14 @@ function AboutPage() {
     ['Multidisciplinary Synergy', 'Humanity’s most formidable challenges transcend singular disciplines. We systematically dismantle sectoral barriers, aligning clinical authorities, technical pioneers, and corporate strategists to generate unexpected insights and borderless innovation.'],
     ['Global Inclusivity & Intellectual Accessibility', 'Scientific advancement is a global imperative. We sustain a borderless platform that elevates pioneering work from across all continents, guaranteeing early-career scholars, doctoral candidates, and seasoned authorities equal access to high-impact publishing, peer recognition, and strategic networks.'],
   ];
+
+  const visionPoints = [
+    'Create a connected international ecosystem where diverse minds, disciplines, and perspectives come together.',
+    'Inspire new ideas, discoveries, and innovations that contribute to the advancement of science, technology, medicine, engineering, and academia.',
+    'Encourage researchers, professionals, and emerging talents to learn, grow, share expertise, and pursue new possibilities.',
+    'Foster a culture of collaboration and innovation that transforms knowledge and ideas into lasting contributions to society.',
+  ];
+
   return (
     <Layout>
       <PageHero
@@ -1864,48 +1891,61 @@ function AboutPage() {
         body="Uniting Academia, Industry, and Clinical Excellence on One Global Stage"
       />
       <main>
-        {/* 1. About Section - Paragraphs */}
+        {/* 1. About Section - Paragraphs (Full Width) */}
         <section className="section-pad">
           <div className="container-wide w-full">
-            <div className="grid gap-5 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full">
-              <p>STREAM Conferences is an established global architect of elite scientific, technical, research, engineering, academic, and medical summits. Operating at the dynamic intersection of rigorous scholarship and industrial execution, we engineer high-precision platforms designed to accelerate knowledge transfer, forge high-value cross-disciplinary synergies, and catalyse theoretical discoveries into transformative global solutions.</p>
-              <p>We redefine the international summit experience through focused, result-driven frameworks that convert intellectual capital into immediate market momentum. We deliberately cultivate environments where data scientists, clinical physicians, biotech innovators, and systems engineers converge to solve high-stakes global challenges.</p>
+            <div className="grid gap-6 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full max-w-none">
+              <p>Where pioneering ideas meet global expertise, STREAM Conferences creates a space for discovery, innovation, and meaningful exchange across Conference platforms fostering knowledge and Academia. We bring together leading researchers, scientists, academicians, healthcare professionals, engineers, technology experts, industry leaders, innovators, and emerging professionals to create meaningful opportunities for knowledge exchange and collaboration. Operating at the intersection of academic excellence and industry innovation.</p>
+              <p>We create focused platforms where research, expertise, and real-world applications can come together. Our conferences are designed to encourage the exchange of groundbreaking research, emerging technologies, practical insights, and diverse perspectives across disciplines.</p>
+              <p>We go beyond traditional conference formats by creating engaging, knowledge-driven environments that encourage meaningful discussions, interdisciplinary connections, and professional networking. Through keynote presentations, plenary sessions, technical talks, research presentations, panel discussions, workshops, and interactive forums, participants gain opportunities to present their work, discover emerging developments, and connect with peers and experts from around the world.</p>
+              <p>Our conferences span diverse areas including Science, Technology, Research, Engineering, Academia, Medicine, and other emerging fields, enabling cross-disciplinary dialogue on some of the most important challenges and opportunities shaping the world today. By bringing complementary areas of expertise together, we aim to encourage collaboration that can transform innovative concepts and research findings into practical applications and impactful solutions.</p>
+              <p>At STREAM Conferences, we believe that progress begins with connection. Every conference is designed to create a space where ideas can be shared, perspectives can be challenged, partnerships can be formed, and new possibilities can emerge. Our goal is to strengthen the global exchange of knowledge while supporting researchers, professionals, and innovators in contributing to the advancement of their fields.</p>
+              <p>Through a growing international network of scientific and professional communities, STREAM Conferences strives to connect minds, facilitate knowledge transfer, encourage innovation, and contribute to meaningful progress across science, technology, healthcare, engineering, and academia.</p>
             </div>
           </div>
         </section>
 
-        {/* 2. Vision & Mission Section - Stacked one by one */}
+        {/* 2. Vision Section (Full Width) */}
         <section className="section-pad bg-[hsl(var(--card))]">
-          <div className="container-wide w-full grid gap-14 grid-cols-1">
-            <div>
-              <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))] mb-3">
-                Vision
-              </p>
-              <p className="text-base sm:text-lg leading-8 text-[hsl(var(--foreground))] font-medium">
-                To serve as the definitive global benchmark for scientific-industrial convergence—building a borderless research ecosystem where breakthrough science seamlessly transitions into commercial technology and clinical practice.
-              </p>
-            </div>
-            <div>
-              <SectionTitle eyebrow="Mission" title="Move knowledge into the world." />
-              <ul className="mt-8 grid gap-5 grid-cols-1">
-                {['Accelerate technology transfer from university-led research into commercial pipelines and clinical application.', 'Foster multidisciplinary synergy across Medicine, Pharma, Health Science, Life Science, Engineering, and Technology.', 'Elevate emerging scholars through visibility and direct mentorship alongside recognized industry leaders.', 'Uphold academic excellence across every keynote, technical panel, symposium, and peer-reviewed publication.'].map((item, i) => (
-                  <li key={item} className="flex gap-4 border-b border-[hsl(var(--border))] pb-5 text-sm sm:text-base leading-6">
-                    <span className="mono text-[hsl(var(--accent))] font-bold text-base">0{i + 1}</span>
-                    <span className="text-[hsl(var(--foreground))]">{item}</span>
-                  </li>
-                ))}
-              </ul>
+          <div className="container-wide w-full">
+            <SectionTitle eyebrow="Vision" title="Connecting minds and transforming global discovery." />
+            <div className="mt-8 grid gap-4 grid-cols-1 md:grid-cols-2 w-full max-w-none">
+              {visionPoints.map((point, i) => (
+                <div key={i} className="flex items-start gap-4 p-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] shadow-xs">
+                  <span className="flex items-center justify-center shrink-0 w-8 h-8 rounded-full bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))] font-mono font-bold text-sm">
+                    0{i + 1}
+                  </span>
+                  <p className="text-base sm:text-lg leading-7 text-[hsl(var(--foreground))] font-medium">
+                    {point}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* 3. What Guides The Work - 4 Cards in 1 Row */}
+        {/* 3. Mission Section (Full Width) */}
+        <section className="section-pad">
+          <div className="container-wide w-full">
+            <SectionTitle eyebrow="Mission" title="Move knowledge into the world." />
+            <ul className="mt-8 grid gap-5 grid-cols-1 w-full max-w-none">
+              {['Accelerate technology transfer from university-led research into commercial pipelines and clinical application.', 'Foster multidisciplinary synergy across Medicine, Pharma, Health Science, Life Science, Engineering, and Technology.', 'Elevate emerging scholars through visibility and direct mentorship alongside recognized industry leaders.', 'Uphold academic excellence across every keynote, technical panel, symposium, and peer-reviewed publication.'].map((item, i) => (
+                <li key={item} className="flex gap-4 border-b border-[hsl(var(--border))] pb-5 text-base sm:text-lg leading-7">
+                  <span className="mono text-[hsl(var(--accent))] font-bold text-base">0{i + 1}</span>
+                  <span className="text-[hsl(var(--foreground))] font-medium">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {/* 4. What Guides The Work (Full Width) */}
         <section className="section-pad bg-[hsl(var(--card))]">
-          <div className="container-wide">
+          <div className="container-wide w-full">
             <SectionTitle eyebrow="What guides the work" title="Four values behind every stage, review, and connection." />
-            <div className="mt-12 grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-12 grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full max-w-none">
               {values.map(([title, body], i) => (
-                <div key={title} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm">
+                <div key={title} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-6 shadow-sm">
                   <div>
                     <span className="font-mono text-[hsl(var(--secondary))] font-bold text-sm tracking-wider">0{i + 1}</span>
                     <h3 className="display mt-4 text-lg sm:text-xl font-bold text-[hsl(var(--foreground))] leading-snug">{title}</h3>
@@ -1917,14 +1957,14 @@ function AboutPage() {
           </div>
         </section>
 
-        {/* 4. Who We Gather */}
-        <section className="section-pad bg-[hsl(var(--card))]">
-          <div className="container-wide grid gap-12 lg:grid-cols-[.8fr_1.2fr]">
+        {/* 5. Who We Gather (Full Width) */}
+        <section className="section-pad">
+          <div className="container-wide w-full">
             <SectionTitle eyebrow="Who we gather" title="A premier delegation of decision-makers and innovators." />
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="mt-8 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full max-w-none">
               {['Clinical & Academic Leaders', 'Industry Innovators', 'Research & Advisory Authorities', 'Next-Gen Researchers'].map((item, i) => (
-                <div key={item} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5">
-                  <Building2 size={20} className="text-[hsl(var(--secondary))]" />
+                <div key={item} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
+                  <Building2 size={24} className="text-[hsl(var(--secondary))]" />
                   <h3 className="display mt-6 text-lg sm:text-xl font-bold">{item}</h3>
                   <p className="mt-3 text-base sm:text-lg leading-7 text-[hsl(var(--muted-foreground))] font-medium">Physicians, executives, editors, strategists, doctoral candidates, and outstanding young scientists.</p>
                 </div>
@@ -1933,11 +1973,11 @@ function AboutPage() {
           </div>
         </section>
 
-        {/* 5. Research Dissemination & Healthcare Publishing */}
+        {/* 6. Research Dissemination & Healthcare Publishing (Full Width - Spans container-wide with max-w-none) */}
         <section className="section-pad bg-[hsl(var(--card))]">
-          <div className="container-wide">
+          <div className="container-wide w-full">
             <SectionTitle eyebrow="Publishing & Indexing" title="Research Dissemination & Healthcare Publishing" />
-            <div className="mt-8 grid gap-5 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] max-w-4xl">
+            <div className="mt-8 grid gap-5 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full max-w-none">
               <p>A fundamental pillar of Stream Conferences is ensuring that presented research secures permanent global reach. We move beyond ephemeral conversations, systematically documenting and indexing scientific discoveries through high-level publishing alliances across healthcare, medical, and technology sectors.</p>
               <p>High-impact submissions receive direct channels for peer-reviewed evaluation in reputed international journals. Furthermore, all accepted abstracts and manuscripts are published in official digital proceedings assigned dedicated DOIs—ensuring universal indexability, citation permanence, and international prestige for researchers at every stage of their trajectory.</p>
             </div>
@@ -2249,9 +2289,124 @@ function VenuePage() {
 }
 
 function SponsorsPage() {
-  const [sent, setSent] = useState(false);
-  const submit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); setSent(true); };
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1200&q=80" eyebrow="Build the room with us" title="Put your work in the conversation." body="Sponsorship and exhibition at ICMLHS 2027 places your organization alongside the researchers and practitioners shaping what comes next." /><main><section className="section-pad"><div className="container-wide"><div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">{[['Platinum', 'Lead the room', ['Main stage recognition', 'Keynote introduction', 'Premium exhibition footprint']], ['Gold', 'Shape the exchange', ['Session recognition', 'Exhibition footprint', 'Delegate invitations']], ['Silver', 'Join the network', ['Logo visibility', 'Exhibition table', 'Delegate invitations']], ['Exhibitor', 'Show the work', ['Dedicated table', 'Listing in event guide', 'Passes included']]].map(([tier, lead, benefits]) => <div key={String(tier)} className={`rounded-2xl border p-6 ${tier === 'Platinum' ? 'border-[hsl(var(--accent))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : 'border-[hsl(var(--border))] bg-[hsl(var(--card))]'}`}><p className={`label ${tier === 'Platinum' ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--secondary))]'}`}>{tier}</p><h3 className="display mt-4 text-2xl font-bold">{lead}</h3><ul className="mt-8 grid gap-3">{(benefits as string[]).map((benefit) => <li key={benefit} className="flex gap-2 text-sm"><Check size={16} className="mt-0.5 shrink-0 text-[hsl(var(--accent))]" />{benefit}</li>)}</ul></div>)}</div></div></section><section className="section-pad bg-[hsl(var(--card))]"><div className="container-wide grid gap-12 lg:grid-cols-[.75fr_1.25fr]"><SectionTitle eyebrow="Partner desk" title="Start a useful conversation." body="Send an initial brief to partners@streamconferences.com. Our partnership team will respond within 24–48 business hours." />{sent ? <SuccessState title="Brief received" body="Thanks. The partnership desk has received your request and will contact you shortly." reset={() => setSent(false)} testId="status-sponsor-success" /> : <form onSubmit={submit} className="grid gap-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6"><input required className="form-field" placeholder="Company name" aria-label="Company name" data-testid="input-sponsor-company" /><input required className="form-field" placeholder="Contact name" aria-label="Contact name" data-testid="input-sponsor-contact" /><div className="grid gap-4 sm:grid-cols-2"><input required type="email" className="form-field" placeholder="Email address" aria-label="Email address" data-testid="input-sponsor-email" /><input className="form-field" placeholder="Phone number" aria-label="Phone number" data-testid="input-sponsor-phone" /></div><select className="form-field" defaultValue="" aria-label="Tier of interest" data-testid="select-sponsor-tier"><option value="" disabled>Tier of interest</option><option>Platinum</option><option>Gold</option><option>Silver</option><option>Exhibitor</option></select><textarea className="form-field min-h-28" placeholder="Tell us what you want to make possible" aria-label="Message" data-testid="input-sponsor-message" /><button type="submit" className="btn-main btn-primary" data-testid="button-submit-sponsor">Send partnership brief <Send size={16} /></button></form>}</div></section></main></Layout>;
+  const [sponsors, setSponsors] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  const fetchSponsors = async (pageNum: number) => {
+    try {
+      const res = await fetch(`${API_BASE}/sponsors/all?page=${pageNum}&limit=10`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setSponsors((prev) => (pageNum === 1 ? data.sponsors : [...prev, ...data.sponsors]));
+      setTotalPages(data.totalPages);
+    } catch (err) {
+      console.error('Failed to load sponsors:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchSponsors(1).then(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (page > 1) {
+      setLoadingMore(true);
+      fetchSponsors(page).then(() => setLoadingMore(false));
+    }
+  }, [page]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && page < totalPages && !loadingMore) {
+          setPage((p) => p + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [page, totalPages, loadingMore]);
+
+  return (
+    <Layout>
+      <PageHero
+        bgImage="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1200&q=80"
+        eyebrow="Build the room with us"
+        title="Put your work in the conversation."
+        body="Sponsorship and exhibition at STREAM Conferences places your organization alongside the researchers and practitioners shaping what comes next."
+      />
+      <main>
+        {/* Dynamic Sponsors Grid from all events */}
+        <section className="section-pad">
+          <div className="container-wide">
+            <SectionTitle
+              eyebrow="Our Partners"
+              title="Sponsors across all events."
+              body="Recognizing the organizations and industry leaders supporting our conferences and webinars."
+            />
+
+            {loading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 pt-8">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="h-36 sm:h-40 rounded-2xl bg-[hsl(var(--muted)/.4)]" />
+                    <div className="mt-2.5 h-4 w-3/4 mx-auto rounded bg-[hsl(var(--muted)/.4)]" />
+                  </div>
+                ))}
+              </div>
+            ) : sponsors.length === 0 ? (
+              <div className="text-center py-16 text-[hsl(var(--muted-foreground))]">
+                <Award size={40} className="mx-auto mb-4 opacity-40" />
+                <p className="text-lg">No sponsors have been added yet.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 pt-8">
+                {sponsors.map((sponsor, idx) => {
+                  const displayName = sponsor.name || sponsor.title || `Sponsor ${idx + 1}`;
+                  const logoUrl = sponsor.logo ? mediaUrl(sponsor.logo) : '';
+                  return (
+                    <div key={`${sponsor.sponsorId}-${idx}`} className="group flex flex-col items-center text-center">
+                      <div className="relative w-full h-36 sm:h-40 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm group-hover:shadow-xl group-hover:border-[hsl(var(--primary)/0.5)] transition-all duration-300 transform group-hover:-translate-y-1 p-3 flex items-center justify-center overflow-hidden">
+                        {logoUrl ? (
+                          <img src={logoUrl} alt={displayName} className="w-full h-full object-contain filter drop-shadow-sm group-hover:scale-105 transition-transform duration-300" />
+                        ) : (
+                          <div className="w-full h-full bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--primary))] flex items-center justify-center font-bold text-base rounded-xl gap-2 p-2">
+                            <Award size={24} />
+                            <span className="font-['Space_Grotesk'] line-clamp-1">{displayName}</span>
+                          </div>
+                        )}
+                      </div>
+                      <h4 className="mt-2.5 text-sm sm:text-base font-extrabold text-[hsl(var(--foreground))] text-center line-clamp-1 group-hover:text-[hsl(var(--primary))] transition-colors font-['Space_Grotesk']">
+                        {displayName}
+                      </h4>
+                      {sponsor.eventTitle && (
+                        <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))] line-clamp-1">{sponsor.eventTitle}</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Infinite scroll sentinel */}
+            <div ref={sentinelRef} className="h-4" />
+            {loadingMore && (
+              <div className="flex justify-center py-6">
+                <div className="h-6 w-6 border-2 border-[hsl(var(--primary))] border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+          </div>
+        </section>
+      </main>
+    </Layout>
+  );
 }
 
 function RegisterPage() {
