@@ -10,12 +10,12 @@ export function AboutPage({ event }: { event: EventData }) {
         tagline="Discover the mission, key themes, and global research highlights for this premier international conference."
       />
 
-      {/* Main Content Body Container */}
-      <div className="container-wide py-10 sm:py-14">
-        <div className="max-w-4xl mx-auto">
+      {/* Main Content Body Container (Full Width) */}
+      <div className="container-wide py-10 sm:py-14 w-full">
+        <div className="w-full max-w-none">
           {event?.description ? (
             <div
-              className="prose prose-lg dark:prose-invert max-w-none text-[hsl(var(--foreground))] leading-relaxed text-base sm:text-lg prose-strong:font-bold prose-strong:text-[hsl(var(--foreground))]"
+              className="prose prose-lg dark:prose-invert max-w-none text-[hsl(var(--foreground))] leading-relaxed text-base sm:text-lg text-justify prose-strong:font-bold prose-strong:text-[hsl(var(--foreground))]"
               dangerouslySetInnerHTML={{ __html: event.description }}
             />
           ) : (

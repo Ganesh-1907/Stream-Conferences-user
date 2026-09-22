@@ -566,18 +566,18 @@ export function HomePage({ event }: { event: EventData }) {
                 <div
                   key={speaker.name || idx}
                   onClick={() => setSelectedSpeaker(speaker)}
-                  className="group relative flex flex-col items-center text-center rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-6 shadow-sm hover:shadow-xl hover:border-[hsl(var(--primary)/.5)] transition-all duration-300 cursor-pointer overflow-hidden"
+                  className="group relative flex flex-col items-center text-center rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-5 shadow-sm hover:shadow-xl hover:border-[hsl(var(--primary)/.5)] transition-all duration-300 cursor-pointer overflow-hidden"
                 >
-                  <div className="w-12 h-1.5 rounded-full bg-[hsl(var(--border))] mb-4 group-hover:bg-[hsl(var(--primary)/.4)] transition-colors shadow-inner shrink-0" />
+                  <div className="w-10 h-1.5 rounded-full bg-[hsl(var(--border))] mb-3 group-hover:bg-[hsl(var(--primary)/.4)] transition-colors shadow-inner shrink-0" />
 
-                  <div className="absolute top-3.5 right-3.5">
+                  <div className="absolute top-3 right-3">
                     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${categoryConfig.badgeClass} shadow-sm`}>
                       {isKeynote && <Award size={12} />}
                       {categoryConfig.label}
                     </span>
                   </div>
 
-                  <div className="relative mb-4 w-28 h-28 sm:w-32 sm:h-32 rounded-full ring-4 ring-[hsl(var(--border))] group-hover:ring-[hsl(var(--primary)/.5)] transition-all duration-300 overflow-hidden bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] shadow-md flex items-center justify-center shrink-0">
+                  <div className="relative mb-3 w-24 h-24 sm:w-28 sm:h-28 rounded-full ring-4 ring-[hsl(var(--border))] group-hover:ring-[hsl(var(--primary)/.5)] transition-all duration-300 overflow-hidden bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] shadow-md flex items-center justify-center shrink-0">
                     {speaker.avatar ? (
                       <img
                         src={mediaUrl(speaker.avatar)}
@@ -585,103 +585,29 @@ export function HomePage({ event }: { event: EventData }) {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-3xl font-['Space_Grotesk'] shadow-inner">
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-2xl font-['Space_Grotesk'] shadow-inner">
                         {getNameInitials(speaker.name, 'S')}
                       </div>
                     )}
                     {isKeynote && (
-                      <div className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md border-2 border-[hsl(var(--card))]">
-                        <Award size={13} />
+                      <div className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md border-2 border-[hsl(var(--card))]">
+                        <Award size={11} />
                       </div>
                     )}
                   </div>
 
-                <h3 className="font-['Space_Grotesk'] font-bold text-lg sm:text-xl text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 w-full px-1">
-                  {speaker.name}
-                </h3>
+                  <h3 className="font-['Space_Grotesk'] font-bold text-base sm:text-lg text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 w-full px-1">
+                    {speaker.name}
+                  </h3>
 
-                {speaker.degree && (
-                  <div className="mt-1">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[hsl(var(--primary))] uppercase tracking-wider bg-[hsl(var(--primary)/0.1)] px-2.5 py-0.5 rounded-full">
-                      <GraduationCap size={12} />
-                      {speaker.degree}
+                  <div className="mt-3 pt-3 w-full flex items-center justify-center border-t border-[hsl(var(--border)/.6)] text-xs">
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))] font-semibold text-xs group-hover:bg-[hsl(var(--primary))] group-hover:text-white transition-all shadow-xs">
+                      View Profile <ExternalLink size={12} />
                     </span>
                   </div>
-                )}
 
-                {speaker.designation && (
-                  <p className="text-sm font-semibold text-[hsl(var(--primary))] mt-1.5 line-clamp-1 w-full px-1">
-                    {speaker.designation}
-                  </p>
-                )}
-
-                {speaker.organization && (
-                  <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1 flex items-center justify-center gap-1.5 line-clamp-1 w-full px-1">
-                    <Building2 size={12} className="shrink-0 opacity-70" />
-                    <span>{speaker.organization}</span>
-                  </p>
-                )}
-
-                {speaker.topic && (
-                  <div className="mt-3 w-full">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[hsl(var(--primary)/.08)] border border-[hsl(var(--primary)/.15)] text-[hsl(var(--primary))] text-xs font-medium max-w-full">
-                      <Presentation size={12} className="shrink-0" />
-                      <span className="truncate">{speaker.topic}</span>
-                    </span>
-                  </div>
-                )}
-
-                {speaker.bio && (
-                  <p className="mt-3 text-xs text-[hsl(var(--muted-foreground))] line-clamp-2 leading-relaxed px-1">
-                    {speaker.bio}
-                  </p>
-                )}
-
-                <div className="mt-auto pt-4 w-full flex items-center justify-between border-t border-[hsl(var(--border)/.6)] text-xs">
-                  <span className="text-[11px] font-medium text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(var(--foreground))] transition-colors flex items-center gap-1">
-                    View Profile <ExternalLink size={11} className="opacity-70" />
-                  </span>
-                  {(speaker.linkedin || speaker.twitter || speaker.website) && (
-                    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                      {speaker.linkedin && (
-                        <a
-                          href={speaker.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-7 h-7 rounded-md flex items-center justify-center bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white transition-all"
-                          title="LinkedIn"
-                        >
-                          <Linkedin size={13} />
-                        </a>
-                      )}
-                      {speaker.twitter && (
-                        <a
-                          href={speaker.twitter}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-7 h-7 rounded-md flex items-center justify-center bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white transition-all"
-                          title="Twitter"
-                        >
-                          <Twitter size={13} />
-                        </a>
-                      )}
-                      {speaker.website && (
-                        <a
-                          href={speaker.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-7 h-7 rounded-md flex items-center justify-center bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white transition-all"
-                          title="Website"
-                        >
-                          <Globe size={13} />
-                        </a>
-                      )}
-                    </div>
-                  )}
+                  <div className="w-full h-1 bg-gradient-to-r from-transparent via-[hsl(var(--primary)/.4)] to-transparent absolute bottom-0 left-0" />
                 </div>
-
-                <div className="w-full h-1 bg-gradient-to-r from-transparent via-[hsl(var(--primary)/.4)] to-transparent absolute bottom-0 left-0" />
-              </div>
             );
           })}
           </div>
@@ -725,42 +651,58 @@ export function HomePage({ event }: { event: EventData }) {
             </p>
           </div>
 
-          <div className="space-y-6 sm:space-y-8">
+          <div className="w-full space-y-8">
             {event.tracks.slice(0, 5).map((track, i) => (
-              <div key={i} className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6 pb-6 sm:pb-8 border-b border-[hsl(var(--border))] last:border-0 last:pb-0">
+              <div key={i} className="flex flex-col sm:flex-row items-start gap-6 sm:gap-8 pb-8 border-b border-[hsl(var(--border))] last:border-0 last:pb-0">
+                {/* Left Side: Track Image or Number Badge */}
                 {track.image ? (
                   <img
                     src={mediaUrl(track.image)}
                     alt={track.title}
-                    className="w-32 h-32 sm:w-48 sm:h-36 md:w-56 md:h-40 shrink-0 rounded-2xl object-cover border border-[hsl(var(--border))] shadow-md bg-[hsl(var(--card))]"
+                    className="w-full sm:w-56 md:w-64 h-44 sm:h-44 md:h-48 shrink-0 rounded-2xl object-cover border border-[hsl(var(--border))] shadow-md bg-[hsl(var(--card))]"
                   />
                 ) : (
-                  <div className="w-32 h-32 sm:w-48 sm:h-36 md:w-56 md:h-40 shrink-0 rounded-2xl bg-[hsl(var(--primary)/.1)] border border-[hsl(var(--primary)/.2)] flex items-center justify-center text-3xl sm:text-5xl font-black text-[hsl(var(--primary))] font-['Space_Grotesk'] shadow-sm">
+                  <div className="w-full sm:w-56 md:w-64 h-44 sm:h-44 md:h-48 shrink-0 rounded-2xl bg-[hsl(var(--primary)/.08)] border border-[hsl(var(--primary)/.18)] flex items-center justify-center text-4xl sm:text-5xl font-black text-[hsl(var(--primary))] font-['Space_Grotesk'] shadow-sm">
                     {(i + 1).toString().padStart(2, '0')}
                   </div>
                 )}
-                <div className="flex-1 pt-1">
-                  <h3 className="font-extrabold text-xl sm:text-2xl text-[hsl(var(--foreground))] font-['Space_Grotesk'] leading-snug">{track.title}</h3>
+
+                {/* Right Side: Title, Clamped Description, Read More Button & Links */}
+                <div className="flex-1 pt-1 space-y-3">
+                  <h3 className="font-extrabold text-xl sm:text-2xl text-[hsl(var(--foreground))] font-['Space_Grotesk'] leading-snug">
+                    {track.title}
+                  </h3>
                   {track.description && (
-                    <p className="mt-2 text-base sm:text-lg text-[hsl(var(--muted-foreground))] leading-relaxed">
-                      {track.description}
-                    </p>
+                    <div
+                      className="text-base sm:text-lg text-[hsl(var(--muted-foreground))] leading-relaxed line-clamp-3 text-justify"
+                      dangerouslySetInnerHTML={{ __html: track.description }}
+                    />
                   )}
-                  {Array.isArray(track.referenceLinks) && track.referenceLinks.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {track.referenceLinks.map((link: any, li: number) => (
-                        <a
-                          key={li}
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-3 py-1 text-xs font-semibold text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] transition-colors"
-                        >
-                          <ExternalLink size={12} /> {link.label || (link as any).title || link.url}
-                        </a>
-                      ))}
-                    </div>
-                  )}
+
+                  <div className="pt-2 flex items-center gap-4 flex-wrap">
+                    <Link
+                      href={`/tracks?track=${i}`}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-semibold text-xs uppercase tracking-wider hover:opacity-90 transition shadow-xs cursor-pointer"
+                    >
+                      Read More <ArrowRight size={14} />
+                    </Link>
+
+                    {Array.isArray(track.referenceLinks) && track.referenceLinks.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {track.referenceLinks.map((link: any, li: number) => (
+                          <a
+                            key={li}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--muted))] border border-[hsl(var(--border))] px-3.5 py-1.5 text-xs font-semibold text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] transition-colors shadow-xs"
+                          >
+                            <ExternalLink size={12} /> {link.label || (link as any).title || link.url}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -851,97 +793,129 @@ export function HomePage({ event }: { event: EventData }) {
       </section>
       )}
 
-      {/* Speaker Details Modal */}
+      {/* Speaker Details Modal Popup */}
       <Dialog open={Boolean(selectedSpeaker)} onOpenChange={(open) => !open && setSelectedSpeaker(null)}>
         {selectedSpeaker && (
-          <DialogContent className="sm:max-w-md bg-[hsl(var(--card))] border-[hsl(var(--border))] text-[hsl(var(--foreground))] p-6">
-            <DialogHeader className="flex flex-col items-center text-center space-y-3">
-              <div className="relative w-24 h-24 rounded-full ring-4 ring-[hsl(var(--primary)/.3)] overflow-hidden shadow-lg bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] flex items-center justify-center">
-                {selectedSpeaker.avatar ? (
-                  <img
-                    src={mediaUrl(selectedSpeaker.avatar)}
-                    alt={selectedSpeaker.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-2xl font-['Space_Grotesk']">
-                    {getNameInitials(selectedSpeaker.name, 'S')}
+          <DialogContent className="sm:max-w-3xl bg-[hsl(var(--card))] border-[hsl(var(--border))] text-[hsl(var(--foreground))] p-6 sm:p-8">
+            <DialogHeader className="sr-only">
+              <DialogTitle>{selectedSpeaker.name}</DialogTitle>
+            </DialogHeader>
+
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8 pt-2">
+              {/* Left Column: Circle Avatar & Designation Down below */}
+              <div className="flex flex-col items-center text-center w-full sm:w-48 shrink-0 gap-3">
+                <div className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full ring-4 ring-[hsl(var(--primary)/.3)] overflow-hidden shadow-xl bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] flex items-center justify-center shrink-0">
+                  {selectedSpeaker.avatar ? (
+                    <img
+                      src={mediaUrl(selectedSpeaker.avatar)}
+                      alt={selectedSpeaker.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-4xl font-['Space_Grotesk']">
+                      {getNameInitials(selectedSpeaker.name, 'S')}
+                    </div>
+                  )}
+                </div>
+
+                {/* Designation Down to Profile Image */}
+                {selectedSpeaker.designation && (
+                  <div className="pt-1">
+                    <span className="inline-block text-xs sm:text-sm font-semibold text-[hsl(var(--primary))] bg-[hsl(var(--primary)/.08)] border border-[hsl(var(--primary)/.2)] px-3 py-1 rounded-full">
+                      {selectedSpeaker.designation}
+                    </span>
                   </div>
                 )}
               </div>
-              <div>
-                <DialogTitle className="text-xl font-bold font-['Space_Grotesk'] text-[hsl(var(--foreground))]">
-                  {selectedSpeaker.name}
-                </DialogTitle>
-                {selectedSpeaker.degree && (
-                  <span className="inline-flex items-center gap-1 text-xs font-bold text-[hsl(var(--primary))] uppercase tracking-wider bg-[hsl(var(--primary)/0.1)] px-2.5 py-0.5 rounded-full mt-1.5">
-                    <GraduationCap size={13} />
-                    {selectedSpeaker.degree}
+
+              {/* Right Column: Key : Value Format List */}
+              <div className="flex-1 w-full space-y-3.5 text-left">
+                {/* Name */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm">
+                  <span className="font-bold text-[hsl(var(--muted-foreground))] w-32 shrink-0">Name :</span>
+                  <span className="font-bold text-base sm:text-lg text-[hsl(var(--foreground))] font-['Space_Grotesk']">{selectedSpeaker.name}</span>
+                </div>
+
+                {/* Category / Role */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm">
+                  <span className="font-bold text-[hsl(var(--muted-foreground))] w-32 shrink-0">Category :</span>
+                  <span className="font-semibold text-[hsl(var(--foreground))]">
+                    {SPEAKER_CATEGORIES.find((c) => c.key === getSpeakerCategoryKey(selectedSpeaker))?.label || 'Speaker'}
                   </span>
+                </div>
+
+                {selectedSpeaker.degree && (
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm">
+                    <span className="font-bold text-[hsl(var(--muted-foreground))] w-32 shrink-0">Degree :</span>
+                    <span className="font-semibold text-[hsl(var(--foreground))]">{selectedSpeaker.degree}</span>
+                  </div>
                 )}
-                {selectedSpeaker.designation && (
-                  <p className="text-sm font-semibold text-[hsl(var(--primary))] mt-1">
-                    {selectedSpeaker.designation}
-                  </p>
-                )}
+
                 {selectedSpeaker.organization && (
-                  <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1 flex items-center justify-center gap-1.5">
-                    <Building2 size={13} className="opacity-70" />
-                    <span>{selectedSpeaker.organization}</span>
-                  </p>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm">
+                    <span className="font-bold text-[hsl(var(--muted-foreground))] w-32 shrink-0">Organization :</span>
+                    <span className="font-semibold text-[hsl(var(--foreground))] flex items-center gap-1">
+                      <Building2 size={14} className="text-[hsl(var(--primary))]" />
+                      {selectedSpeaker.organization}
+                    </span>
+                  </div>
                 )}
-              </div>
-            </DialogHeader>
 
-            {selectedSpeaker.topic && (
-              <div className="mt-2 text-center">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[hsl(var(--primary)/.08)] border border-[hsl(var(--primary)/.15)] text-[hsl(var(--primary))] text-xs font-medium">
-                  <Presentation size={13} />
-                  <span>Topic: {selectedSpeaker.topic}</span>
-                </span>
-              </div>
-            )}
+                {selectedSpeaker.topic && (
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm">
+                    <span className="font-bold text-[hsl(var(--muted-foreground))] w-32 shrink-0">Topic :</span>
+                    <span className="font-semibold text-[hsl(var(--foreground))]">{selectedSpeaker.topic}</span>
+                  </div>
+                )}
 
-            {selectedSpeaker.bio && (
-              <div className="mt-4 text-xs text-[hsl(var(--muted-foreground))] leading-relaxed text-center px-2">
-                {selectedSpeaker.bio}
-              </div>
-            )}
+                {selectedSpeaker.bio && (
+                  <div className="flex flex-col sm:flex-row items-start gap-1 sm:gap-2 text-sm pt-1">
+                    <span className="font-bold text-[hsl(var(--muted-foreground))] w-32 shrink-0">Biography :</span>
+                    <div className="flex-1 text-sm text-[hsl(var(--foreground))] leading-relaxed text-justify">
+                      {selectedSpeaker.bio}
+                    </div>
+                  </div>
+                )}
 
-            {(selectedSpeaker.linkedin || selectedSpeaker.twitter || selectedSpeaker.website) && (
-              <div className="mt-5 pt-4 flex items-center justify-center gap-3 border-t border-[hsl(var(--border)/.6)]">
-                {selectedSpeaker.linkedin && (
-                  <a
-                    href={selectedSpeaker.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 rounded-lg bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white transition-all flex items-center gap-1.5 text-xs font-medium"
-                  >
-                    <Linkedin size={15} /> LinkedIn
-                  </a>
-                )}
-                {selectedSpeaker.twitter && (
-                  <a
-                    href={selectedSpeaker.twitter}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 rounded-lg bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white transition-all flex items-center gap-1.5 text-xs font-medium"
-                  >
-                    <Twitter size={15} /> Twitter
-                  </a>
-                )}
-                {selectedSpeaker.website && (
-                  <a
-                    href={selectedSpeaker.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 rounded-lg bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white transition-all flex items-center gap-1.5 text-xs font-medium"
-                  >
-                    <Globe size={15} /> Website
-                  </a>
+                {(selectedSpeaker.linkedin || selectedSpeaker.twitter || selectedSpeaker.website) && (
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 text-sm pt-2">
+                    <span className="font-bold text-[hsl(var(--muted-foreground))] w-32 shrink-0">Socials :</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {selectedSpeaker.linkedin && (
+                        <a
+                          href={selectedSpeaker.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1 rounded-full bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white transition-all inline-flex items-center gap-1 text-xs font-semibold"
+                        >
+                          <Linkedin size={12} /> LinkedIn
+                        </a>
+                      )}
+                      {selectedSpeaker.twitter && (
+                        <a
+                          href={selectedSpeaker.twitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1 rounded-full bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white transition-all inline-flex items-center gap-1 text-xs font-semibold"
+                        >
+                          <Twitter size={12} /> Twitter
+                        </a>
+                      )}
+                      {selectedSpeaker.website && (
+                        <a
+                          href={selectedSpeaker.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1 rounded-full bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white transition-all inline-flex items-center gap-1 text-xs font-semibold"
+                        >
+                          <Globe size={12} /> Website
+                        </a>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
-            )}
+            </div>
           </DialogContent>
         )}
       </Dialog>

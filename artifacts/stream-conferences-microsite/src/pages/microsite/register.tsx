@@ -3,6 +3,7 @@ import { CalendarDays, MapPin, ChevronDown, ArrowUpRight, ArrowRight, Check, Loa
 import type { EventData } from './layout';
 import { MicrositeHero } from '@/components/microsite-hero';
 import { isFeeDateExpired } from './fees';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
 
@@ -23,13 +24,16 @@ function formatDateRange(event: EventData): string {
 
 const CURRENCY_SYMBOL: Record<Currency, string> = { USD: '$', EUR: '€', GBP: '£' };
 
+const TITLE_OPTIONS = ['Dr.', 'Mr.', 'Mrs.', 'Ms.', 'Prof.', 'Assist Prof.', 'Assoc Prof.'];
+
 export function RegisterPage({ event }: { event: EventData }) {
   const [step, setStep] = useState<1 | 2>(1);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [title, setTitle] = useState('Dr.');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNum, setPhoneNum] = useState('');
   const [institution, setInstitution] = useState('');
+  const [address, setAddress] = useState('');
   const [country, setCountry] = useState('');
   const [currency, setCurrency] = useState<Currency>('USD');
   const [selectedFeeIndex, setSelectedFeeIndex] = useState<number>(0);
@@ -78,7 +82,7 @@ export function RegisterPage({ event }: { event: EventData }) {
   const selectedFee = fees[selectedFeeIndex] || fees[0] || null;
 
   const phone = phoneNum.trim();
-  const name = `${firstName} ${lastName}`.trim();
+  const name = title ? `${title} ${fullName}`.trim() : fullName.trim();
 
   const verifyPayment = async (orderId: string, paymentId: string, signature: string) => {
     try {
@@ -134,7 +138,7 @@ export function RegisterPage({ event }: { event: EventData }) {
 
   const handleStep1 = (e: FormEvent) => {
     e.preventDefault();
-    if (!firstName || !lastName || !email || !phoneNum || !institution || !country) {
+    if (!fullName.trim() || !email || !phoneNum || !institution || !country || !address.trim()) {
       setError('Please fill all required fields.');
       return;
     }
@@ -153,7 +157,7 @@ export function RegisterPage({ event }: { event: EventData }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name, email, phone, institution, country, category,
+          title, fullName, name, email, phone, institution, address, country, category,
           eventId: event._id, eventType: event.eventType, eventSlug: event.slug || event.subdomain || event.eventId,
           cohortId: event.activeCohort?.cohortId || null,
         }),
@@ -167,7 +171,7 @@ export function RegisterPage({ event }: { event: EventData }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name, email, phone, category, amount: selectedPrice || 245, currency, registrationId: regData._id,
+          title, fullName, name, email, phone, category, address, amount: selectedPrice || 245, currency, registrationId: regData._id,
           eventId: event._id, eventType: event.eventType, eventTitle: event.title, eventSlug: event.slug || event.subdomain || event.eventId,
           cohortId: event.activeCohort?.cohortId || null,
         }),
@@ -236,7 +240,7 @@ export function RegisterPage({ event }: { event: EventData }) {
                 <h3 className="text-xl font-bold text-[hsl(var(--foreground))]">Registration Complete!</h3>
                 <p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Your registration and payment have been successfully recorded. A confirmation email has been sent to {email}.</p>
               </div>
-              <button onClick={() => { setSent(false); setStep(1); setFirstName(''); setLastName(''); setEmail(''); setPhoneNum(''); setInstitution(''); setCountry(''); setSelectedFeeIndex(0); setConsent(false); setPaymentOrderId(''); }} className="mt-4 btn-main btn-primary">Register Another</button>
+              <button onClick={() => { setSent(false); setStep(1); setTitle('Dr.'); setFullName(''); setEmail(''); setPhoneNum(''); setInstitution(''); setAddress(''); setCountry(''); setSelectedFeeIndex(0); setConsent(false); setPaymentOrderId(''); }} className="mt-4 btn-main btn-primary">Register Another</button>
             </div>
           ) : paymentOrderId && !sent ? (
             <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-6">
@@ -264,12 +268,23 @@ export function RegisterPage({ event }: { event: EventData }) {
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
-                      <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">First Name *</label>
-                      <input required className="form-field w-full" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                      <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Title *</label>
+                      <Select value={title} onValueChange={(val) => setTitle(val)}>
+                        <SelectTrigger className="form-field w-full rounded-xl bg-[hsl(var(--card))] border-[hsl(var(--border))] text-[hsl(var(--foreground))] h-11 px-4 flex items-center justify-between cursor-pointer">
+                          <SelectValue placeholder="Select Title" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xl text-[hsl(var(--foreground))] z-50 p-1">
+                          {TITLE_OPTIONS.map((t) => (
+                            <SelectItem key={t} value={t} className="rounded-lg cursor-pointer py-2 px-3 text-sm focus:bg-[hsl(var(--primary)/.1)] focus:text-[hsl(var(--primary))]">
+                              {t}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Last Name *</label>
-                      <input required className="form-field w-full" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                      <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Full Name *</label>
+                      <input required className="form-field w-full" placeholder="Full name (e.g. John Doe)" value={fullName} onChange={(e) => setFullName(e.target.value)} />
                     </div>
                   </div>
 
@@ -293,6 +308,11 @@ export function RegisterPage({ event }: { event: EventData }) {
                       <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Country *</label>
                       <input required className="form-field w-full" placeholder="Country of residence" value={country} onChange={(e) => setCountry(e.target.value)} />
                     </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Address *</label>
+                    <textarea required rows={3} className="form-field w-full resize-y" placeholder="Full mailing address" value={address} onChange={(e) => setAddress(e.target.value)} />
                   </div>
 
                   {error && <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600">{error}</div>}

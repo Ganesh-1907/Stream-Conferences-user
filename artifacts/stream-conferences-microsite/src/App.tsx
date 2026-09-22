@@ -246,6 +246,7 @@ type EventItem = {
   startTime?: string;
   endTime?: string;
   logoUrl?: string;
+  subjectImageUrl?: string;
   bannerUrl?: string;
   brochureUrl?: string;
   fees?: { type: string; dateLabel: string; deadline?: string | Date; usd: number; gbp: number; eur: number }[];
@@ -395,10 +396,10 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
             return (
               <div key={e.id || (e as any)._id || index} className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-event-${index}`}>
                 <div className="relative aspect-[16/9] w-full bg-white dark:bg-slate-900/60 border-b border-[hsl(var(--border))] overflow-hidden flex items-center justify-center">
-                  {e.bannerUrl ? (
+                  {e.subjectImageUrl ? (
                     <img 
-                      src={mediaUrl(e.bannerUrl)} 
-                      alt={`${e.title} banner`} 
+                      src={mediaUrl(e.subjectImageUrl)} 
+                      alt={`${e.title} subject`} 
                       className="h-full w-full object-cover" 
                     />
                   ) : e.logoUrl ? (
@@ -406,6 +407,12 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
                       src={mediaUrl(e.logoUrl)} 
                       alt={`${e.title} logo`} 
                       className="h-full w-full object-contain p-2.5" 
+                    />
+                  ) : e.bannerUrl ? (
+                    <img 
+                      src={mediaUrl(e.bannerUrl)} 
+                      alt={`${e.title} banner`} 
+                      className="h-full w-full object-cover" 
                     />
                   ) : (
                     <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center">
@@ -641,6 +648,7 @@ function APIProvider({ children }: { children: ReactNode }) {
       startTime: c.startTime,
       endTime: c.endTime,
       logoUrl: c.logoUrl,
+      subjectImageUrl: c.subjectImageUrl,
       bannerUrl: c.bannerUrl,
       brochureUrl: c.brochureUrl,
       fees: c.fees,
@@ -664,6 +672,7 @@ function APIProvider({ children }: { children: ReactNode }) {
       startTime: w.startTime,
       endTime: w.endTime,
       logoUrl: w.logoUrl,
+      subjectImageUrl: w.subjectImageUrl,
       bannerUrl: w.bannerUrl,
       brochureUrl: w.brochureUrl,
       fees: w.fees,
@@ -812,7 +821,7 @@ function SiteHeader() {
         <div className="container-wide flex h-[76px] items-center justify-between gap-4">
           {/* Brand / Logo */}
           <Link href="/" className="group flex shrink-0 items-center gap-3.5" data-testid="link-home-logo">
-            <img src="/logo.jpg" className="h-12 w-12 rounded-[14px] object-cover shadow-lg border border-white/30" alt="SC" />
+            <img src="/logo.jpg" className="h-12 w-12 rounded-[14px] object-contain bg-white p-1 shadow-lg border border-white/30" alt="STREAM" />
             <span className="display block text-[24px] sm:text-[26px] font-black tracking-[-.02em] text-white leading-none">
               Stream<span className="text-[hsl(var(--accent))]">Conferences</span>
             </span>
@@ -1003,7 +1012,7 @@ function Footer() {
         {/* Brand & Social Icons */}
         <div>
           <div className="flex items-center gap-3">
-            <img src="/logo.jpg" className="h-10 w-10 rounded-[11px] object-cover" alt="SC" />
+            <img src="/logo.jpg" className="h-10 w-10 rounded-[11px] object-contain bg-white p-1" alt="STREAM" />
             <span className="display text-lg font-bold">Stream Conferences</span>
           </div>
           <p className="mt-4 max-w-xs text-sm leading-6 text-[hsl(var(--primary-foreground)/.68)]">
@@ -1180,7 +1189,7 @@ function PageHero({ eyebrow, title, body, variant = 'wave' }: { eyebrow: string;
 
         {/* Hero Content */}
         <div className="container-wide relative z-10 reveal">
-          <div className="max-w-3xl">
+          <div className="w-full max-w-none">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-xs font-extrabold uppercase tracking-widest mb-4 shadow-sm">
               <span className="h-2 w-2 rounded-full bg-amber-300 animate-pulse" />
               <span>{eyebrow}</span>
@@ -1244,7 +1253,7 @@ function TestimonialCarousel() {
   const [active, setActive] = useState(0);
   const testimonial = testimonials[active];
   const move = (direction: number) => setActive((current) => (current + direction + testimonials.length) % testimonials.length);
-  return <section className="section-pad bg-[hsl(var(--card))] text-[hsl(var(--foreground))]" aria-label="Delegate testimonials">
+  return <section className="pt-10 pb-10 bg-[hsl(var(--card))] text-[hsl(var(--foreground))] border-b border-[hsl(var(--border))]" aria-label="Delegate testimonials">
     <div className="container-wide grid gap-10 lg:grid-cols-[.65fr_1.35fr] lg:items-end">
       <div><p className="label text-[hsl(var(--secondary))]">From the delegate community</p><h2 className="display mt-5 max-w-md text-4xl font-bold leading-[1.03] tracking-[-.05em] md:text-6xl text-[hsl(var(--foreground))]">A room people remember.</h2><p className="mt-6 max-w-md text-base leading-7 text-[hsl(var(--muted-foreground))]">The conference experience is designed to stay useful long after the final session.</p></div>
       <div className="relative rounded-[22px] border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.35)] p-7 md:p-10 shadow-lg">
@@ -1268,7 +1277,7 @@ function HomeFaqSection() {
   const homeFaqs = faqs.slice(0, 5);
 
   return (
-    <section className="section-pad bg-[hsl(var(--card))]">
+    <section className="pt-10 pb-12 bg-[hsl(var(--card))]">
       <div className="container-wide max-w-4xl">
         <div className="text-center mb-10">
           <SectionTitle
@@ -1368,7 +1377,7 @@ function GallerySlider() {
   const activeItem = items[active] || { title: '', description: '', image: '' };
 
   return (
-    <section className="section-pad bg-[hsl(var(--card))]" aria-label="Inside the exchange">
+    <section className="pt-10 pb-6 bg-[hsl(var(--card))]" aria-label="Inside the exchange">
       <div className="container-wide">
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end mb-8">
           <SectionTitle 
@@ -1646,13 +1655,13 @@ function Home() {
       </section>
 
       {/* About STREAM Conferences Introduction Section */}
-      <section className="section-pad bg-[hsl(var(--background))] border-b border-[hsl(var(--border))]">
+      <section className="pt-12 pb-8 bg-[hsl(var(--background))] border-b border-[hsl(var(--border))]">
         <div className="container-wide w-full">
           <SectionTitle 
             eyebrow="About STREAM Conferences" 
             title="Operating at the intersection of academic excellence and industry innovation." 
           />
-          <div className="mt-8 grid gap-6 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full max-w-none">
+          <div className="mt-8 grid gap-6 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full max-w-none text-justify">
             <p>
               STREAM Conferences is an established global architect of elite scientific, technical, research, engineering, academic, and medical summits. Operating at the dynamic intersection of rigorous scholarship and industrial execution, we engineer high-precision platforms designed to accelerate knowledge transfer, forge high-value cross-disciplinary synergies, and catalyse theoretical discoveries into transformative global solutions.
             </p>
@@ -1660,11 +1669,20 @@ function Home() {
               We redefine the international summit experience through focused, result-driven frameworks that convert intellectual capital into immediate market momentum. We deliberately cultivate environments where data scientists, clinical physicians, biotech innovators, and systems engineers converge to solve high-stakes global challenges.
             </p>
           </div>
+          <div className="mt-6 flex items-center justify-start">
+            <Link
+              href="/about"
+              className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.9)] text-white font-extrabold text-sm uppercase tracking-wider shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer"
+            >
+              <span>Read More</span>
+              <ArrowRight size={16} />
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Upcoming Conferences Section */}
-      <section className="section-pad bg-[hsl(var(--card))]" id="upcoming-events-conferences">
+      <section className="pt-8 pb-8 bg-[hsl(var(--card))]" id="upcoming-events-conferences">
         <div className="container-wide">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end mb-10">
             <SectionTitle 
@@ -1684,10 +1702,10 @@ function Home() {
               return (
                 <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-home-conference-${index}`}>
                   <div className="relative aspect-[16/9] w-full bg-white dark:bg-slate-900/60 border-b border-[hsl(var(--border))] overflow-hidden flex items-center justify-center">
-                    {item.bannerUrl ? (
+                    {item.subjectImageUrl ? (
                       <img 
-                        src={mediaUrl(item.bannerUrl)} 
-                        alt={`${item.title} banner`} 
+                        src={mediaUrl(item.subjectImageUrl)} 
+                        alt={`${item.title} subject`} 
                         className="h-full w-full object-cover" 
                       />
                     ) : item.logoUrl ? (
@@ -1695,6 +1713,12 @@ function Home() {
                         src={mediaUrl(item.logoUrl)} 
                         alt={`${item.title} logo`} 
                         className="h-full w-full object-contain p-2.5" 
+                      />
+                    ) : item.bannerUrl ? (
+                      <img 
+                        src={mediaUrl(item.bannerUrl)} 
+                        alt={`${item.title} banner`} 
+                        className="h-full w-full object-cover" 
                       />
                     ) : (
                       <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center">
@@ -1778,7 +1802,7 @@ function Home() {
       <TestimonialCarousel />
       <GallerySlider />
       {insightsList.length > 0 && (
-        <section className="section-pad bg-[hsl(var(--card))]"><div className="container-wide grid gap-10 md:grid-cols-[.7fr_1.3fr]"><div><SectionTitle eyebrow="From the Stream Conferences blog" title="Notes for the in-between." /><Link href="/blog" className="btn-main btn-quiet mt-8" data-testid="link-home-insights">Read the blog <ArrowRight size={16} /></Link></div><div className="grid gap-6 sm:grid-cols-3">{insightsList.slice(0, 3).map((insight, index) => <div key={insight.id || insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full shadow-sm"><div className="p-6 flex-1"><div className="aspect-video w-full rounded-xl overflow-hidden mb-4 bg-[hsl(var(--muted)/.25)] flex items-center justify-center relative">{insight.bannerUrl ? <img src={mediaUrl(insight.bannerUrl)} alt={insight.title} className="h-full w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} /> : <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center"><BookOpen className="text-[hsl(var(--primary-foreground))] opacity-65" size={32} /></div>}</div><span className="text-xs font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">{insight.label}</span><h3 className="display mt-2 text-xl font-bold leading-snug line-clamp-2 text-[hsl(var(--foreground))]">{insight.title}</h3><p className="mt-3 text-base leading-7 text-[hsl(var(--muted-foreground))] line-clamp-3">{insight.copy}</p></div><div className="px-6 pb-6 pt-0"><Link href={`/blog/${encodeURIComponent(insight.id)}`} className="inline-flex items-center gap-1.5 text-base font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition" data-testid={`link-home-blog-${index}`}>Read field note <ArrowRight size={15} /></Link></div></div>)}</div></div></section>
+        <section className="pt-10 pb-10 bg-[hsl(var(--card))] border-b border-[hsl(var(--border))]"><div className="container-wide grid gap-10 md:grid-cols-[.7fr_1.3fr]"><div><SectionTitle eyebrow="From the Stream Conferences blog" title="Notes for the in-between." /><Link href="/blog" className="btn-main btn-quiet mt-8" data-testid="link-home-insights">Read the blog <ArrowRight size={16} /></Link></div><div className="grid gap-6 sm:grid-cols-3">{insightsList.slice(0, 3).map((insight, index) => <div key={insight.id || insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full shadow-sm"><div className="p-6 flex-1"><div className="aspect-video w-full rounded-xl overflow-hidden mb-4 bg-[hsl(var(--muted)/.25)] flex items-center justify-center relative">{insight.bannerUrl ? <img src={mediaUrl(insight.bannerUrl)} alt={insight.title} className="h-full w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} /> : <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center"><BookOpen className="text-[hsl(var(--primary-foreground))] opacity-65" size={32} /></div>}</div><span className="text-xs font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">{insight.label}</span><h3 className="display mt-2 text-xl font-bold leading-snug line-clamp-2 text-[hsl(var(--foreground))]">{insight.title}</h3><p className="mt-3 text-base leading-7 text-[hsl(var(--muted-foreground))] line-clamp-3">{insight.copy}</p></div><div className="px-6 pb-6 pt-0"><Link href={`/blog/${encodeURIComponent(insight.id)}`} className="inline-flex items-center gap-1.5 text-base font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition" data-testid={`link-home-blog-${index}`}>Read field note <ArrowRight size={15} /></Link></div></div>)}</div></div></section>
       )}
       <HomeFaqSection />
       <section className="bg-[hsl(var(--primary))] py-12 text-[hsl(var(--primary-foreground))]"><div className="container-wide flex flex-col justify-between gap-6 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--accent))]">Help desk</p><p className="display mt-2 text-2xl font-bold text-[hsl(var(--primary-foreground))]">Have a question before you arrive?</p><div className="mt-3 flex flex-wrap gap-4 text-sm text-[hsl(var(--primary-foreground)/.85)]"><a href="mailto:info@streamconferences.com" className="flex items-center gap-2 font-semibold hover:text-[hsl(var(--accent))]" data-testid="link-home-email"><Mail size={16} /> info@streamconferences.com</a><span className="flex items-center gap-2"><Phone size={16} /> +1 (617) 555-0199</span></div></div><Link href="/contact" className="btn-main bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:brightness-110 shadow-lg border-0" data-testid="link-home-contact">Contact us <ArrowUpRight size={16} /></Link></div></section>
@@ -1829,7 +1853,7 @@ function SpeakersPage() {
         title="People who make the questions sharper." 
         body="Meet the world-class organizing committee and invited faculty shaping the scientific agenda for ICMLHS 2027." 
       />
-      <main className="section-pad">
+      <main className="pt-6 pb-16">
         <div className="container-wide">
           <SectionTitle 
             eyebrow="Organizing committee" 
@@ -1891,10 +1915,10 @@ function AboutPage() {
         body="Uniting Academia, Industry, and Clinical Excellence on One Global Stage"
       />
       <main>
-        {/* 1. About Section - Paragraphs (Full Width) */}
-        <section className="section-pad">
+        {/* 1. About Section - Paragraphs (Full Width, Justified Text) */}
+        <section className="pt-6 pb-6">
           <div className="container-wide w-full">
-            <div className="grid gap-6 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full max-w-none">
+            <div className="grid gap-6 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full max-w-none text-justify">
               <p>Where pioneering ideas meet global expertise, STREAM Conferences creates a space for discovery, innovation, and meaningful exchange across Conference platforms fostering knowledge and Academia. We bring together leading researchers, scientists, academicians, healthcare professionals, engineers, technology experts, industry leaders, innovators, and emerging professionals to create meaningful opportunities for knowledge exchange and collaboration. Operating at the intersection of academic excellence and industry innovation.</p>
               <p>We create focused platforms where research, expertise, and real-world applications can come together. Our conferences are designed to encourage the exchange of groundbreaking research, emerging technologies, practical insights, and diverse perspectives across disciplines.</p>
               <p>We go beyond traditional conference formats by creating engaging, knowledge-driven environments that encourage meaningful discussions, interdisciplinary connections, and professional networking. Through keynote presentations, plenary sessions, technical talks, research presentations, panel discussions, workshops, and interactive forums, participants gain opportunities to present their work, discover emerging developments, and connect with peers and experts from around the world.</p>
@@ -1906,7 +1930,7 @@ function AboutPage() {
         </section>
 
         {/* 2. Vision Section (Full Width) */}
-        <section className="section-pad bg-[hsl(var(--card))]">
+        <section className="pt-6 pb-6 bg-[hsl(var(--card))]">
           <div className="container-wide w-full">
             <SectionTitle eyebrow="Vision" title="Connecting minds and transforming global discovery." />
             <div className="mt-8 grid gap-4 grid-cols-1 md:grid-cols-2 w-full max-w-none">
@@ -1925,25 +1949,34 @@ function AboutPage() {
         </section>
 
         {/* 3. Mission Section (Full Width) */}
-        <section className="section-pad">
+        <section className="pt-6 pb-6">
           <div className="container-wide w-full">
             <SectionTitle eyebrow="Mission" title="Move knowledge into the world." />
-            <ul className="mt-8 grid gap-5 grid-cols-1 w-full max-w-none">
-              {['Accelerate technology transfer from university-led research into commercial pipelines and clinical application.', 'Foster multidisciplinary synergy across Medicine, Pharma, Health Science, Life Science, Engineering, and Technology.', 'Elevate emerging scholars through visibility and direct mentorship alongside recognized industry leaders.', 'Uphold academic excellence across every keynote, technical panel, symposium, and peer-reviewed publication.'].map((item, i) => (
-                <li key={item} className="flex gap-4 border-b border-[hsl(var(--border))] pb-5 text-base sm:text-lg leading-7">
-                  <span className="mono text-[hsl(var(--accent))] font-bold text-base">0{i + 1}</span>
-                  <span className="text-[hsl(var(--foreground))] font-medium">{item}</span>
-                </li>
+            <div className="mt-8 grid gap-4 grid-cols-1 md:grid-cols-2 w-full max-w-none">
+              {[
+                'Accelerate technology transfer from university-led research into commercial pipelines and clinical application.',
+                'Foster multidisciplinary synergy across Medicine, Pharma, Health Science, Life Science, Engineering, and Technology.',
+                'Elevate emerging scholars through visibility and direct mentorship alongside recognized industry leaders.',
+                'Uphold academic excellence across every keynote, technical panel, symposium, and peer-reviewed publication.',
+              ].map((item, i) => (
+                <div key={i} className="flex items-start gap-4 p-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xs">
+                  <span className="flex items-center justify-center shrink-0 w-8 h-8 rounded-full bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))] font-mono font-bold text-sm">
+                    0{i + 1}
+                  </span>
+                  <p className="text-base sm:text-lg leading-7 text-[hsl(var(--foreground))] font-medium">
+                    {item}
+                  </p>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         </section>
 
         {/* 4. What Guides The Work (Full Width) */}
-        <section className="section-pad bg-[hsl(var(--card))]">
+        <section className="pt-6 pb-6 bg-[hsl(var(--card))]">
           <div className="container-wide w-full">
             <SectionTitle eyebrow="What guides the work" title="Four values behind every stage, review, and connection." />
-            <div className="mt-12 grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full max-w-none">
+            <div className="mt-6 grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full max-w-none">
               {values.map(([title, body], i) => (
                 <div key={title} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-6 shadow-sm">
                   <div>
@@ -1957,11 +1990,11 @@ function AboutPage() {
           </div>
         </section>
 
-        {/* 5. Who We Gather (Full Width) */}
-        <section className="section-pad">
+        {/* 5. Who We Gather (Full Width - 2 columns per row) */}
+        <section className="pt-6 pb-6">
           <div className="container-wide w-full">
             <SectionTitle eyebrow="Who we gather" title="A premier delegation of decision-makers and innovators." />
-            <div className="mt-8 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full max-w-none">
+            <div className="mt-6 grid gap-6 grid-cols-1 md:grid-cols-2 w-full max-w-none">
               {['Clinical & Academic Leaders', 'Industry Innovators', 'Research & Advisory Authorities', 'Next-Gen Researchers'].map((item, i) => (
                 <div key={item} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
                   <Building2 size={24} className="text-[hsl(var(--secondary))]" />
@@ -1974,7 +2007,7 @@ function AboutPage() {
         </section>
 
         {/* 6. Research Dissemination & Healthcare Publishing (Full Width - Spans container-wide with max-w-none) */}
-        <section className="section-pad bg-[hsl(var(--card))]">
+        <section className="pt-6 pb-12 bg-[hsl(var(--card))]">
           <div className="container-wide w-full">
             <SectionTitle eyebrow="Publishing & Indexing" title="Research Dissemination & Healthcare Publishing" />
             <div className="mt-8 grid gap-5 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full max-w-none">
@@ -2028,7 +2061,7 @@ function GalleryPage() {
         title="A room built for exchange."
         body="A visual archive of the people, moments, and working sessions that make Stream Conferences more than a program."
       />
-      <main className="section-pad">
+      <main className="pt-6 pb-16">
         <div className="container-wide">
           {loading ? (
             <div className="text-center py-12 text-muted-foreground">Loading gallery...</div>
@@ -2186,7 +2219,7 @@ function ProgramPage() {
         title="A clear route through complex work." 
         body="The full program is organized around translation: what we know, what we can test, and what we can build together." 
       />
-      <main className="section-pad">
+      <main className="pt-6 pb-16">
         <div className="container-wide">
           <div className="grid gap-6 md:grid-cols-3">
             {[
@@ -2247,7 +2280,7 @@ function BrochurePage() {
   return (
     <Layout>
       <PageHero bgImage="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=1200&q=80" eyebrow="The delegate edition" title="Take the summit with you." body="A concise field guide to Stream Conferences: tracks, program architecture, venue notes, and the details that help you make the most of our events." />
-      <main className="section-pad">
+      <main className="pt-6 pb-16">
         <div className="container-wide grid gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-center">
           <div className="relative mx-auto aspect-[.72] w-full max-w-[360px] overflow-hidden rounded-2xl bg-[hsl(var(--primary))] p-8 text-[hsl(var(--primary-foreground))] shadow-2xl shadow-[hsl(var(--primary)/.2)]">
             <div className="absolute right-[-50px] top-[-20px] h-48 w-48 rounded-full border border-[hsl(var(--accent)/.55)]" />
@@ -2262,20 +2295,21 @@ function BrochurePage() {
             </div>
           </div>
           <div>
-            <ul className="grid gap-4">
-              {['Five interdisciplinary tracks with clear submission routes', 'Three-day program architecture and delegate experience', 'Speaker, venue, travel, and registration overview', 'Publishing and proceedings pathway with DOI/ISBN note'].map((item) => (
-                <li key={item} className="flex gap-3 text-sm leading-6">
-                  <Check size={18} className="mt-1 shrink-0 text-[hsl(var(--secondary))]" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <button type="button" onClick={handleDownload} className="btn-main btn-primary mt-9" data-testid="button-download-brochure">
-              <Download size={16} /> Download brochure ({mainBrochure?.fileName ? mainBrochure.fileName.split('.').pop()?.toUpperCase() : 'PDF'})
-            </button>
-            <p className="mt-4 text-xs text-[hsl(var(--muted-foreground))]">
-              {mainBrochure ? `Official brochure edition · File: ${mainBrochure.fileName || mainBrochure.title}` : 'Official brochure edition · PDF version including full track details and registration terms.'}
+            <span className="label text-[hsl(var(--secondary))]">Delegate Brochure</span>
+            <h2 className="display mt-4 text-3xl font-bold sm:text-5xl">{mainBrochure?.title || 'Comprehensive Event Field Guide'}</h2>
+            <p className="mt-6 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">
+              {mainBrochure?.description || 'Download the complete delegate field guide for Stream Conferences. Get detailed access to track taxonomies, keynote presentation schedules, delegate registration tiers, abstract submission timelines, and venue logistics across all upcoming global summits.'}
             </p>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <button
+                type="button"
+                onClick={handleDownload}
+                className="btn-main flex items-center gap-2 cursor-pointer shadow-lg"
+                data-testid="button-download-brochure-page"
+              >
+                <Download size={18} /> Download Official Brochure (PDF)
+              </button>
+            </div>
           </div>
         </div>
       </main>
@@ -2283,9 +2317,9 @@ function BrochurePage() {
   );
 }
 
-function VenuePage() {
+function VenuesPage() {
   const { venues } = useContext(APIContext);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1501979392350-f8c5b058a5c6?auto=format&fit=crop&w=1200&q=80" eyebrow="Our spaces" title="Venues for the conversation." body="Explore the venues available for our conferences and webinars." /><main className="section-pad"><div className="container-wide"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{venues.length > 0 ? venues.map((venue) => <div key={venue._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6"><div className="flex items-center gap-3"><MapPin size={20} className="text-[hsl(var(--secondary))]" /><h3 className="display text-xl font-bold">{venue.name}</h3></div>{venue.address && <p className="mt-3 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{venue.address}</p>}{venue.locationUrl && <a href={venue.locationUrl} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition">View location <ExternalLink size={14} /></a>}</div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p>No venues have been added yet.</p></div>}</div></div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1501979392350-f8c5b058a5c6?auto=format&fit=crop&w=1200&q=80" eyebrow="Our spaces" title="Venues for the conversation." body="Explore the venues available for our conferences and webinars." /><main className="pt-6 pb-16"><div className="container-wide"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{venues.length > 0 ? venues.map((venue) => <div key={venue._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6"><div className="flex items-center gap-3"><MapPin size={20} className="text-[hsl(var(--secondary))]" /><h3 className="display text-xl font-bold">{venue.name}</h3></div>{venue.address && <p className="mt-3 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{venue.address}</p>}{venue.locationUrl && <a href={venue.locationUrl} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition">View location <ExternalLink size={14} /></a>}</div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p>No venues have been added yet.</p></div>}</div></div></main></Layout>;
 }
 
 function SponsorsPage() {
@@ -2344,7 +2378,7 @@ function SponsorsPage() {
       />
       <main>
         {/* Dynamic Sponsors Grid from all events */}
-        <section className="section-pad">
+        <section className="pt-6 pb-16">
           <div className="container-wide">
             <SectionTitle
               eyebrow="Our Partners"
@@ -3209,7 +3243,7 @@ function FAQPage() {
   const [open, setOpen] = useState<number | null>(0);
   const [query, setQuery] = useState('');
   const filtered = useMemo(() => faqs.filter(([question, answer]) => `${question} ${answer}`.toLowerCase().includes(query.toLowerCase())), [query]);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80" eyebrow="Help desk" title="The questions worth answering early." body="Find practical guidance on eligibility, submission, review, presentation formats, registration, and joining from abroad." /><main className="section-pad"><div className="container-wide max-w-4xl"><div className="relative mb-10"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] pointer-events-none z-10" size={19} /><input className="form-field !pl-12 pr-4 py-3.5 text-base shadow-sm rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]" style={{ paddingLeft: '48px' }} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the help desk" aria-label="Search FAQs" data-testid="input-faq-search" /></div><div className="grid gap-3">{filtered.map(([question, answer], index) => { const actualIndex = faqs.findIndex(([item]) => item === question); const isOpen = open === actualIndex; return <div key={question} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"><button type="button" onClick={() => setOpen(isOpen ? null : actualIndex)} className="flex w-full items-center justify-between gap-5 p-5 text-left font-bold text-base sm:text-lg" aria-expanded={isOpen} data-testid={`button-faq-${actualIndex}`}><span>{question}</span><ChevronDown size={18} className={`shrink-0 text-[hsl(var(--secondary))] transition-transform ${isOpen ? 'rotate-180' : ''}`} /></button>{isOpen && <div className="border-t border-[hsl(var(--border))] px-6 pb-6 pt-4 text-base sm:text-lg leading-8 text-[hsl(var(--foreground)/.85)]" data-testid={`text-faq-answer-${actualIndex}`}>{answer}</div>}</div>; })}</div>{filtered.length === 0 && <div className="rounded-2xl border border-dashed border-[hsl(var(--border))] p-10 text-center"><CircleHelp className="mx-auto text-[hsl(var(--secondary))]" /><p className="mt-4 font-bold text-lg">No matching questions</p><p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Try a shorter search, or email the scientific coordination team.</p></div>}<div className="mt-16 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm"><p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">Need further assistance?</p><p className="mt-3 max-w-2xl text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">For questions regarding abstract guidelines or technical issues, contact <a href="mailto:abstracts@streamconferences.com" className="font-bold text-[hsl(var(--secondary))]" data-testid="link-faq-email">abstracts@streamconferences.com</a>.</p><Link href="/contact" className="btn-main btn-quiet mt-6" data-testid="link-faq-contact">Contact us <ArrowUpRight size={16} /></Link></div></div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80" eyebrow="Help desk" title="The questions worth answering early." body="Find practical guidance on eligibility, submission, review, presentation formats, registration, and joining from abroad." /><main className="pt-6 pb-16"><div className="container-wide max-w-4xl"><div className="relative mb-10"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] pointer-events-none z-10" size={19} /><input className="form-field !pl-12 pr-4 py-3.5 text-base shadow-sm rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]" style={{ paddingLeft: '48px' }} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the help desk" aria-label="Search FAQs" data-testid="input-faq-search" /></div><div className="grid gap-3">{filtered.map(([question, answer], index) => { const actualIndex = faqs.findIndex(([item]) => item === question); const isOpen = open === actualIndex; return <div key={question} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"><button type="button" onClick={() => setOpen(isOpen ? null : actualIndex)} className="flex w-full items-center justify-between gap-5 p-5 text-left font-bold text-base sm:text-lg" aria-expanded={isOpen} data-testid={`button-faq-${actualIndex}`}><span>{question}</span><ChevronDown size={18} className={`shrink-0 text-[hsl(var(--secondary))] transition-transform ${isOpen ? 'rotate-180' : ''}`} /></button>{isOpen && <div className="border-t border-[hsl(var(--border))] px-6 pb-6 pt-4 text-base sm:text-lg leading-8 text-[hsl(var(--foreground)/.85)]" data-testid={`text-faq-answer-${actualIndex}`}>{answer}</div>}</div>; })}</div>{filtered.length === 0 && <div className="rounded-2xl border border-dashed border-[hsl(var(--border))] p-10 text-center"><CircleHelp className="mx-auto text-[hsl(var(--secondary))]" /><p className="mt-4 font-bold text-lg">No matching questions</p><p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Try a shorter search, or email the scientific coordination team.</p></div>}<div className="mt-16 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm"><p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">Need further assistance?</p><p className="mt-3 max-w-2xl text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">For questions regarding abstract guidelines or technical issues, contact <a href="mailto:abstracts@streamconferences.com" className="font-bold text-[hsl(var(--secondary))]" data-testid="link-faq-email">abstracts@streamconferences.com</a>.</p><Link href="/contact" className="btn-main btn-quiet mt-6" data-testid="link-faq-contact">Contact us <ArrowUpRight size={16} /></Link></div></div></main></Layout>;
 }
 
 function AbstractSubmissionGuidelinesPage() {
@@ -3313,8 +3347,8 @@ function AbstractSubmissionGuidelinesPage() {
         title="Abstract Submission Guidelines"
         body="Stream Conferences invites researchers, clinicians, academicians, and industry leaders to submit original abstracts for oral, poster, and virtual presentations at our upcoming global events. All submissions undergo a rigorous double-blind peer review by our Scientific Advisory Board to ensure high academic and professional standards."
       />
-      <main className="section-pad">
-        <div className="container-wide max-w-4xl">
+      <main className="pt-6 pb-16">
+        <div className="container-wide w-full max-w-none">
           {/* Review turnaround notification banner */}
           <div className="mb-10 rounded-2xl border border-[hsl(var(--secondary)/.3)] bg-[hsl(var(--secondary)/.08)] p-6 text-base sm:text-lg leading-8 flex items-center gap-4">
             <Clock className="text-[hsl(var(--secondary))] shrink-0" size={24} />
@@ -3443,12 +3477,12 @@ function AbstractSubmissionGuidelinesPage() {
 
 function GuidelinesPage() {
   const sections = [['Presentation day checklist', ['Arrive 30 minutes before your session.', 'Check in at the speaker desk and confirm your file.', 'Keep a backup copy on a USB drive and in cloud storage.', 'Stay for questions and support the presenters after you.']], ['Poster presentation specifications', ['A0 or A1 portrait orientation.', 'Export at print-ready resolution with accessible type sizes.', 'Include title, authors, affiliations, methods, results, and contact.', 'Mounting boards and pins are provided by the secretariat at the venue.']], ['AV & room support', ['HDMI presentation connection and confidence monitor.', 'Session chair, handheld microphone, and venue Wi-Fi.', 'Technical rehearsal windows published in the final program.', 'Tell the speaker desk about accessibility requirements early.']], ['Code of conduct', ['Be generous with questions and precise with critique.', 'Respect consent, privacy, and intellectual property.', 'No harassment, discrimination, or commercial promotion.', 'Raise concerns with the organizing committee promptly.']]];
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80" eyebrow="Practical notes" title="Arrive ready to contribute." body="A short field guide for presenters and delegates to optimize their conference experience and presentation sessions." /><main className="section-pad"><div className="container-wide grid gap-5 md:grid-cols-2">{sections.map(([title, items], i) => <div key={String(title)} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8" data-testid={`card-guideline-${i}`}><span className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">0{i + 1}</span><h2 className="display mt-4 text-2xl font-bold">{title}</h2><ul className="mt-6 grid gap-4">{(items as string[]).map((item) => <li key={item} className="flex gap-3 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]"><Check size={18} className="mt-1.5 shrink-0 text-[hsl(var(--secondary))]" />{item}</li>)}</ul></div>)}</div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80" eyebrow="Practical notes" title="Arrive ready to contribute." body="A short field guide for presenters and delegates to optimize their conference experience and presentation sessions." /><main className="pt-6 pb-16"><div className="container-wide grid gap-5 md:grid-cols-2">{sections.map(([title, items], i) => <div key={String(title)} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8" data-testid={`card-guideline-${i}`}><span className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">0{i + 1}</span><h2 className="display mt-4 text-2xl font-bold">{title}</h2><ul className="mt-6 grid gap-4">{(items as string[]).map((item) => <li key={item} className="flex gap-3 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]"><Check size={18} className="mt-1.5 shrink-0 text-[hsl(var(--secondary))]" />{item}</li>)}</ul></div>)}</div></main></Layout>;
 }
 
 function TermsPage() {
   const sections = [['Registration & payment terms', 'Registration rates, inclusions, taxes, and payment processing details are finalized in the official prospectus. A registration is confirmed only after successful payment and written confirmation.'], ['Cancellation & refund policy', 'Cancellation requests must be made in writing. Full refunds (less standard administration fees) are available up to 30 days prior to the conference. Transfers to alternate delegates are permitted.'], ['Abstract & publication rights', 'Authors retain ownership of their work while granting the conference a non-exclusive right to display accepted material in conference materials and official digital proceedings. DOI and ISBN assignment are subject to editorial review.'], ['Code of conduct', 'All delegates are expected to participate with respect, integrity, and professional care. Harassment, discrimination, intimidation, and unauthorized commercial promotion are not permitted.'], ['Liability', 'Attendees participate at their own risk. The organizers are not responsible for loss, travel disruption, or personal injury beyond the protections required by applicable law.'], ['Force majeure', 'If circumstances beyond reasonable control affect the event, the organizers may reschedule, change format, or cancel the event. Final remedies and notices will be defined in the reviewed policy.']];
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=1200&q=80" eyebrow="The fine print" title="Terms & conditions." body="Official terms of attendance, cancellation policies, intellectual property rights, and code of conduct standards for all delegates." /><main className="section-pad"><div className="container-wide max-w-4xl"><div className="mb-10 rounded-2xl border border-[hsl(var(--accent)/.5)] bg-[hsl(var(--accent)/.12)] p-6 text-base sm:text-lg leading-8"><ShieldCheck className="mr-2.5 inline text-[hsl(var(--secondary))]" size={20} /> Official delegate terms for the 2027 International Conference on Medical, Life & Health Sciences.</div><div className="grid gap-10">{sections.map(([title, text], i) => <section key={title} className="border-b border-[hsl(var(--border))] pb-8"><p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">0{i + 1}</p><h2 className="display mt-2 text-2xl font-bold">{title}</h2><p className="mt-4 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">{text}</p></section>)}</div></div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=1200&q=80" eyebrow="The fine print" title="Terms & conditions." body="Official terms of attendance, cancellation policies, intellectual property rights, and code of conduct standards for all delegates." /><main className="pt-6 pb-16"><div className="container-wide w-full max-w-none"><div className="mb-10 rounded-2xl border border-[hsl(var(--accent)/.5)] bg-[hsl(var(--accent)/.12)] p-6 text-base sm:text-lg leading-8"><ShieldCheck className="mr-2.5 inline text-[hsl(var(--secondary))]" size={20} /> Official delegate terms for the 2027 International Conference on Medical, Life & Health Sciences.</div><div className="grid gap-10">{sections.map(([title, text], i) => <section key={title} className="border-b border-[hsl(var(--border))] pb-8"><p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">0{i + 1}</p><h2 className="display mt-2 text-2xl font-bold">{title}</h2><p className="mt-4 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] text-justify">{text}</p></section>)}</div></div></main></Layout>;
 }
 
 function ContactPage() {
@@ -3953,7 +3987,7 @@ function BlogPage() {
         title="Notes for the curious." 
         body="Field notes, proceedings, and useful context from the conversations we host." 
       />
-      <main className="section-pad">
+      <main className="pt-6 pb-16">
         <div className="container-wide">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {insightsList.length > 0 ? insightsList.map((insight, index) => (
@@ -4521,7 +4555,7 @@ function ConferencesPage() {
         title="Meetings with a point of view." 
         body="Find your next place to present, listen, challenge, and leave with better work." 
       />
-      <main className="section-pad">
+      <main className="pt-6 pb-16">
         <div className="container-wide">
           <EventList key={`${location}-${statusParam}-${typeof window !== 'undefined' ? window.location.search : ''}`} initial={statusParam} onlyType="Conference" />
         </div>
@@ -4539,7 +4573,7 @@ function WebinarsPage() {
         title="A focused room for the right questions." 
         body="Shorter, sharper sessions for researchers, practitioners, and peers across the world." 
       />
-      <main className="section-pad">
+      <main className="pt-6 pb-16">
         <div className="container-wide">
           <EventList onlyType="Webinar" />
         </div>
@@ -4550,17 +4584,17 @@ function WebinarsPage() {
 
 function MediaPartnersPage() {
   const { mediaPartners } = useContext(APIContext);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1200&q=80" eyebrow="The amplification network" title="Media partners." body="Organizations that carry our conversations further and keep our community informed." /><main className="section-pad"><div className="container-wide"><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{mediaPartners.length > 0 ? mediaPartners.map((partner) => <div key={partner._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex items-start gap-4">{partner.logo ? <img src={mediaUrl(partner.logo)} alt={partner.name} className="h-14 w-14 rounded-xl object-contain border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] shrink-0" /> : <div className="h-14 w-14 rounded-xl bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] shrink-0"><Building2 size={20} /></div>}<div className="min-w-0"><h3 className="display text-lg sm:text-xl font-bold text-[hsl(var(--foreground))]">{partner.name}</h3>{partner.description && <p className="mt-2 text-base leading-7 text-[hsl(var(--muted-foreground))]">{partner.description}</p>}</div></div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p className="text-base sm:text-lg">No media partners have been added yet.</p></div>}</div></div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1200&q=80" eyebrow="The amplification network" title="Media partners." body="Organizations that carry our conversations further and keep our community informed." /><main className="pt-6 pb-16"><div className="container-wide"><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{mediaPartners.length > 0 ? mediaPartners.map((partner) => <div key={partner._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex items-start gap-4">{partner.logo ? <img src={mediaUrl(partner.logo)} alt={partner.name} className="h-14 w-14 rounded-xl object-contain border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] shrink-0" /> : <div className="h-14 w-14 rounded-xl bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] shrink-0"><Building2 size={20} /></div>}<div className="min-w-0"><h3 className="display text-lg sm:text-xl font-bold text-[hsl(var(--foreground))]">{partner.name}</h3>{partner.description && <p className="mt-2 text-base leading-7 text-[hsl(var(--muted-foreground))]">{partner.description}</p>}</div></div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p className="text-base sm:text-lg">No media partners have been added yet.</p></div>}</div></div></main></Layout>;
 }
 
 function CollaboratorsPage() {
   const { collaborators } = useContext(APIContext);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=1200&q=80" eyebrow="Working together" title="Collaborators." body="Institutions, partners, and research groups advancing the summit with us." /><main className="section-pad"><div className="container-wide"><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{collaborators.length > 0 ? collaborators.map((collaborator) => <div key={collaborator._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex items-start gap-4">{collaborator.logo ? <img src={mediaUrl(collaborator.logo)} alt={collaborator.name} className="h-14 w-14 rounded-xl object-contain border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] shrink-0" /> : <div className="h-14 w-14 rounded-xl bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] shrink-0"><Handshake size={20} /></div>}<div className="min-w-0"><h3 className="display text-lg sm:text-xl font-bold text-[hsl(var(--foreground))]">{collaborator.name}</h3>{collaborator.description && <p className="mt-2 text-base leading-7 text-[hsl(var(--muted-foreground))]">{collaborator.description}</p>}</div></div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p className="text-base sm:text-lg">No collaborators have been added yet.</p></div>}</div></div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=1200&q=80" eyebrow="Working together" title="Collaborators." body="Institutions, partners, and research groups advancing the summit with us." /><main className="pt-6 pb-16"><div className="container-wide"><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{collaborators.length > 0 ? collaborators.map((collaborator) => <div key={collaborator._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex items-start gap-4">{collaborator.logo ? <img src={mediaUrl(collaborator.logo)} alt={collaborator.name} className="h-14 w-14 rounded-xl object-contain border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] shrink-0" /> : <div className="h-14 w-14 rounded-xl bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] shrink-0"><Handshake size={20} /></div>}<div className="min-w-0"><h3 className="display text-lg sm:text-xl font-bold text-[hsl(var(--foreground))]">{collaborator.name}</h3>{collaborator.description && <p className="mt-2 text-base leading-7 text-[hsl(var(--muted-foreground))]">{collaborator.description}</p>}</div></div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p className="text-base sm:text-lg">No collaborators have been added yet.</p></div>}</div></div></main></Layout>;
 }
 
 function ExhibitorsPage() {
   const { exhibitors } = useContext(APIContext);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80" eyebrow="On the floor" title="Exhibitors." body="Organizations showcasing the tools, services, and ideas shaping their fields." /><main className="section-pad"><div className="container-wide"><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{exhibitors.length > 0 ? exhibitors.map((exhibitor) => <div key={exhibitor._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex items-start gap-4">{exhibitor.logo ? <img src={mediaUrl(exhibitor.logo)} alt={exhibitor.name} className="h-14 w-14 rounded-xl object-contain border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] shrink-0" /> : <div className="h-14 w-14 rounded-xl bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] shrink-0"><Store size={20} /></div>}<div className="min-w-0"><h3 className="display text-lg sm:text-xl font-bold text-[hsl(var(--foreground))]">{exhibitor.name}</h3>{exhibitor.description && <p className="mt-2 text-base leading-7 text-[hsl(var(--muted-foreground))]">{exhibitor.description}</p>}</div></div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p className="text-base sm:text-lg">No exhibitors have been added yet.</p></div>}</div></div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80" eyebrow="On the floor" title="Exhibitors." body="Organizations showcasing the tools, services, and ideas shaping their fields." /><main className="pt-6 pb-16"><div className="container-wide"><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{exhibitors.length > 0 ? exhibitors.map((exhibitor) => <div key={exhibitor._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex items-start gap-4">{exhibitor.logo ? <img src={mediaUrl(exhibitor.logo)} alt={exhibitor.name} className="h-14 w-14 rounded-xl object-contain border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] shrink-0" /> : <div className="h-14 w-14 rounded-xl bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] shrink-0"><Store size={20} /></div>}<div className="min-w-0"><h3 className="display text-lg sm:text-xl font-bold text-[hsl(var(--foreground))]">{exhibitor.name}</h3>{exhibitor.description && <p className="mt-2 text-base leading-7 text-[hsl(var(--muted-foreground))]">{exhibitor.description}</p>}</div></div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p className="text-base sm:text-lg">No exhibitors have been added yet.</p></div>}</div></div></main></Layout>;
 }
 
 function MentorDetailsPage() {
@@ -4750,7 +4784,7 @@ function ScrollToTop() {
 }
 
 function Router() {
-  return <RoutedErrorBoundary><ScrollToTop /><Switch><Route path="/" component={Home} /><Route path="/about" component={AboutPage} /><Route path="/submit-abstract" component={AbstractSubmissionPage} /><Route path="/abstract-submission-guidelines" component={AbstractSubmissionGuidelinesPage} /><Route path="/program" component={ProgramPage} /><Route path="/speakers" component={SpeakersPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/blog" component={BlogPage} /><Route path="/blog/:slug" component={BlogDetailPage} /><Route path="/conferences" component={ConferencesPage} /><Route path="/webinars" component={WebinarsPage} /><Route path="/brochure" component={BrochurePage} /><Route path="/venue" component={VenuePage} /><Route path="/sponsors" component={SponsorsPage} /><Route path="/media-partners" component={MediaPartnersPage} /><Route path="/collaborators" component={CollaboratorsPage} /><Route path="/exhibitors" component={ExhibitorsPage} /><Route path="/mentors/:username" component={MentorDetailsPage} /><Route path="/thank-you" component={ThankYouPage} /><Route path="/terms" component={TermsPage} /><Route path="/faq" component={FAQPage} /><Route path="/guidelines" component={GuidelinesPage} /><Route path="/contact" component={ContactPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
+  return <RoutedErrorBoundary><ScrollToTop /><Switch><Route path="/" component={Home} /><Route path="/about" component={AboutPage} /><Route path="/submit-abstract" component={AbstractSubmissionPage} /><Route path="/abstract-submission-guidelines" component={AbstractSubmissionGuidelinesPage} /><Route path="/program" component={ProgramPage} /><Route path="/speakers" component={SpeakersPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/blog" component={BlogPage} /><Route path="/blog/:slug" component={BlogDetailPage} /><Route path="/conferences" component={ConferencesPage} /><Route path="/webinars" component={WebinarsPage} /><Route path="/brochure" component={BrochurePage} /><Route path="/venue" component={VenuesPage} /><Route path="/venues" component={VenuesPage} /><Route path="/sponsors" component={SponsorsPage} /><Route path="/media-partners" component={MediaPartnersPage} /><Route path="/collaborators" component={CollaboratorsPage} /><Route path="/exhibitors" component={ExhibitorsPage} /><Route path="/mentors/:username" component={MentorDetailsPage} /><Route path="/thank-you" component={ThankYouPage} /><Route path="/terms" component={TermsPage} /><Route path="/faq" component={FAQPage} /><Route path="/guidelines" component={GuidelinesPage} /><Route path="/contact" component={ContactPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
 }
 
 function App() {

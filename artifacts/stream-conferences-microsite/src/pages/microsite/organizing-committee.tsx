@@ -54,14 +54,14 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
     return (
       <div
         onClick={() => setSelectedMember(member)}
-        className="group relative flex flex-col items-center text-center rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-6 shadow-sm hover:shadow-xl hover:border-[hsl(var(--primary)/.5)] transition-all duration-300 cursor-pointer overflow-hidden"
+        className="group relative flex flex-col items-center text-center rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-5 shadow-sm hover:shadow-xl hover:border-[hsl(var(--primary)/.5)] transition-all duration-300 cursor-pointer overflow-hidden"
       >
         {/* Lanyard Notch / ID Badge Slot */}
-        <div className="w-12 h-1.5 rounded-full bg-[hsl(var(--border))] mb-4 group-hover:bg-[hsl(var(--primary)/.4)] transition-colors shadow-inner shrink-0" />
+        <div className="w-10 h-1.5 rounded-full bg-[hsl(var(--border))] mb-3 group-hover:bg-[hsl(var(--primary)/.4)] transition-colors shadow-inner shrink-0" />
 
         {/* Top-Right Key/Chair Badge */}
         {isKey && (
-          <div className="absolute top-3.5 right-3.5">
+          <div className="absolute top-3 right-3">
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm">
               <Award size={12} /> {member.role || 'Chair'}
             </span>
@@ -69,7 +69,7 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
         )}
 
         {/* Top Center Circular Image */}
-        <div className="relative mb-4 w-28 h-28 sm:w-32 sm:h-32 rounded-full ring-4 ring-[hsl(var(--border))] group-hover:ring-[hsl(var(--primary)/.5)] transition-all duration-300 overflow-hidden bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] shadow-md flex items-center justify-center shrink-0">
+        <div className="relative mb-3 w-24 h-24 sm:w-28 sm:h-28 rounded-full ring-4 ring-[hsl(var(--border))] group-hover:ring-[hsl(var(--primary)/.5)] transition-all duration-300 overflow-hidden bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] shadow-md flex items-center justify-center shrink-0">
           {member.image ? (
             <img
               src={mediaUrl(member.image)}
@@ -77,68 +77,26 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-3xl font-['Space_Grotesk'] shadow-inner">
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-2xl font-['Space_Grotesk'] shadow-inner">
               {getNameInitials(member.name, 'M')}
             </div>
           )}
           {isKey && (
-            <div className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md border-2 border-[hsl(var(--card))]">
-              <Award size={13} />
+            <div className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md border-2 border-[hsl(var(--card))]">
+              <Award size={11} />
             </div>
           )}
         </div>
 
         {/* Member Name */}
-        <h3 className="font-['Space_Grotesk'] font-bold text-lg sm:text-xl text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 w-full px-1">
+        <h3 className="font-['Space_Grotesk'] font-bold text-base sm:text-lg text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 w-full px-1">
           {member.name}
         </h3>
 
-        {/* Degree */}
-        {member.degree && (
-          <div className="mt-1">
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[hsl(var(--primary))] uppercase tracking-wider bg-[hsl(var(--primary)/0.1)] px-2.5 py-0.5 rounded-full">
-              <GraduationCap size={12} />
-              {member.degree}
-            </span>
-          </div>
-        )}
-
-        {/* Specialization */}
-        {member.specialization && (
-          <p className="text-sm font-semibold text-[hsl(var(--primary))] mt-1.5 line-clamp-1 w-full px-1">
-            {member.specialization}
-          </p>
-        )}
-
-        {/* Research Area Pill */}
-        {member.researchArea && (
-          <div className="mt-2.5 w-full">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[hsl(var(--primary)/.08)] border border-[hsl(var(--primary)/.15)] text-[hsl(var(--primary))] text-xs font-medium max-w-full">
-              <BookOpen size={12} className="shrink-0" />
-              <span className="truncate">{member.researchArea}</span>
-            </span>
-          </div>
-        )}
-
-        {/* Country */}
-        {member.country && (
-          <p className="text-xs text-[hsl(var(--muted-foreground))] mt-2 flex items-center justify-center gap-1.5 line-clamp-1 w-full px-1">
-            <MapPin size={12} className="shrink-0 opacity-70" />
-            <span>{member.country}</span>
-          </p>
-        )}
-
-        {/* Biography Excerpt */}
-        {member.biography && (
-          <p className="mt-3 text-xs text-[hsl(var(--muted-foreground))] line-clamp-2 leading-relaxed px-1">
-            {member.biography.replace(/<[^>]*>/g, '')}
-          </p>
-        )}
-
-        {/* Footer */}
-        <div className="mt-auto pt-4 w-full flex items-center justify-center border-t border-[hsl(var(--border)/.6)] text-xs">
-          <span className="text-[11px] font-medium text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(var(--foreground))] transition-colors flex items-center gap-1">
-            View Profile <ExternalLink size={11} className="opacity-70" />
+        {/* View Profile Button */}
+        <div className="mt-3 pt-3 w-full flex items-center justify-center border-t border-[hsl(var(--border)/.6)] text-xs">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))] font-semibold text-xs group-hover:bg-[hsl(var(--primary))] group-hover:text-white transition-all shadow-xs">
+            View Profile <ExternalLink size={12} />
           </span>
         </div>
 
@@ -149,13 +107,13 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+    <div className="bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
       <MicrositeHero
         badge="ORGANIZING COMMITTEE"
         title="Organizing Committee"
         tagline="Meet the distinguished academic chairs, conference leads, and scientific committee members."
       />
-      <div className="container-wide py-10 sm:py-14">
+      <div className="container-wide pt-6 pb-6 sm:pt-8 sm:pb-8">
 
       {keyMembers.length > 0 && (
         <div className="mb-12">
@@ -186,63 +144,91 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
         </div>
       )}
 
-      {/* Member Details Modal */}
+      {/* Member Details Modal Popup */}
       <Dialog open={Boolean(selectedMember)} onOpenChange={(open) => !open && setSelectedMember(null)}>
         {selectedMember && (
-          <DialogContent className="sm:max-w-md bg-[hsl(var(--card))] border-[hsl(var(--border))] text-[hsl(var(--foreground))] p-6">
-            <DialogHeader className="flex flex-col items-center text-center space-y-3">
-              <div className="relative w-24 h-24 rounded-full ring-4 ring-[hsl(var(--primary)/.3)] overflow-hidden shadow-lg bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] flex items-center justify-center">
-                {selectedMember.image ? (
-                  <img
-                    src={mediaUrl(selectedMember.image)}
-                    alt={selectedMember.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-2xl font-['Space_Grotesk']">
-                    {getNameInitials(selectedMember.name, 'M')}
+          <DialogContent className="sm:max-w-3xl bg-[hsl(var(--card))] border-[hsl(var(--border))] text-[hsl(var(--foreground))] p-6 sm:p-8">
+            <DialogHeader className="sr-only">
+              <DialogTitle>{selectedMember.name}</DialogTitle>
+            </DialogHeader>
+
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8 pt-2">
+              {/* Left Column: Circle Profile Image + Specialization Down below */}
+              <div className="flex flex-col items-center text-center w-full sm:w-48 shrink-0 gap-3">
+                <div className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full ring-4 ring-[hsl(var(--primary)/.3)] overflow-hidden shadow-xl bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] flex items-center justify-center shrink-0">
+                  {selectedMember.image ? (
+                    <img
+                      src={mediaUrl(selectedMember.image)}
+                      alt={selectedMember.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-4xl font-['Space_Grotesk']">
+                      {getNameInitials(selectedMember.name, 'M')}
+                    </div>
+                  )}
+                </div>
+
+                {/* Specialization Down to Profile Image */}
+                {selectedMember.specialization && (
+                  <div className="pt-1">
+                    <span className="inline-block text-xs sm:text-sm font-semibold text-[hsl(var(--primary))] bg-[hsl(var(--primary)/.08)] border border-[hsl(var(--primary)/.2)] px-3 py-1 rounded-full">
+                      {selectedMember.specialization}
+                    </span>
                   </div>
                 )}
               </div>
-              <div>
-                <DialogTitle className="text-xl font-bold font-['Space_Grotesk'] text-[hsl(var(--foreground))]">
-                  {selectedMember.name}
-                </DialogTitle>
+
+              {/* Right Column: All Content formatted as Key : Value */}
+              <div className="flex-1 w-full space-y-3.5 text-left">
+                {/* Name as Key : Value */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm">
+                  <span className="font-bold text-[hsl(var(--muted-foreground))] w-32 shrink-0">Name :</span>
+                  <span className="font-bold text-base sm:text-lg text-[hsl(var(--foreground))] font-['Space_Grotesk']">{selectedMember.name}</span>
+                </div>
+
+                {selectedMember.role && (
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm">
+                    <span className="font-bold text-[hsl(var(--muted-foreground))] w-32 shrink-0">Role :</span>
+                    <span className="font-semibold text-[hsl(var(--foreground))]">{selectedMember.role}</span>
+                  </div>
+                )}
+
                 {selectedMember.degree && (
-                  <span className="inline-flex items-center gap-1 text-xs font-bold text-[hsl(var(--primary))] uppercase tracking-wider bg-[hsl(var(--primary)/0.1)] px-2.5 py-0.5 rounded-full mt-1.5">
-                    <GraduationCap size={13} />
-                    {selectedMember.degree}
-                  </span>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm">
+                    <span className="font-bold text-[hsl(var(--muted-foreground))] w-32 shrink-0">Degree :</span>
+                    <span className="font-semibold text-[hsl(var(--foreground))]">{selectedMember.degree}</span>
+                  </div>
                 )}
-                {selectedMember.specialization && (
-                  <p className="text-sm font-semibold text-[hsl(var(--primary))] mt-1">
-                    {selectedMember.specialization}
-                  </p>
-                )}
+
                 {selectedMember.country && (
-                  <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1 flex items-center justify-center gap-1.5">
-                    <MapPin size={13} className="opacity-70" />
-                    <span>{selectedMember.country}</span>
-                  </p>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm">
+                    <span className="font-bold text-[hsl(var(--muted-foreground))] w-32 shrink-0">Country :</span>
+                    <span className="font-semibold text-[hsl(var(--foreground))] flex items-center gap-1">
+                      <MapPin size={14} className="text-[hsl(var(--primary))]" />
+                      {selectedMember.country}
+                    </span>
+                  </div>
+                )}
+
+                {selectedMember.researchArea && (
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm">
+                    <span className="font-bold text-[hsl(var(--muted-foreground))] w-32 shrink-0">Research Area :</span>
+                    <span className="font-semibold text-[hsl(var(--foreground))]">{selectedMember.researchArea}</span>
+                  </div>
+                )}
+
+                {selectedMember.biography && (
+                  <div className="flex flex-col sm:flex-row items-start gap-1 sm:gap-2 text-sm pt-1">
+                    <span className="font-bold text-[hsl(var(--muted-foreground))] w-32 shrink-0">Biography :</span>
+                    <div
+                      className="flex-1 text-sm text-[hsl(var(--foreground))] leading-relaxed prose prose-sm dark:prose-invert max-w-none text-justify"
+                      dangerouslySetInnerHTML={{ __html: selectedMember.biography }}
+                    />
+                  </div>
                 )}
               </div>
-            </DialogHeader>
-
-            {selectedMember.researchArea && (
-              <div className="mt-2 text-center">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[hsl(var(--primary)/.08)] border border-[hsl(var(--primary)/.15)] text-[hsl(var(--primary))] text-xs font-medium">
-                  <BookOpen size={13} />
-                  <span>Research: {selectedMember.researchArea}</span>
-                </span>
-              </div>
-            )}
-
-            {selectedMember.biography && (
-              <div
-                className="mt-4 text-xs text-[hsl(var(--foreground)/0.85)] leading-relaxed text-center px-2 prose prose-sm dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: selectedMember.biography }}
-              />
-            )}
+            </div>
           </DialogContent>
         )}
       </Dialog>

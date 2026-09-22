@@ -23,12 +23,12 @@ export function ContactPage({ event }: { event: EventData }) {
 
   const venueFullAddress = venueAddressParts.length > 0
     ? venueAddressParts.join(', ')
-    : (event.venueAddress || event.venue || event.location || contact?.address || '100 Convention Boulevard');
+    : (event.venueAddress || event.venue || event.location || contact?.address || '');
 
   const venueName = venue.name || event.venue;
   const conferenceLocation = venueName && venueFullAddress && !venueFullAddress.toLowerCase().includes(venueName.toLowerCase())
     ? `${venueName}, ${venueFullAddress}`
-    : (venueFullAddress || venueName || '100 Convention Boulevard');
+    : (venueFullAddress || venueName || '');
 
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', country: '', subject: '', message: '' });
   const [submitting, setSubmitting] = useState(false);

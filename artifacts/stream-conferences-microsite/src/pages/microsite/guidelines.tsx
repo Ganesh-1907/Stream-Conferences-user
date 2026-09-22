@@ -10,15 +10,15 @@ export function GuidelinesPage({ event }: { event: EventData }) {
         tagline="Review submission policies, presentation formats, manuscript structure, and ethics code."
       />
 
-      <div className="container-wide py-10 sm:py-14">
+      <div className="container-wide py-10 sm:py-14 w-full">
         {!event.guidelines ? (
           <div className="py-12 text-center bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl p-8 max-w-2xl mx-auto">
             <p className="text-[hsl(var(--muted-foreground))] font-medium">No detailed guidelines available for this event yet.</p>
           </div>
         ) : (
-          <div className="max-w-4xl mx-auto">
+          <div className="w-full max-w-none">
             <div
-              className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-['Space_Grotesk'] prose-headings:text-[hsl(var(--foreground))] prose-p:text-[hsl(var(--foreground)/0.85)] prose-strong:text-[hsl(var(--foreground))] prose-li:text-[hsl(var(--foreground)/0.85)] font-normal"
+              className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-['Space_Grotesk'] prose-headings:text-[hsl(var(--foreground))] prose-p:text-[hsl(var(--foreground)/0.85)] prose-strong:text-[hsl(var(--foreground))] prose-li:text-[hsl(var(--foreground)/0.85)] font-normal text-justify"
               dangerouslySetInnerHTML={{ __html: event.guidelines }}
             />
           </div>

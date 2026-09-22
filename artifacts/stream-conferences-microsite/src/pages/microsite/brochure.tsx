@@ -2,19 +2,23 @@ import { useState, type FormEvent } from 'react';
 import { Download, ArrowRight, Check, FileText } from 'lucide-react';
 import type { EventData } from './layout';
 import { MicrositeHero } from '@/components/microsite-hero';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
 const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
 
+const TITLE_OPTIONS = ['Dr.', 'Mr.', 'Mrs.', 'Ms.', 'Prof.', 'Assist Prof.', 'Assoc Prof.'];
+
 export function BrochurePage({ event }: { event: EventData }) {
   const [step, setStep] = useState<1 | 2>(1);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [title, setTitle] = useState('Dr.');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [institution, setInstitution] = useState('');
   const [designation, setDesignation] = useState('');
+  const [address, setAddress] = useState('');
   const [country, setCountry] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -24,7 +28,7 @@ export function BrochurePage({ event }: { event: EventData }) {
   const handleFormSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!firstName || !lastName || !email || !phone || !institution || !country) {
+    if (!fullName.trim() || !email || !phone || !institution || !country || !address.trim()) {
       setError('Please fill all required fields.');
       return;
     }
@@ -34,7 +38,8 @@ export function BrochurePage({ event }: { event: EventData }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          firstName, lastName, email, phone, institution, designation, country,
+          title, fullName, name: title ? `${title} ${fullName}`.trim() : fullName.trim(), firstName: title, lastName: fullName,
+          email, phone, institution, designation, address, country,
           eventId: event._id,
           eventType: event.eventType,
           eventSlug: event.slug || event.subdomain || event.eventId || '',
@@ -94,12 +99,23 @@ export function BrochurePage({ event }: { event: EventData }) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">First Name *</label>
-              <input required className="form-field w-full" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+              <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Title *</label>
+              <Select value={title} onValueChange={(val) => setTitle(val)}>
+                <SelectTrigger className="form-field w-full rounded-xl bg-[hsl(var(--card))] border-[hsl(var(--border))] text-[hsl(var(--foreground))] h-11 px-4 flex items-center justify-between cursor-pointer">
+                  <SelectValue placeholder="Select Title" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xl text-[hsl(var(--foreground))] z-50 p-1">
+                  {TITLE_OPTIONS.map((t) => (
+                    <SelectItem key={t} value={t} className="rounded-lg cursor-pointer py-2 px-3 text-sm focus:bg-[hsl(var(--primary)/.1)] focus:text-[hsl(var(--primary))]">
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Last Name *</label>
-              <input required className="form-field w-full" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+              <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Full Name *</label>
+              <input required className="form-field w-full" placeholder="Full name (e.g. John Doe)" value={fullName} onChange={(e) => setFullName(e.target.value)} />
             </div>
           </div>
 
@@ -125,9 +141,16 @@ export function BrochurePage({ event }: { event: EventData }) {
             </div>
           </div>
 
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Country *</label>
+              <input required className="form-field w-full" placeholder="Country of residence" value={country} onChange={(e) => setCountry(e.target.value)} />
+            </div>
+          </div>
+
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Country *</label>
-            <input required className="form-field w-full" placeholder="Country of residence" value={country} onChange={(e) => setCountry(e.target.value)} />
+            <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Address *</label>
+            <textarea required rows={3} className="form-field w-full resize-y" placeholder="Full mailing address" value={address} onChange={(e) => setAddress(e.target.value)} />
           </div>
 
           {error && <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600">{error}</div>}
@@ -143,7 +166,7 @@ export function BrochurePage({ event }: { event: EventData }) {
             <Check size={28} className="text-green-600" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-[hsl(var(--foreground))]">Thank you, {firstName}!</h3>
+            <h3 className="text-xl font-bold text-[hsl(var(--foreground))]">Thank you, {title} {fullName}!</h3>
             <p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Your details have been recorded. Click below to download the brochure.</p>
           </div>
           {brochureUrl ? (

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, type FormEvent } from 'react';
 import { CalendarDays, MapPin, ChevronDown, FileText, ArrowRight, Check, Loader2, Download } from 'lucide-react';
 import type { EventData } from './layout';
 import { MicrositeHero } from '@/components/microsite-hero';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
@@ -27,13 +28,16 @@ function isFeeDateExpired(item: FeeItem): boolean {
   return !isNaN(d.getTime()) && d < new Date();
 }
 
+const TITLE_OPTIONS = ['Dr.', 'Mr.', 'Mrs.', 'Ms.', 'Prof.', 'Assist Prof.', 'Assoc Prof.'];
+
 export function AbstractPage({ event }: { event: EventData }) {
   const [step, setStep] = useState<1 | 2>(1);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [title, setTitle] = useState('Dr.');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [institution, setInstitution] = useState('');
+  const [address, setAddress] = useState('');
   const [country, setCountry] = useState('');
   const [abstractFile, setAbstractFile] = useState<File | null>(null);
   const [error, setError] = useState('');
@@ -106,7 +110,7 @@ export function AbstractPage({ event }: { event: EventData }) {
 
   const handleStep1 = (e: FormEvent) => {
     e.preventDefault();
-    if (!firstName || !lastName || !email || !institution || !country) {
+    if (!fullName.trim() || !email || !institution || !country || !address.trim()) {
       setError('Please fill all required fields.');
       return;
     }
@@ -124,11 +128,15 @@ export function AbstractPage({ event }: { event: EventData }) {
     setSubmitting(true);
     try {
       const fd = new FormData();
-      fd.append('firstName', firstName);
-      fd.append('lastName', lastName);
+      fd.append('title', title);
+      fd.append('fullName', fullName);
+      fd.append('name', title ? `${title} ${fullName}`.trim() : fullName.trim());
+      fd.append('firstName', title);
+      fd.append('lastName', fullName);
       fd.append('email', email);
       fd.append('phone', phone);
       fd.append('institution', institution);
+      fd.append('address', address);
       fd.append('country', country);
       fd.append('abstractFile', abstractFile);
       fd.append('eventId', event._id);
@@ -184,7 +192,7 @@ export function AbstractPage({ event }: { event: EventData }) {
                 <h3 className="text-xl font-bold text-[hsl(var(--foreground))]">Abstract Submitted Successfully!</h3>
                 <p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Your abstract has been submitted for review. You will receive a confirmation email at {email} within 5-7 business days.</p>
               </div>
-              <button onClick={() => { setSent(false); setStep(1); setFirstName(''); setLastName(''); setEmail(''); setPhone(''); setInstitution(''); setCountry(''); setAbstractFile(null); }} className="mt-4 btn-main btn-primary">Submit Another</button>
+              <button onClick={() => { setSent(false); setStep(1); setTitle('Dr.'); setFullName(''); setEmail(''); setPhone(''); setInstitution(''); setAddress(''); setCountry(''); setAbstractFile(null); }} className="mt-4 btn-main btn-primary">Submit Another</button>
             </div>
           ) : step === 1 ? (
             <form onSubmit={handleStep1} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-5">
@@ -196,12 +204,23 @@ export function AbstractPage({ event }: { event: EventData }) {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">First Name *</label>
-                    <input required className="form-field w-full" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                    <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Title *</label>
+                    <Select value={title} onValueChange={(val) => setTitle(val)}>
+                      <SelectTrigger className="form-field w-full rounded-xl bg-[hsl(var(--card))] border-[hsl(var(--border))] text-[hsl(var(--foreground))] h-11 px-4 flex items-center justify-between cursor-pointer">
+                        <SelectValue placeholder="Select Title" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xl text-[hsl(var(--foreground))] z-50 p-1">
+                        {TITLE_OPTIONS.map((t) => (
+                          <SelectItem key={t} value={t} className="rounded-lg cursor-pointer py-2 px-3 text-sm focus:bg-[hsl(var(--primary)/.1)] focus:text-[hsl(var(--primary))]">
+                            {t}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Last Name *</label>
-                    <input required className="form-field w-full" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                    <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Full Name *</label>
+                    <input required className="form-field w-full" placeholder="Full name (e.g. John Doe)" value={fullName} onChange={(e) => setFullName(e.target.value)} />
                   </div>
                 </div>
 
@@ -227,6 +246,11 @@ export function AbstractPage({ event }: { event: EventData }) {
                   </div>
                 </div>
 
+                <div className="space-y-1.5">
+                  <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Address *</label>
+                  <textarea required rows={3} className="form-field w-full resize-y" placeholder="Full mailing address" value={address} onChange={(e) => setAddress(e.target.value)} />
+                </div>
+
                 {error && <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600">{error}</div>}
 
                 <button type="submit" className="w-full btn-main btn-primary py-3 mt-2">Continue <ArrowRight className="ml-1 inline" size={16} /></button>
@@ -241,7 +265,7 @@ export function AbstractPage({ event }: { event: EventData }) {
                 </div>
 
                 <div className="rounded-xl bg-[hsl(var(--muted)/.3)] p-4 border border-[hsl(var(--border))]">
-                  <p className="text-sm font-medium text-[hsl(var(--foreground))]">Submitting as: <strong>{firstName} {lastName}</strong> ({email})</p>
+                  <p className="text-sm font-medium text-[hsl(var(--foreground))]">Submitting as: <strong>{title} {fullName}</strong> ({email})</p>
                 </div>
 
                 <div className="space-y-1.5">

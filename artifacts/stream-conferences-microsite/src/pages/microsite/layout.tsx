@@ -43,6 +43,7 @@ export interface EventData {
   brochureUrl?: string;
   bannerUrl?: string;
   logoUrl?: string;
+  subjectImageUrl?: string;
   headerBanners?: string[];
   fees?: { type: string; dateLabel: string; deadline?: string | Date; usd: number; gbp: number; eur: number }[];
   tracks?: { title: string; description?: string; image?: string; referenceLinks?: { label: string; url: string }[] }[];
@@ -162,6 +163,24 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    let iconLink = document.querySelector<HTMLLinkElement>("link[rel*='icon']");
+    if (!iconLink) {
+      iconLink = document.createElement('link');
+      iconLink.rel = 'icon';
+      document.head.appendChild(iconLink);
+    }
+    if (event?.logoUrl) {
+      iconLink.href = mediaUrl(event.logoUrl);
+    } else {
+      iconLink.href = '/logo.jpg';
+    }
+
+    if (event?.title) {
+      document.title = `${event.title} · Stream Conferences`;
+    }
+  }, [event?.logoUrl, event?.title]);
+
   const isActive = (path: string) => location === path;
 
   const isHomeTop = location === '/' && !scrolled;
@@ -269,7 +288,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
     }`}>
       <div className="container-wide flex items-center justify-between gap-4 py-3">
         <Link href="/" className="flex items-center gap-3 min-w-0 shrink-0">
-          <img src="/logo.jpg" alt="Stream Conferences" className="h-11 w-11 rounded-xl object-cover shadow-lg border border-white/20 shrink-0" />
+          <img src="/logo.jpg" alt="Stream Conferences" className="h-10 w-10 rounded-xl object-contain bg-white p-0.5 shadow-md border border-white/20 shrink-0" />
           <span className="truncate font-['Space_Grotesk'] font-black tracking-tight text-base md:text-xl text-white">Stream Conferences</span>
         </Link>
 
@@ -694,7 +713,7 @@ function MicrositeFooter({ event, navItems }: { event: EventData; navItems: NavI
               {event?.logoUrl ? (
                 <img src={mediaUrl(event.logoUrl)} alt={event?.title || "Conference Logo"} className="h-10 w-10 rounded-xl object-contain bg-white/10 p-1 border border-white/20 shrink-0" />
               ) : (
-                <img src="/logo.jpg" alt="Conference Logo" className="h-10 w-10 rounded-xl object-cover shrink-0" />
+                <img src="/logo.jpg" alt="Conference Logo" className="h-10 w-10 rounded-xl object-contain bg-white p-1 shrink-0" />
               )}
               <h3 className="font-['Space_Grotesk'] text-lg font-bold line-clamp-2 !text-white">{event?.title || 'Stream Conferences'}</h3>
             </div>
