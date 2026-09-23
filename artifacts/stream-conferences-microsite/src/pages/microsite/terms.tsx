@@ -55,7 +55,7 @@ export function TermsPage({ event }: { event: EventData }) {
         tagline="Please read the official policies, cancellation guidelines, and terms before registering."
       />
 
-      <div className="container-wide py-10 sm:py-14 w-full">
+      <div className="container-wide py-4 sm:py-6 w-full">
         <div className="w-full max-w-none">
           <div
             className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-['Space_Grotesk'] prose-headings:text-[hsl(var(--foreground))] prose-p:text-[hsl(var(--foreground)/0.85)] prose-strong:text-[hsl(var(--foreground))] prose-li:text-[hsl(var(--foreground)/0.85)] font-normal text-justify"

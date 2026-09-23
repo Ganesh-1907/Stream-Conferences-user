@@ -11,7 +11,7 @@ export function AboutPage({ event }: { event: EventData }) {
       />
 
       {/* Main Content Body Container (Full Width) */}
-      <div className="container-wide py-10 sm:py-14 w-full">
+      <div className="container-wide py-4 sm:py-6 w-full">
         <div className="w-full max-w-none">
           {event?.description ? (
             <div

@@ -32,7 +32,7 @@ export function FeesPage({ event }: { event: EventData }) {
         tagline="Choose your registration category, early-bird deadlines, and view applicable currency rates."
       />
 
-      <div className="container-wide py-10 sm:py-14">
+      <div className="container-wide py-4 sm:py-6">
         {fees.length === 0 ? (
           <div className="py-12 text-center bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl p-8 max-w-2xl mx-auto">
             <p className="text-[hsl(var(--muted-foreground))] font-medium">No fee information available for this event yet.</p>

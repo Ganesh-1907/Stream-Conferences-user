@@ -67,7 +67,7 @@ export function ContactPage({ event }: { event: EventData }) {
         title="Contact Us"
         tagline="Get in touch with the conference organizing team for attendee support, queries, and assistance."
       />
-      <div className="container-wide py-10 sm:py-14">
+      <div className="container-wide py-4 sm:py-6">
 
       {/* Two-Column Layout */}
       <div className="grid gap-8 lg:grid-cols-2 items-stretch">

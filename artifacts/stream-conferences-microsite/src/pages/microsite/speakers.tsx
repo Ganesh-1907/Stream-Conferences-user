@@ -152,7 +152,7 @@ export function SpeakersPage({ event }: { event: EventData }) {
         title="Meet Our Speakers"
         tagline="Discover the visionary keynote presenters and global researchers driving scientific advancement."
       />
-      <div className="container-wide pt-6 pb-6 sm:pt-8 sm:pb-8 space-y-10">
+      <div className="container-wide py-4 sm:py-6 space-y-8">
         {/* Keynote Speakers Section */}
         {keynoteSpeakers.length > 0 && (
           <div className="space-y-6">

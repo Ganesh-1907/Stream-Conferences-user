@@ -10,7 +10,7 @@ export function GuidelinesPage({ event }: { event: EventData }) {
         tagline="Review submission policies, presentation formats, manuscript structure, and ethics code."
       />
 
-      <div className="container-wide py-10 sm:py-14 w-full">
+      <div className="container-wide py-4 sm:py-6 w-full">
         {!event.guidelines ? (
           <div className="py-12 text-center bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl p-8 max-w-2xl mx-auto">
             <p className="text-[hsl(var(--muted-foreground))] font-medium">No detailed guidelines available for this event yet.</p>

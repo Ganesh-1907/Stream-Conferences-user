@@ -215,7 +215,7 @@ export function RegisterPage({ event }: { event: EventData }) {
         title="Register For Conference"
         tagline="Complete your registration in simple steps to confirm your attendance and participation."
       />
-      <div className="container-wide py-10 sm:py-14 max-w-6xl">
+      <div className="container-wide py-4 sm:py-6 max-w-6xl">
 
       <div className="flex items-center justify-center gap-3 mb-8">
         <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${step === 1 ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : 'bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))]'}`}>

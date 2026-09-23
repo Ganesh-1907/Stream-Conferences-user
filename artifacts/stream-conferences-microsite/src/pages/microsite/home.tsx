@@ -292,7 +292,7 @@ export function HomePage({ event }: { event: EventData }) {
   return (
     <>
       {/* Full-Bleed Edge-to-Edge Dynamic Theme Hero Section with Ambient Glow (Plain Color) */}
-      <section className="relative w-full hero-slant-bg text-white pt-20 sm:pt-24 md:pt-28 pb-10 sm:pb-14 border-b border-white/10 overflow-hidden flex flex-col justify-between min-h-screen">
+      <section className="relative w-full hero-slant-bg text-white pt-20 sm:pt-24 md:pt-28 pb-10 sm:pb-14 overflow-hidden flex flex-col justify-between min-h-screen">
         {/* Ambient Center & Corner Soft Glows */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[450px] bg-white/8 rounded-full blur-[140px] pointer-events-none" />
         <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-white/10 rounded-full blur-[120px] pointer-events-none" />
@@ -497,7 +497,7 @@ export function HomePage({ event }: { event: EventData }) {
 
       {/* Centered Banner Carousel Section */}
       {headerBanners.length > 0 && (
-        <section className="container-wide py-8 md:py-10 border-b border-[hsl(var(--border))]">
+        <section className="container-wide py-4 md:py-6">
           <div className="max-w-[1220px] w-full mx-auto flex flex-col items-center justify-center">
             <div className="w-full">
               <HeaderBannerCarousel
@@ -512,7 +512,7 @@ export function HomePage({ event }: { event: EventData }) {
 
       {/* Welcome Message Banner Section */}
       {(event.welcomeBannerTitle || event.welcomeBannerDescription) && (
-        <section className="container-wide py-8">
+        <section className="container-wide py-4 md:py-6">
           <div className="rounded-3xl border border-[hsl(var(--primary)/0.3)] bg-gradient-to-br from-[hsl(var(--primary)/0.08)] to-[hsl(var(--secondary)/0.08)] p-6 sm:p-8 shadow-lg">
             {event.welcomeBannerTitle && (
               <h2 className="text-2xl sm:text-3xl font-black font-['Space_Grotesk'] text-[hsl(var(--primary))] mb-3">
@@ -531,8 +531,8 @@ export function HomePage({ event }: { event: EventData }) {
 
       {/* Featured Speakers Section */}
       {featuredSpeakers.length > 0 ? (
-        <section className="container-wide py-14 md:py-20 border-b border-[hsl(var(--border))]">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+        <section className="container-wide py-6 md:py-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
             <div>
               <p className="display w-full text-left text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
                 Speakers
@@ -614,7 +614,7 @@ export function HomePage({ event }: { event: EventData }) {
           })}
           </div>
 
-          <div className="mt-10 text-center">
+          <div className="mt-6 text-center">
             <Link
               href="/speakers"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.9)] text-white font-bold text-sm shadow-md hover:shadow-lg transition-all cursor-pointer"
@@ -625,7 +625,7 @@ export function HomePage({ event }: { event: EventData }) {
           </div>
         </section>
       ) : (
-        <section className="container-wide py-14 border-b border-[hsl(var(--border))] text-center">
+        <section className="container-wide py-6 md:py-8 text-center">
           <div className="max-w-2xl mx-auto bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-3xl p-8 sm:p-10 shadow-lg space-y-4">
             <div className="w-16 h-16 rounded-2xl bg-[hsl(var(--primary)/0.12)] text-[hsl(var(--primary))] flex items-center justify-center mx-auto">
               <Users size={32} />
@@ -642,8 +642,8 @@ export function HomePage({ event }: { event: EventData }) {
 
       {/* Top 5 Tracks Section */}
       {Array.isArray(event.tracks) && event.tracks.length > 0 && (
-        <section className="container-wide py-14 border-b border-[hsl(var(--border))]">
-          <div className="mb-8">
+        <section className="container-wide py-6 md:py-8">
+          <div className="mb-5">
             <p className="display w-full text-left text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
               Tracks
             </p>
@@ -712,7 +712,7 @@ export function HomePage({ event }: { event: EventData }) {
             ))}
           </div>
 
-          <div className="mt-8 sm:mt-10 text-center">
+          <div className="mt-6 text-center">
             <Link
               href="/tracks"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.9)] text-white font-bold text-sm shadow-md hover:shadow-lg transition-all cursor-pointer"
@@ -726,8 +726,8 @@ export function HomePage({ event }: { event: EventData }) {
 
       {/* Media Partners Section (Directly Above FAQs) */}
       {Array.isArray(event.mediaPartners) && event.mediaPartners.length > 0 && (
-        <section className="container-wide py-12 border-b border-[hsl(var(--border))]">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+        <section className="container-wide py-6 md:py-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-5 gap-4">
             <div>
               <p className="display w-full text-left text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
                 Collaboration
@@ -760,8 +760,8 @@ export function HomePage({ event }: { event: EventData }) {
 
       {/* Frequently Asked Questions Section */}
       {faqs.length > 0 && (
-      <section className="container-wide py-16 md:py-24">
-        <div className="mb-12 text-center max-w-2xl mx-auto">
+      <section className="container-wide py-8 md:py-10">
+        <div className="mb-6 text-center max-w-2xl mx-auto">
           <p className="display w-full text-center text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
             FAQ
           </p>

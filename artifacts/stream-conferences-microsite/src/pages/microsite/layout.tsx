@@ -284,7 +284,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
     <header className={`z-40 transition-all duration-300 text-white ${
       !scrolled
         ? 'absolute top-0 left-0 right-0 bg-transparent border-b-0 shadow-none'
-        : 'fixed top-0 left-0 right-0 bg-[hsl(var(--primary))]/95 border-b border-white/15 backdrop-blur-xl shadow-lg'
+        : 'fixed top-0 left-0 right-0 bg-[hsl(var(--primary))]/95 dark:bg-[#141820]/95 border-b border-white/15 dark:border-white/10 backdrop-blur-xl shadow-lg'
     }`}>
       <div className="container-wide flex items-center justify-between gap-4 py-3">
         <Link href="/" className="flex items-center gap-3 min-w-0 shrink-0">
@@ -504,7 +504,7 @@ function PersistentContactFooter({ event }: { event: EventData }) {
   if (!contact || (!contact.email && !contact.phone && !contact.website)) return null;
 
   return (
-    <section className="border-t border-[hsl(var(--border))] bg-gradient-to-b from-transparent via-[hsl(var(--card)/0.3)] to-[hsl(var(--card)/0.6)] py-10 md:py-14">
+    <section className="border-t border-[hsl(var(--border))] py-6 md:py-8">
       <div className="container-wide">
         <div className="grid lg:grid-cols-[1fr_1.25fr] gap-8 lg:gap-14 items-center">
           {/* Left Side: Eyebrow, Heading, Description & Assurance Badges */}
@@ -633,7 +633,7 @@ function PreviousCohortsStrip({ event }: { event: EventData }) {
   const search = typeof window !== 'undefined' ? window.location.search : '';
 
   return (
-    <section aria-label="Previous Cohorts" className="border-t border-[hsl(var(--border))] bg-[hsl(var(--card))] py-2.5 sm:py-3 transition-colors">
+    <section aria-label="Previous Cohorts" className="py-2.5 sm:py-3 transition-colors">
       <div className="container-wide flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         {/* Left: Title & Subtitle */}
         <div className="flex items-center gap-2 shrink-0">

@@ -37,7 +37,7 @@ export function VenuePage({ event }: { event: EventData }) {
         tagline="Explore the conference center, accommodation options, travel directions, and nearby amenities."
       />
 
-      <div className="container-wide py-10 sm:py-14 space-y-10">
+      <div className="container-wide py-4 sm:py-6 space-y-6">
         {!hasContent ? (
           <div className="py-12 text-center bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl p-8 max-w-2xl mx-auto">
             <p className="text-[hsl(var(--muted-foreground))] font-medium">Venue details not available yet.</p>

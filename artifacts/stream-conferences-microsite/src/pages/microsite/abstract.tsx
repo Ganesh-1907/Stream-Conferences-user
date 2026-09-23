@@ -166,7 +166,7 @@ export function AbstractPage({ event }: { event: EventData }) {
         title="Submit an Abstract"
         tagline="Share your original research findings and connect with leading international scholars."
       />
-      <div className="container-wide py-10 sm:py-14 max-w-6xl">
+      <div className="container-wide py-4 sm:py-6 max-w-6xl">
 
       {/* Step indicators above the grid */}
       <div className="flex items-center justify-center gap-3 mb-8">

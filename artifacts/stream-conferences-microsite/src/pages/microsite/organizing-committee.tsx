@@ -113,7 +113,7 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
         title="Organizing Committee"
         tagline="Meet the distinguished academic chairs, conference leads, and scientific committee members."
       />
-      <div className="container-wide pt-6 pb-6 sm:pt-8 sm:pb-8">
+      <div className="container-wide py-4 sm:py-6">
 
       {keyMembers.length > 0 && (
         <div className="mb-12">

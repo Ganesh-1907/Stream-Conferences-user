@@ -103,10 +103,10 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
         title="Sponsor Guidelines & Opportunities"
         tagline="Explore sponsorship packages, exhibition booth options, and brand partnership opportunities."
       />
-      <div className="py-10 md:py-14">
+      <div className="py-4 sm:py-6">
 
       {/* Official Event Sponsors Section */}
-      <section className="container-wide mb-12">
+      <section className="container-wide mb-6">
         <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-7 md:p-10 shadow-sm space-y-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
@@ -188,7 +188,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
       </section>
 
       {/* Premium Sponsorship Packages */}
-      <section className="container-wide mt-14 md:mt-20">
+      <section className="container-wide mt-6 md:mt-8">
         <div className="text-center max-w-2xl mx-auto mb-10">
           <p className="display w-full text-center text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
             Partnership Tiers
@@ -350,7 +350,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
       </section>
 
       {/* Additional Sponsorship Packages & Advertisements Section */}
-      <section className="container-wide mt-14 md:mt-20">
+      <section className="container-wide mt-6 md:mt-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Additional Sponsorship Packages */}
           <div className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-sm">
@@ -407,7 +407,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
       </section>
 
       {/* Avail the Opportunity Section / Contact & Brief Form */}
-      <section id="enquire" className="container-wide mt-14 md:mt-20">
+      <section id="enquire" className="container-wide mt-6 md:mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] rounded-3xl border border-[hsl(var(--border))] overflow-hidden bg-[hsl(var(--card))] shadow-xl">
           {/* Left: Contact Card (matching the green/teal banner from screenshot 3) */}
           <div className="p-8 md:p-12 bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex flex-col justify-between">

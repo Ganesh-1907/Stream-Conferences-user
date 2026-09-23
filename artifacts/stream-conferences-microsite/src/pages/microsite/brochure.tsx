@@ -75,7 +75,7 @@ export function BrochurePage({ event }: { event: EventData }) {
         title="Download Event Brochure"
         tagline="Fill in your details to access the complete official conference prospectus and program guide."
       />
-      <div className="container-wide py-10 sm:py-14 max-w-3xl">
+      <div className="container-wide py-4 sm:py-6 max-w-3xl">
 
       {/* Step indicator */}
       <div className="flex items-center justify-center gap-3 mb-10">

@@ -1276,7 +1276,7 @@ function Countdown({ targetDate, locationStr }: { targetDate?: string; locationS
   const countdown = useCountdown(targetDate);
   if (!countdown) return null;
   const items = [['days', countdown.days], ['hours', countdown.hours], ['minutes', countdown.minutes], ['seconds', countdown.seconds]];
-  return <section className="border-b border-[hsl(var(--border))] bg-[hsl(var(--primary))] py-14 text-[hsl(var(--primary-foreground))]"><div className="container-wide text-center"><p className="label text-[hsl(var(--accent))]">The summit begins in</p>{countdown.live || countdown.concluded ? <h2 className="display mt-5 text-4xl font-bold">{countdown.live ? 'Conference is live' : 'Conference concluded'}</h2> : <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">{items.map(([label, value]) => <div key={label as string} className="rounded-xl border border-[hsl(var(--primary-foreground)/.15)] bg-[hsl(var(--primary-foreground)/.06)] px-4 py-5"><strong className="display block text-4xl font-bold tracking-[-.06em] text-[hsl(var(--accent))] md:text-5xl">{String(value).padStart(2, '0')}</strong><span className="label mt-2 block text-[9px] text-[hsl(var(--primary-foreground)/.6)]">{label}</span></div>)}</div>}{locationStr && <p className="mt-6 text-sm text-[hsl(var(--primary-foreground)/.55)]">{locationStr}</p>}</div></section>;
+  return <section className="bg-[hsl(var(--primary))] py-14 text-[hsl(var(--primary-foreground))]"><div className="container-wide text-center"><p className="label text-[hsl(var(--accent))]">The summit begins in</p>{countdown.live || countdown.concluded ? <h2 className="display mt-5 text-4xl font-bold">{countdown.live ? 'Conference is live' : 'Conference concluded'}</h2> : <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">{items.map(([label, value]) => <div key={label as string} className="rounded-xl border border-[hsl(var(--primary-foreground)/.15)] bg-[hsl(var(--primary-foreground)/.06)] px-4 py-5"><strong className="display block text-4xl font-bold tracking-[-.06em] text-[hsl(var(--accent))] md:text-5xl">{String(value).padStart(2, '0')}</strong><span className="label mt-2 block text-[9px] text-[hsl(var(--primary-foreground)/.6)]">{label}</span></div>)}</div>}{locationStr && <p className="mt-6 text-sm text-[hsl(var(--primary-foreground)/.55)]">{locationStr}</p>}</div></section>;
 }
 
 function TrackGrid() {
@@ -1287,7 +1287,7 @@ function TestimonialCarousel() {
   const [active, setActive] = useState(0);
   const testimonial = testimonials[active];
   const move = (direction: number) => setActive((current) => (current + direction + testimonials.length) % testimonials.length);
-  return <section className="pt-10 pb-10 bg-[hsl(var(--card))] text-[hsl(var(--foreground))]" aria-label="Delegate testimonials">
+  return <section className="pt-10 pb-10 text-[hsl(var(--foreground))]" aria-label="Delegate testimonials">
     <div className="container-wide grid gap-10 lg:grid-cols-[.65fr_1.35fr] lg:items-end">
       <div>
         <p className="display w-full text-left text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight text-[hsl(var(--secondary))] uppercase">
@@ -1300,7 +1300,7 @@ function TestimonialCarousel() {
           The conference experience is designed to stay useful long after the final session.
         </p>
       </div>
-      <div className="card-lift relative rounded-[22px] border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.35)] p-7 md:p-10">
+      <div className="card-lift relative rounded-[22px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-7 md:p-10">
         <span className="display text-6xl leading-none text-[hsl(var(--secondary))]">“</span>
         <blockquote className="display mt-3 max-w-3xl text-2xl font-semibold leading-tight tracking-[-.03em] md:text-4xl text-[hsl(var(--foreground))]">“{testimonial.quote}”</blockquote>
         <div className="mt-8 flex flex-col gap-5 border-t border-[hsl(var(--border))] pt-5 sm:flex-row sm:items-end sm:justify-between">
@@ -1321,7 +1321,7 @@ function HomeFaqSection() {
   const homeFaqs = faqs.slice(0, 5);
 
   return (
-    <section className="pt-10 pb-12 bg-[hsl(var(--card))]">
+    <section className="pt-10 pb-12">
       <div className="container-wide max-w-4xl">
         <div className="text-center mb-10">
           <SectionTitle
@@ -1421,7 +1421,7 @@ function GallerySlider() {
   const activeItem = items[active] || { title: '', description: '', image: '' };
 
   return (
-    <section className="pt-10 pb-6 bg-[hsl(var(--card))]" aria-label="Inside the exchange">
+    <section className="pt-10 pb-6" aria-label="Inside the exchange">
       <div className="container-wide">
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end mb-8">
           <SectionTitle 
@@ -1688,7 +1688,7 @@ function Home() {
       </section>
 
       {/* Upcoming Conferences Section */}
-      <section className="pt-8 pb-8 bg-[hsl(var(--card))]" id="upcoming-events-conferences">
+      <section className="pt-8 pb-8" id="upcoming-events-conferences">
         <div className="container-wide">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end mb-10">
             <SectionTitle 
@@ -1774,7 +1774,7 @@ function Home() {
       <TestimonialCarousel />
       <GallerySlider />
       {insightsList.length > 0 && (
-        <section className="pt-10 pb-10 bg-[hsl(var(--card))]">
+        <section className="pt-10 pb-10">
           <div className="container-wide grid gap-10 md:grid-cols-[.7fr_1.3fr] md:items-end">
             <div>
               <SectionTitle eyebrow="From the Stream Conferences blog" title="Notes for the in-between." />
@@ -1874,7 +1874,7 @@ function SpeakersPage() {
               </div>
             )}
           </div>
-          <div className="my-24 border-t border-[hsl(var(--border))] pt-16">
+          <div className="my-24 pt-16">
             <SectionTitle 
               eyebrow="Keynote & invited speakers" 
               title="Voices worth making time for." 
@@ -1941,13 +1941,13 @@ function AboutPage() {
         </section>
 
         {/* 2. Vision Section (Full Width) */}
-        <section className="pt-6 pb-6 bg-[hsl(var(--card))]">
+        <section className="pt-6 pb-6">
           <div className="container-wide w-full">
             <SectionTitle eyebrow="Vision" title="Connecting minds and transforming global discovery." />
             <div className="mt-8 grid gap-4 grid-cols-1 md:grid-cols-2 w-full max-w-none">
               {visionPoints.map((point, i) => (
                 <Reveal key={i} direction={i % 2 === 0 ? 'left' : 'right'} delay={Math.floor(i / 2) * 120} className="h-full">
-                  <div className="card-lift group cursor-pointer flex items-start gap-4 p-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] shadow-xs h-full">
+                  <div className="card-lift group cursor-pointer flex items-start gap-4 p-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xs h-full">
                     <span className="flex items-center justify-center shrink-0 w-8 h-8 rounded-full bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))] font-mono font-bold text-sm group-hover:bg-[hsl(var(--secondary))] group-hover:text-white transition-colors">
                       0{i + 1}
                     </span>
@@ -1988,13 +1988,13 @@ function AboutPage() {
         </section>
 
         {/* 4. What Guides The Work (Full Width) */}
-        <section className="pt-6 pb-6 bg-[hsl(var(--card))]">
+        <section className="pt-6 pb-6">
           <div className="container-wide w-full">
             <SectionTitle eyebrow="What guides the work" title="Four values behind every stage, review, and connection." />
             <div className="mt-6 grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full max-w-none">
               {values.map(([title, body], i) => (
                 <Reveal key={title} direction="up" delay={i * 100} className="h-full">
-                  <div className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-6 shadow-sm h-full">
+                  <div className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm h-full">
                     <div>
                       <span className="font-mono text-[hsl(var(--secondary))] font-bold text-sm tracking-wider">0{i + 1}</span>
                       <h3 className="display mt-4 text-lg sm:text-xl font-bold text-[hsl(var(--foreground))] leading-snug">{title}</h3>
@@ -2026,7 +2026,7 @@ function AboutPage() {
         </section>
 
         {/* 6. Research Dissemination & Healthcare Publishing (Full Width - Spans container-wide with max-w-none) */}
-        <section className="pt-6 pb-12 bg-[hsl(var(--card))]">
+        <section className="pt-6 pb-12">
           <div className="container-wide w-full">
             <SectionTitle eyebrow="Publishing & Indexing" title="Research Dissemination & Healthcare Publishing" />
             <div className="mt-8 grid gap-5 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full max-w-none">
@@ -3724,7 +3724,7 @@ function ContactPage() {
           </div>
         </section>
 
-        <section className="section-pad bg-[hsl(var(--card))]">
+        <section className="section-pad">
           <div className="container-wide grid gap-12 lg:grid-cols-[.7fr_1.3fr]">
             <div>
               <SectionTitle

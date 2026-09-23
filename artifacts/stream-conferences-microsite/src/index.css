@@ -75,30 +75,30 @@
 }
 
 .dark {
-  --background: 222 47% 6%;
+  --background: 220 20% 10%;
   --foreground: 210 40% 98%;
-  --border: 217 33% 18%;
-  --input: 217 33% 18%;
+  --border: 220 16% 22%;
+  --input: 220 16% 22%;
   --ring: 187 85% 45%;
-  --card: 222 47% 8%;
+  --card: 220 18% 15%;
   --card-foreground: 210 40% 98%;
-  --card-border: 217 33% 18%;
+  --card-border: 220 16% 22%;
   --primary: 187 85% 45%;
   --primary-foreground: 0 0% 100%;
   --secondary: 172 75% 40%;
   --secondary-foreground: 0 0% 100%;
-  --muted: 217 33% 12%;
-  --muted-foreground: 210 40% 90%;
+  --muted: 220 16% 19%;
+  --muted-foreground: 215 20% 75%;
   --accent: 174 72% 48%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 63% 31%;
   --destructive-foreground: 210 40% 98%;
-  --sidebar: 222 47% 6%;
+  --sidebar: 220 20% 10%;
   --sidebar-foreground: 210 40% 98%;
-  --sidebar-border: 217 33% 18%;
+  --sidebar-border: 220 16% 22%;
   --sidebar-primary: 187 85% 45%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 217 33% 18%;
+  --sidebar-accent: 220 16% 22%;
   --sidebar-accent-foreground: 210 40% 98%;
 }
 
@@ -263,11 +263,11 @@
   box-shadow: 0 22px 45px -10px hsl(var(--secondary) / 0.32), 0 10px 22px -6px hsl(var(--primary) / 0.2), 0 0 0 1.5px hsl(var(--secondary) / 0.4) !important;
 }
 .dark .card-lift {
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.45), 0 4px 12px -2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35), 0 4px 10px -2px rgba(0, 0, 0, 0.2);
 }
 .dark .card-lift:hover {
-  border-color: hsl(var(--secondary) / 0.9) !important;
-  box-shadow: 0 24px 50px -10px hsl(var(--secondary) / 0.5), 0 0 0 1.5px hsl(var(--secondary) / 0.6) !important;
+  border-color: hsl(var(--secondary) / 0.8) !important;
+  box-shadow: 0 20px 40px -10px hsl(var(--secondary) / 0.22), 0 0 0 1.5px hsl(var(--secondary) / 0.4) !important;
 }
 
 /* Logo Marquee Horizontal Infinite Scroll */
@@ -304,9 +304,12 @@
 .page-copy { max-width: 850px; font-size: clamp(16px, 2.5vw, 19px); line-height: 1.7; color: hsl(var(--muted-foreground)); margin: 24px 0 0; padding-left: 24px; border-left: 3px solid hsl(var(--primary)); font-style: italic; }
 .bg-grid { background-image: none; }
 /* ===== Dynamic Hero Split & Theme Styling ===== */
-.hero-slant-bg,
-.dark .hero-slant-bg {
+.hero-slant-bg {
   background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%) !important;
+  transition: background 0.4s ease;
+}
+.dark .hero-slant-bg {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.72) 0%, hsl(var(--secondary) / 0.75) 45%, hsl(220 20% 10%) 100%) !important;
   transition: background 0.4s ease;
 }
 @media (min-width: 1024px) {

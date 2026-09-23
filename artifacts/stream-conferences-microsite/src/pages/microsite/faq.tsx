@@ -17,7 +17,7 @@ export function FAQPage({ event }: { event: EventData }) {
         tagline="Find answers to common questions about abstract submission, registration, venue, and attendance."
       />
 
-      <div className="container-wide py-10 sm:py-14">
+      <div className="container-wide py-4 sm:py-6">
         {faqs.length === 0 ? (
           <div className="py-12 text-center bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl p-8">
             <p className="text-[hsl(var(--muted-foreground))] font-medium">No FAQs available for this event yet.</p>

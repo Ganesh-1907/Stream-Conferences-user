@@ -14,7 +14,7 @@ export function MediaPartnersPage({ event }: { event: EventData }) {
         tagline="Recognizing our esteemed media partners and global publishing collaborators supporting this summit."
       />
 
-      <div className="container-wide py-10 sm:py-14">
+      <div className="container-wide py-4 sm:py-6">
         {mediaPartners.length === 0 ? (
           <div className="text-center py-16 bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-3xl p-8 space-y-3 max-w-2xl mx-auto">
             <Award size={48} className="mx-auto text-[hsl(var(--primary))]" />

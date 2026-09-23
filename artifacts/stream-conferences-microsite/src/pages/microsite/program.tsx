@@ -16,7 +16,7 @@ export function ProgramPage({ event }: { event: EventData }) {
         tagline="Explore the multi-track agenda, keynote lectures, and technical session schedule."
       />
 
-      <div className="container-wide py-10 sm:py-14">
+      <div className="container-wide py-4 sm:py-6">
         {program.length === 0 ? (
           <div className="py-12 text-center bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl p-8">
             <p className="text-[hsl(var(--muted-foreground))] font-medium">No program schedule available for this event yet.</p>

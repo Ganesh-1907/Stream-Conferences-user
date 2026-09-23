@@ -117,7 +117,7 @@ export function TracksPage({ event }: { event: EventData }) {
         tagline="Explore the thematic tracks, session domains, and interdisciplinary research areas."
       />
 
-      <div className="container-wide py-10 sm:py-14">
+      <div className="container-wide py-4 sm:py-6">
         {tracks.length === 0 ? (
           <div className="py-12 text-center bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl p-8">
             <p className="text-[hsl(var(--muted-foreground))] font-medium">No tracks available for this event yet.</p>
