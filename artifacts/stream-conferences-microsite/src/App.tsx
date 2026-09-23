@@ -1094,19 +1094,21 @@ function Reveal({ children, className = '' }: { children: ReactNode; className?:
   return <div ref={ref} className={`reveal-on-scroll ${visible ? 'is-visible' : ''} ${className}`}>{children}</div>;
 }
 
-function SectionTitle({ eyebrow, title, body, light = false, eyebrowClassName, titleClassName }: { eyebrow?: string; title: string; body?: string; light?: boolean; eyebrowClassName?: string; titleClassName?: string }) {
+function SectionTitle({ eyebrow, title, body, light = false, eyebrowClassName, titleClassName }: { eyebrow?: string; title?: string; body?: string; light?: boolean; eyebrowClassName?: string; titleClassName?: string }) {
   return (
     <div>
       {eyebrow && (
-        <p className={eyebrowClassName || `text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] ${light ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--secondary))]'}`}>
+        <p className={eyebrowClassName || `display w-full text-left text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase ${light ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--secondary))]'}`}>
           {eyebrow}
         </p>
       )}
-      <h2 className={titleClassName || `display mt-3.5 w-full text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-[-.045em] ${light ? 'text-white' : 'text-[hsl(var(--foreground))]'}`}>
-        {title}
-      </h2>
+      {title && (
+        <h2 className={titleClassName || `mt-2.5 w-full text-left text-base sm:text-lg md:text-xl font-bold leading-snug ${light ? 'text-white' : 'text-[hsl(var(--foreground))]'}`}>
+          {title}
+        </h2>
+      )}
       {body && (
-        <p className={`mt-4 w-full text-base sm:text-lg md:text-xl font-medium leading-relaxed ${light ? 'text-slate-200' : 'text-[hsl(var(--muted-foreground))]'}`}>
+        <p className={`mt-3 w-full text-base sm:text-lg font-medium leading-relaxed ${light ? 'text-slate-200' : 'text-[hsl(var(--muted-foreground))]'}`}>
           {body}
         </p>
       )}
@@ -1187,9 +1189,19 @@ function TestimonialCarousel() {
   const [active, setActive] = useState(0);
   const testimonial = testimonials[active];
   const move = (direction: number) => setActive((current) => (current + direction + testimonials.length) % testimonials.length);
-  return <section className="pt-10 pb-10 bg-[hsl(var(--card))] text-[hsl(var(--foreground))] border-b border-[hsl(var(--border))]" aria-label="Delegate testimonials">
+  return <section className="pt-10 pb-10 bg-[hsl(var(--card))] text-[hsl(var(--foreground))]" aria-label="Delegate testimonials">
     <div className="container-wide grid gap-10 lg:grid-cols-[.65fr_1.35fr] lg:items-end">
-      <div><p className="label text-[hsl(var(--secondary))]">From the delegate community</p><h2 className="display mt-5 max-w-md text-4xl font-bold leading-[1.03] tracking-[-.05em] md:text-6xl text-[hsl(var(--foreground))]">A room people remember.</h2><p className="mt-6 max-w-md text-base leading-7 text-[hsl(var(--muted-foreground))]">The conference experience is designed to stay useful long after the final session.</p></div>
+      <div>
+        <p className="display w-full text-left text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight text-[hsl(var(--secondary))] uppercase">
+          From the delegate community
+        </p>
+        <h2 className="mt-2.5 max-w-md text-left text-base sm:text-lg md:text-xl font-bold leading-snug text-[hsl(var(--foreground))]">
+          A room people remember.
+        </h2>
+        <p className="mt-3 max-w-md text-base leading-7 text-[hsl(var(--muted-foreground))]">
+          The conference experience is designed to stay useful long after the final session.
+        </p>
+      </div>
       <div className="relative rounded-[22px] border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.35)] p-7 md:p-10 shadow-lg">
         <span className="display text-6xl leading-none text-[hsl(var(--secondary))]">“</span>
         <blockquote className="display mt-3 max-w-3xl text-2xl font-semibold leading-tight tracking-[-.03em] md:text-4xl text-[hsl(var(--foreground))]">“{testimonial.quote}”</blockquote>
@@ -1552,11 +1564,11 @@ function Home() {
       </section>
 
       {/* About STREAM Conferences Introduction Section */}
-      <section className="pt-12 pb-8 bg-[hsl(var(--background))] border-b border-[hsl(var(--border))]">
+      <section className="pt-12 pb-8 bg-[hsl(var(--background))]">
         <div className="container-wide w-full">
           <SectionTitle 
             title="About STREAM Conferences" 
-            titleClassName="display w-full text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-[-.045em] text-[hsl(var(--secondary))] uppercase"
+            titleClassName="display w-full text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight text-[hsl(var(--secondary))] uppercase"
             /* title="Operating at the intersection of academic excellence and industry innovation." */
           />
           <div className="mt-8 grid gap-6 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full max-w-none text-justify">
@@ -1583,7 +1595,7 @@ function Home() {
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end mb-10">
             <SectionTitle 
               title="Upcoming Conferences" 
-              titleClassName="display w-full text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-[-.045em] text-[hsl(var(--secondary))] uppercase"
+              titleClassName="display w-full text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight text-[hsl(var(--secondary))] uppercase"
               /* title="Conclaves of global scale." */
               body="Announcing the premier global gatherings for science, engineering, and academia." 
             />
@@ -1664,9 +1676,42 @@ function Home() {
       <TestimonialCarousel />
       <GallerySlider />
       {insightsList.length > 0 && (
-        <section className="pt-10 pb-10 bg-[hsl(var(--card))] border-b border-[hsl(var(--border))]"><div className="container-wide grid gap-10 md:grid-cols-[.7fr_1.3fr]"><div><SectionTitle eyebrow="From the Stream Conferences blog" title="Notes for the in-between." /><Link href="/blog" className="btn-main btn-quiet mt-8" data-testid="link-home-insights">Read the blog <ArrowRight size={16} /></Link></div><div className="grid gap-6 sm:grid-cols-3">{insightsList.slice(0, 3).map((insight, index) => <div key={insight.id || insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full shadow-sm"><div className="p-6 flex-1"><div className="aspect-video w-full rounded-xl overflow-hidden mb-4 bg-[hsl(var(--muted)/.25)] flex items-center justify-center relative">{insight.bannerUrl ? <img src={mediaUrl(insight.bannerUrl)} alt={insight.title} className="h-full w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} /> : <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center"><BookOpen className="text-[hsl(var(--primary-foreground))] opacity-65" size={32} /></div>}</div><span className="text-xs font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">{insight.label}</span><h3 className="display mt-2 text-xl font-bold leading-snug line-clamp-2 text-[hsl(var(--foreground))]">{insight.title}</h3><p className="mt-3 text-base leading-7 text-[hsl(var(--muted-foreground))] line-clamp-3">{insight.copy}</p></div><div className="px-6 pb-6 pt-0"><Link href={`/blog/${encodeURIComponent(insight.id)}`} className="inline-flex items-center gap-1.5 text-base font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition" data-testid={`link-home-blog-${index}`}>Read field note <ArrowRight size={15} /></Link></div></div>)}</div></div></section>
+        <section className="pt-10 pb-10 bg-[hsl(var(--card))]">
+          <div className="container-wide grid gap-10 md:grid-cols-[.7fr_1.3fr] md:items-end">
+            <div>
+              <SectionTitle eyebrow="From the Stream Conferences blog" title="Notes for the in-between." />
+              <Link href="/blog" className="btn-main btn-quiet mt-8" data-testid="link-home-insights">
+                Read blogs <ArrowRight size={16} />
+              </Link>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-3">
+              {insightsList.slice(0, 3).map((insight, index) => (
+                <div key={insight.id || insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full shadow-sm">
+                  <div className="p-6 flex-1">
+                    <div className="aspect-video w-full rounded-xl overflow-hidden mb-4 bg-[hsl(var(--muted)/.25)] flex items-center justify-center relative">
+                      {insight.bannerUrl ? (
+                        <img src={mediaUrl(insight.bannerUrl)} alt={insight.title} className="h-full w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center">
+                          <BookOpen className="text-[hsl(var(--primary-foreground))] opacity-65" size={32} />
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-xs font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">{insight.label}</span>
+                    <h3 className="display mt-2 text-xl font-bold leading-snug line-clamp-2 text-[hsl(var(--foreground))]">{insight.title}</h3>
+                    <p className="mt-3 text-base leading-7 text-[hsl(var(--muted-foreground))] line-clamp-3">{insight.copy}</p>
+                  </div>
+                  <div className="px-6 pb-6 pt-0">
+                    <Link href={`/blog/${encodeURIComponent(insight.id)}`} className="inline-flex items-center gap-1.5 text-base font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition" data-testid={`link-home-blog-${index}`}>
+                      Read field note <ArrowRight size={15} />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       )}
-      <HomeFaqSection />
       <section className="bg-[hsl(var(--primary))] py-12 text-[hsl(var(--primary-foreground))]"><div className="container-wide flex flex-col justify-between gap-6 md:flex-row md:items-center"><div><p className="label text-[hsl(var(--accent))]">Help desk</p><p className="display mt-2 text-2xl font-bold text-[hsl(var(--primary-foreground))]">Have a question before you arrive?</p><div className="mt-3 flex flex-wrap gap-4 text-sm text-[hsl(var(--primary-foreground)/.85)]"><a href="mailto:info@streamconferences.com" className="flex items-center gap-2 font-semibold hover:text-[hsl(var(--accent))]" data-testid="link-home-email"><Mail size={16} /> info@streamconferences.com</a><span className="flex items-center gap-2"><Phone size={16} /> +1 (617) 555-0199</span></div></div><Link href="/contact" className="btn-main bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:brightness-110 shadow-lg border-0" data-testid="link-home-contact">Contact us <ArrowUpRight size={16} /></Link></div></section>
     </main>
   </Layout>;
@@ -2163,8 +2208,12 @@ function BrochurePage() {
             </div>
           </div>
           <div>
-            <span className="label text-[hsl(var(--secondary))]">Delegate Brochure</span>
-            <h2 className="display mt-4 text-3xl font-bold sm:text-5xl">{mainBrochure?.title || 'Comprehensive Event Field Guide'}</h2>
+            <p className="display w-full text-left text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
+              Delegate Brochure
+            </p>
+            <h2 className="mt-2.5 w-full text-left text-base sm:text-lg md:text-xl font-bold leading-snug text-[hsl(var(--foreground))]">
+              {mainBrochure?.title || 'Comprehensive Event Field Guide'}
+            </h2>
             <p className="mt-6 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">
               {mainBrochure?.description || 'Download the complete delegate field guide for Stream Conferences. Get detailed access to track taxonomies, keynote presentation schedules, delegate registration tiers, abstract submission timelines, and venue logistics across all upcoming global summits.'}
             </p>

@@ -138,7 +138,7 @@ export function VenuePage({ event }: { event: EventData }) {
               {/* Right Column: Venue Description & Additional Notes */}
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-[hsl(var(--foreground))] font-['Space_Grotesk'] pb-4 border-b border-[hsl(var(--border))]">
+                  <h3 className="display text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))] pb-4 border-b border-[hsl(var(--border))]">
                     About the Venue
                   </h3>
                   {venue.description ? (

@@ -534,11 +534,13 @@ export function HomePage({ event }: { event: EventData }) {
         <section className="container-wide py-14 md:py-20 border-b border-[hsl(var(--border))]">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
-              <span className="section-eyebrow">Speakers</span>
-              <h2 className="mt-3 text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">
+              <p className="display w-full text-left text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
+                Speakers
+              </p>
+              <h2 className="mt-2.5 w-full text-left text-base sm:text-lg md:text-xl font-bold leading-snug text-[hsl(var(--foreground))]">
                 Featured Speakers
               </h2>
-              <p className="mt-2 text-sm md:text-base text-[hsl(var(--muted-foreground))] max-w-xl">
+              <p className="mt-3 w-full text-base sm:text-lg font-medium leading-relaxed text-[hsl(var(--muted-foreground))] max-w-xl">
                 Learn from world-renowned keynote experts and pioneering practitioners leading the sessions
               </p>
             </div>
@@ -642,11 +644,13 @@ export function HomePage({ event }: { event: EventData }) {
       {Array.isArray(event.tracks) && event.tracks.length > 0 && (
         <section className="container-wide py-14 border-b border-[hsl(var(--border))]">
           <div className="mb-8">
-            <span className="section-eyebrow">Tracks</span>
-            <h2 className="mt-3 text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">
+            <p className="display w-full text-left text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
+              Tracks
+            </p>
+            <h2 className="mt-2.5 w-full text-left text-base sm:text-lg md:text-xl font-bold leading-snug text-[hsl(var(--foreground))]">
               Conference Tracks & Scientific Themes
             </h2>
-            <p className="mt-2 text-sm md:text-base text-[hsl(var(--muted-foreground))]">
+            <p className="mt-3 w-full text-base sm:text-lg font-medium leading-relaxed text-[hsl(var(--muted-foreground))]">
               Explore key research tracks presented at {event.title}
             </p>
           </div>
@@ -725,11 +729,13 @@ export function HomePage({ event }: { event: EventData }) {
         <section className="container-wide py-12 border-b border-[hsl(var(--border))]">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
             <div>
-              <span className="section-eyebrow">Collaboration</span>
-              <h2 className="mt-3 text-3xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">
+              <p className="display w-full text-left text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
+                Collaboration
+              </p>
+              <h2 className="mt-2.5 w-full text-left text-base sm:text-lg md:text-xl font-bold leading-snug text-[hsl(var(--foreground))]">
                 Media Partners
               </h2>
-              <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+              <p className="mt-3 w-full text-base sm:text-lg font-medium leading-relaxed text-[hsl(var(--muted-foreground))]">
                 Official press and publishing collaborators supporting {event.title}
               </p>
             </div>
@@ -756,11 +762,13 @@ export function HomePage({ event }: { event: EventData }) {
       {faqs.length > 0 && (
       <section className="container-wide py-16 md:py-24">
         <div className="mb-12 text-center max-w-2xl mx-auto">
-          <span className="section-eyebrow justify-center">FAQ</span>
-          <h2 className="mt-3 text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">
+          <p className="display w-full text-center text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
+            FAQ
+          </p>
+          <h2 className="mt-2.5 w-full text-center text-base sm:text-lg md:text-xl font-bold leading-snug text-[hsl(var(--foreground))]">
             Frequently Asked Questions
           </h2>
-          <p className="mt-2 text-sm md:text-base text-[hsl(var(--muted-foreground))]">
+          <p className="mt-3 w-full text-base sm:text-lg font-medium leading-relaxed text-[hsl(var(--muted-foreground))]">
             Find answers to common questions about participation, registration, and attendance
           </p>
         </div>

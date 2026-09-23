@@ -110,11 +110,13 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
         <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-7 md:p-10 shadow-sm space-y-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <span className="section-eyebrow">Official Event Partners</span>
-              <h2 className="mt-2 text-2xl md:text-3xl font-['Space_Grotesk'] font-bold text-[hsl(var(--foreground))]">
+              <p className="display w-full text-left text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
+                Official Event Partners
+              </p>
+              <h2 className="mt-2.5 w-full text-left text-base sm:text-lg md:text-xl font-bold leading-snug text-[hsl(var(--foreground))]">
                 Our Esteemed Event Sponsors
               </h2>
-              <p className="mt-1 text-xs md:text-sm text-[hsl(var(--muted-foreground))]">
+              <p className="mt-3 w-full text-base sm:text-lg font-medium leading-relaxed text-[hsl(var(--muted-foreground))]">
                 Recognizing the leading organizations and industry leaders supporting {conferenceTitle}
               </p>
             </div>
@@ -148,8 +150,10 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
       <section className="container-wide">
         <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-7 md:p-12 shadow-sm">
           <div className="max-w-3xl">
-            <span className="section-eyebrow">Strategic Value</span>
-            <h2 className="mt-3 text-2xl md:text-3xl font-['Space_Grotesk'] font-bold text-[hsl(var(--foreground))]">
+            <p className="display w-full text-left text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
+              Strategic Value
+            </p>
+            <h2 className="mt-2.5 w-full text-left text-base sm:text-lg md:text-xl font-bold leading-snug text-[hsl(var(--foreground))]">
               Why with us?
             </h2>
           </div>
@@ -186,11 +190,13 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
       {/* Premium Sponsorship Packages */}
       <section className="container-wide mt-14 md:mt-20">
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <span className="section-eyebrow justify-center">Partnership Tiers</span>
-          <h2 className="mt-3 text-3xl md:text-4xl font-['Space_Grotesk'] font-bold text-[hsl(var(--foreground))]">
+          <p className="display w-full text-center text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
+            Partnership Tiers
+          </p>
+          <h2 className="mt-2.5 w-full text-center text-base sm:text-lg md:text-xl font-bold leading-snug text-[hsl(var(--foreground))]">
             Premium Sponsorship Packages
           </h2>
-          <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
+          <p className="mt-3 w-full text-base sm:text-lg font-medium leading-relaxed text-[hsl(var(--muted-foreground))]">
             Tailored packages designed to maximize your organizational visibility and brand alignment.
           </p>
         </div>

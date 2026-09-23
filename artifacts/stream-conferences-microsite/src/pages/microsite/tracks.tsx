@@ -69,7 +69,7 @@ export function TracksPage({ event }: { event: EventData }) {
 
           {/* Down Content / Description */}
           <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 sm:p-12 shadow-sm space-y-6">
-            <h3 className="text-xl sm:text-2xl font-bold font-['Space_Grotesk'] text-[hsl(var(--foreground))] border-b border-[hsl(var(--border))] pb-4">
+            <h3 className="display text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))] border-b border-[hsl(var(--border))] pb-4">
               Track Overview & Research Topics
             </h3>
             {track.description ? (

@@ -13,9 +13,15 @@ export function ItineraryPage({ event }: { event: EventData }) {
   return (
     <div className="container-wide py-12">
       <div className="mb-8">
-        <span className="section-eyebrow">Itinerary</span>
-        <h1 className="mt-3 text-3xl md:text-4xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">Detailed schedule</h1>
-        <p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">A day-by-day guide to the event</p>
+        <p className="display w-full text-left text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
+          Itinerary
+        </p>
+        <h1 className="mt-2.5 w-full text-left text-base sm:text-lg md:text-xl font-bold leading-snug text-[hsl(var(--foreground))]">
+          Detailed schedule
+        </h1>
+        <p className="mt-3 w-full text-base sm:text-lg font-medium leading-relaxed text-[hsl(var(--muted-foreground))]">
+          A day-by-day guide to the event
+        </p>
       </div>
 
       <div>

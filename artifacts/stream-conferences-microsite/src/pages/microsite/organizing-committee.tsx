@@ -117,10 +117,12 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
 
       {keyMembers.length > 0 && (
         <div className="mb-12">
-          <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-[hsl(var(--foreground))]">
-            <Award size={20} className="text-amber-500" />
-            Committee Chairs & Key Leaders
-          </h3>
+          <div className="flex items-center gap-2 mb-6 border-b border-[hsl(var(--border))] pb-3">
+            <Award size={26} className="text-amber-500 shrink-0" />
+            <h3 className="display text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
+              Committee Chairs & Key Leaders
+            </h3>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {keyMembers.map((member, idx) => (
               <CommitteeCard key={member.name || idx} member={member} isKey />
@@ -132,9 +134,11 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
       {otherMembers.length > 0 && (
         <div>
           {keyMembers.length > 0 && (
-            <h3 className="text-xl font-bold mb-6 text-[hsl(var(--foreground))]">
-              Committee Members
-            </h3>
+            <div className="border-b border-[hsl(var(--border))] pb-3 mb-6">
+              <h3 className="display text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
+                Committee Members
+              </h3>
+            </div>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {otherMembers.map((member, idx) => (

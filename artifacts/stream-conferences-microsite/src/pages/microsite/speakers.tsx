@@ -156,13 +156,15 @@ export function SpeakersPage({ event }: { event: EventData }) {
         {/* Keynote Speakers Section */}
         {keynoteSpeakers.length > 0 && (
           <div className="space-y-6">
-            <h3 className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-[hsl(var(--foreground))] border-b border-[hsl(var(--border))] pb-3 font-['Space_Grotesk']">
-              <Award size={22} className="text-amber-500" />
-              <span>Keynote Speakers</span>
-              <span className="ml-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+            <div className="flex items-center gap-3 border-b border-[hsl(var(--border))] pb-3">
+              <h3 className="display text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))] flex items-center gap-2">
+                <Award size={26} className="text-amber-500 shrink-0" />
+                Keynote Speakers
+              </h3>
+              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
                 {keynoteSpeakers.length}
               </span>
-            </h3>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {keynoteSpeakers.map((speaker, idx) => (
                 <SpeakerCard key={speaker.name || idx} speaker={speaker} />
@@ -174,13 +176,15 @@ export function SpeakersPage({ event }: { event: EventData }) {
         {/* All Other Speakers & Presenters Section */}
         {otherSpeakers.length > 0 && (
           <div className="space-y-6">
-            <h3 className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-[hsl(var(--foreground))] border-b border-[hsl(var(--border))] pb-3 font-['Space_Grotesk']">
-              <Presentation size={22} className="text-[hsl(var(--primary))]" />
-              <span>Speakers</span>
-              <span className="ml-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))] border border-[hsl(var(--primary)/.2)]">
+            <div className="flex items-center gap-3 border-b border-[hsl(var(--border))] pb-3">
+              <h3 className="display text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))] flex items-center gap-2">
+                <Presentation size={26} className="text-[hsl(var(--secondary))] shrink-0" />
+                Speakers
+              </h3>
+              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[hsl(var(--secondary)/.1)] text-[hsl(var(--secondary))] border border-[hsl(var(--secondary)/.2)]">
                 {otherSpeakers.length}
               </span>
-            </h3>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {otherSpeakers.map((speaker, idx) => (
                 <SpeakerCard key={speaker.name || idx} speaker={speaker} />

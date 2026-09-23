@@ -509,11 +509,13 @@ function PersistentContactFooter({ event }: { event: EventData }) {
         <div className="grid lg:grid-cols-[1fr_1.25fr] gap-8 lg:gap-14 items-center">
           {/* Left Side: Eyebrow, Heading, Description & Assurance Badges */}
           <div>
-            <span className="section-eyebrow">Contact</span>
-            <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-['Space_Grotesk'] font-bold tracking-tight text-[hsl(var(--foreground))]">
+            <p className="display w-full text-left text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
+              Contact
+            </p>
+            <h2 className="mt-2.5 w-full text-left text-base sm:text-lg md:text-xl font-bold leading-snug text-[hsl(var(--foreground))]">
               Get in Touch
             </h2>
-            <p className="mt-3 text-base md:text-lg text-[hsl(var(--muted-foreground))] leading-relaxed max-w-lg">
+            <p className="mt-3 text-base sm:text-lg font-medium text-[hsl(var(--muted-foreground))] leading-relaxed max-w-lg">
               Have questions regarding registration, abstract submissions, or venue logistics?
               Our organizers are available to assist you.
             </p>
