@@ -140,6 +140,38 @@ const getStartAndEndDates = (eventDateStr?: string, dayRangeStr?: string) => {
   return { start, end };
 };
 
+const formatEventDateRange = (eventDateStr?: string, dayRangeStr?: string) => {
+  if (!eventDateStr) return '';
+  const { start, end } = getStartAndEndDates(eventDateStr, dayRangeStr);
+  if (!start) return eventDateStr;
+
+  const startMonth = start.toLocaleDateString(undefined, { month: 'short' });
+  const startDay = start.getDate();
+  const startYear = start.getFullYear();
+
+  if (!end || start.getTime() === end.getTime()) {
+    return `${startMonth} ${startDay}, ${startYear}`;
+  }
+
+  const endMonth = end.toLocaleDateString(undefined, { month: 'short' });
+  const endDay = end.getDate();
+  const endYear = end.getFullYear();
+
+  if (startYear === endYear) {
+    if (startMonth === endMonth) {
+      return `${startMonth} ${startDay} – ${endDay}, ${startYear}`;
+    }
+    return `${startMonth} ${startDay} – ${endMonth} ${endDay}, ${startYear}`;
+  }
+
+  return `${startMonth} ${startDay}, ${startYear} – ${endMonth} ${endDay}, ${endYear}`;
+};
+
+const formatLocation = (loc?: string) => {
+  if (!loc) return '';
+  return loc.replace(/\s*·\s*(In person|Hybrid|Online|Virtual)/gi, '').trim();
+};
+
 const conferenceName = 'International Conference on Medical, Life & Health Sciences';
 const conferenceCode = 'ICMLHS 2027';
 const eventDate = 'March 12–14, 2027';
@@ -255,9 +287,9 @@ type EventItem = {
 };
 
 const events: EventItem[] = [
-  { id: 'med-27', day: '12–14', month: 'MAR 27', type: 'Conference', title: 'International Conference on Medical, Life & Health Sciences', location: 'Boston, Massachusetts · Hybrid', date: 'upcoming', eventDate: '2027-03-12', slug: 'icmlhs-2027' },
-  { id: 'ai-27', day: '08–09', month: 'MAY 27', type: 'Conference', title: 'Applied Intelligence & Emerging Technologies Forum', location: 'Singapore · In person', date: 'upcoming', eventDate: '2027-05-08', slug: 'applied-intelligence-2027' },
-  { id: 'past-25', day: '18–20', month: 'NOV 25', type: 'Conference', title: 'Global Forum on Research Translation', location: 'Copenhagen · Hybrid', date: 'past', eventDate: '2025-11-18', slug: 'global-forum-2025' },
+  { id: 'med-27', day: '12–14', month: 'MAR 27', type: 'Conference', title: 'International Conference on Medical, Life & Health Sciences', location: 'Boston, Massachusetts', date: 'upcoming', eventDate: '2027-03-12', slug: 'icmlhs-2027' },
+  { id: 'ai-27', day: '08–09', month: 'MAY 27', type: 'Conference', title: 'Applied Intelligence & Emerging Technologies Forum', location: 'Singapore', date: 'upcoming', eventDate: '2027-05-08', slug: 'applied-intelligence-2027' },
+  { id: 'past-25', day: '18–20', month: 'NOV 25', type: 'Conference', title: 'Global Forum on Research Translation', location: 'Copenhagen', date: 'past', eventDate: '2025-11-18', slug: 'global-forum-2025' },
 ];
 
 function EventList({ initial: initialStatus = 'upcoming' }: { initial?: Status }) {
@@ -366,15 +398,14 @@ function EventList({ initial: initialStatus = 'upcoming' }: { initial?: Status }
         {visible.length ? (
           visible.map((e, index) => {
             const detailsHref = subdomainUrl(e) || `/conference/${encodeURIComponent(e.eventId || e.slug || (e as any)._id || e.id)}`;
-            const { start, end } = getStartAndEndDates(e.eventDate, e.day);
-            const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : '';
-            const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : '';
-            const dateBadgeText = startFormatted ? (endFormatted ? `${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${endFormatted}` : startFormatted) : (e.eventDate || '');
+            const dateBadgeText = formatEventDateRange(e.eventDate, e.day);
 
             return (
               <a 
                 key={e.id || (e as any)._id || index} 
                 href={detailsHref} 
+                target="_blank"
+                rel="noopener noreferrer"
                 className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full group hover:shadow-xl transition-all duration-300 cursor-pointer" 
                 data-testid={`card-event-${index}`}
               >
@@ -419,7 +450,7 @@ function EventList({ initial: initialStatus = 'upcoming' }: { initial?: Status }
                     {e.location && (
                       <div className="mt-4 flex items-center gap-2.5 text-base font-semibold text-[hsl(var(--foreground)/.88)]">
                         <MapPin size={16} className="shrink-0 text-[hsl(var(--accent))]" />
-                        <span className="truncate">{e.location}</span>
+                        <span className="truncate">{formatLocation(e.location)}</span>
                       </div>
                     )}
                   </div>
@@ -1063,13 +1094,15 @@ function Reveal({ children, className = '' }: { children: ReactNode; className?:
   return <div ref={ref} className={`reveal-on-scroll ${visible ? 'is-visible' : ''} ${className}`}>{children}</div>;
 }
 
-function SectionTitle({ eyebrow, title, body, light = false, eyebrowClassName }: { eyebrow: string; title: string; body?: string; light?: boolean; eyebrowClassName?: string }) {
+function SectionTitle({ eyebrow, title, body, light = false, eyebrowClassName, titleClassName }: { eyebrow?: string; title: string; body?: string; light?: boolean; eyebrowClassName?: string; titleClassName?: string }) {
   return (
     <div>
-      <p className={eyebrowClassName || `text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] ${light ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--secondary))]'}`}>
-        {eyebrow}
-      </p>
-      <h2 className={`display mt-3.5 w-full text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-[-.045em] ${light ? 'text-white' : 'text-[hsl(var(--foreground))]'}`}>
+      {eyebrow && (
+        <p className={eyebrowClassName || `text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] ${light ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--secondary))]'}`}>
+          {eyebrow}
+        </p>
+      )}
+      <h2 className={titleClassName || `display mt-3.5 w-full text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-[-.045em] ${light ? 'text-white' : 'text-[hsl(var(--foreground))]'}`}>
         {title}
       </h2>
       {body && (
@@ -1522,22 +1555,22 @@ function Home() {
       <section className="pt-12 pb-8 bg-[hsl(var(--background))] border-b border-[hsl(var(--border))]">
         <div className="container-wide w-full">
           <SectionTitle 
-            eyebrow="About STREAM Conferences" 
-            eyebrowClassName="text-base sm:text-lg md:text-xl font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]"
-            title="Operating at the intersection of academic excellence and industry innovation." 
+            title="About STREAM Conferences" 
+            titleClassName="display w-full text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-[-.045em] text-[hsl(var(--secondary))] uppercase"
+            /* title="Operating at the intersection of academic excellence and industry innovation." */
           />
           <div className="mt-8 grid gap-6 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full max-w-none text-justify">
             <p>
               STREAM Conferences is an established global architect of elite scientific, technical, research, engineering, academic, and medical summits. Operating at the dynamic intersection of rigorous scholarship and industrial execution, we engineer high-precision platforms designed to accelerate knowledge transfer, forge high-value cross-disciplinary synergies, and catalyse theoretical discoveries into transformative global solutions.
             </p>
             <p className="inline sm:block">
-              We redefine the international summit experience through focused, result-driven frameworks that convert intellectual capital into immediate market momentum. We deliberately cultivate environments where data scientists, clinical physicians, biotech innovators, and systems engineers converge to solve high-stakes global challenges.{' '}
+              We redefine the international summit experience through focused, result-driven frameworks that convert intellectual capital into immediate market momentum. We deliberately cultivate environments where data scientists, clinical physicians, biotech innovators, and systems engineers converge to solve high-stakes global challenges.......{' '}
               <Link
                 href="/about"
-                className="inline-flex items-center gap-1.5 ml-2 px-4 py-1.5 rounded-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.9)] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-sm hover:shadow transition-all align-middle cursor-pointer"
+                className="inline-flex items-center gap-1 ml-1.5 font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--primary))] hover:underline transition-colors align-baseline cursor-pointer"
               >
                 <span>Read More</span>
-                <ArrowRight size={14} />
+                <ArrowRight size={15} />
               </Link>
             </p>
           </div>
@@ -1549,8 +1582,9 @@ function Home() {
         <div className="container-wide">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end mb-10">
             <SectionTitle 
-              eyebrow="Upcoming conferences" 
-              title="Conclaves of global scale." 
+              title="Upcoming Conferences" 
+              titleClassName="display w-full text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-[-.045em] text-[hsl(var(--secondary))] uppercase"
+              /* title="Conclaves of global scale." */
               body="Announcing the premier global gatherings for science, engineering, and academia." 
             />
             <Link href="/conferences" className="btn-main btn-quiet shrink-0" data-testid="link-home-view-conferences">
@@ -1560,15 +1594,14 @@ function Home() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {displayConferences.map((item, index) => {
               const detailsHref = subdomainUrl(item) || `/conference/${encodeURIComponent(item.eventId || item.slug || (item as any)._id || item.id)}`;
-              const { start, end } = getStartAndEndDates(item.eventDate, item.day);
-              const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : '';
-              const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : '';
-              const dateBadgeText = startFormatted ? (endFormatted ? `${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${endFormatted}` : startFormatted) : (item.eventDate || '');
+              const dateBadgeText = formatEventDateRange(item.eventDate, item.day);
 
               return (
                 <a 
                   key={item._id || item.id || index} 
                   href={detailsHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full group hover:shadow-xl transition-all duration-300 cursor-pointer" 
                   data-testid={`card-home-conference-${index}`}
                 >
@@ -1613,7 +1646,7 @@ function Home() {
                       {item.location && (
                         <div className="mt-4 flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
                           <MapPin size={15} className="shrink-0 text-[hsl(var(--accent))]" />
-                          <span className="truncate">{item.location}</span>
+                          <span className="truncate">{formatLocation(item.location)}</span>
                         </div>
                       )}
                     </div>
@@ -1748,6 +1781,12 @@ function AboutPage() {
         <section className="pt-6 pb-6">
           <div className="container-wide w-full">
             <div className="grid gap-6 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full max-w-none text-justify">
+              <p>
+                STREAM Conferences is an established global architect of elite scientific, technical, research, engineering, academic, and medical summits. Operating at the dynamic intersection of rigorous scholarship and industrial execution, we engineer high-precision platforms designed to accelerate knowledge transfer, forge high-value cross-disciplinary synergies, and catalyse theoretical discoveries into transformative global solutions.
+              </p>
+              <p>
+                We redefine the international summit experience through focused, result-driven frameworks that convert intellectual capital into immediate market momentum. We deliberately cultivate environments where data scientists, clinical physicians, biotech innovators, and systems engineers converge to solve high-stakes global challenges.
+              </p>
               <p>Where pioneering ideas meet global expertise, STREAM Conferences creates a space for discovery, innovation, and meaningful exchange across Conference platforms fostering knowledge and Academia. We bring together leading researchers, scientists, academicians, healthcare professionals, engineers, technology experts, industry leaders, innovators, and emerging professionals to create meaningful opportunities for knowledge exchange and collaboration. Operating at the intersection of academic excellence and industry innovation.</p>
               <p>We create focused platforms where research, expertise, and real-world applications can come together. Our conferences are designed to encourage the exchange of groundbreaking research, emerging technologies, practical insights, and diverse perspectives across disciplines.</p>
               <p>We go beyond traditional conference formats by creating engaging, knowledge-driven environments that encourage meaningful discussions, interdisciplinary connections, and professional networking. Through keynote presentations, plenary sessions, technical talks, research presentations, panel discussions, workshops, and interactive forums, participants gain opportunities to present their work, discover emerging developments, and connect with peers and experts from around the world.</p>
