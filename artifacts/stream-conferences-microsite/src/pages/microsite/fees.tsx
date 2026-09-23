@@ -40,7 +40,7 @@ export function FeesPage({ event }: { event: EventData }) {
         ) : (
           <div className="max-w-4xl mx-auto space-y-10">
             {grouped.map(([type, items]) => (
-              <div key={type} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm">
+              <div key={type} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm">
                 <div className="px-6 py-4 bg-[#f0f4f9] dark:bg-slate-900/60 border-b border-[hsl(var(--border))]">
                   <h2 className="text-base font-['Space_Grotesk'] font-bold text-[hsl(var(--foreground))] uppercase tracking-wider">{type || 'Untitled Fee Type'}</h2>
                 </div>

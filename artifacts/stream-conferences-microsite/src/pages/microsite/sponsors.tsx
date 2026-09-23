@@ -205,7 +205,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
           {/* Column 1: Elite & Gold */}
           <div className="space-y-8">
             {/* Elite Sponsor Card */}
-            <div className="rounded-2xl border-2 border-[hsl(var(--primary))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-lg shadow-[hsl(var(--primary)/.05)] relative overflow-hidden">
+            <div className="card-lift rounded-2xl border-2 border-[hsl(var(--primary))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-lg shadow-[hsl(var(--primary)/.05)] relative overflow-hidden">
               <div className="absolute top-0 right-0 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-4 py-1 rounded-bl-xl text-[11px] font-mono uppercase font-bold tracking-wider">
                 Top Tier
               </div>
@@ -242,7 +242,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
             </div>
 
             {/* Gold Sponsor Card */}
-            <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-sm hover:border-amber-500/70 transition-colors">
+            <div className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-sm">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-11 h-11 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
                   <Award size={22} />
@@ -279,7 +279,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
           {/* Column 2: Silver & Exhibition */}
           <div className="space-y-8">
             {/* Silver Sponsor Card */}
-            <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-sm hover:border-[hsl(var(--secondary)/.7)] transition-colors">
+            <div className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-sm">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-11 h-11 rounded-xl bg-[hsl(var(--secondary)/.15)] text-[hsl(var(--secondary))] flex items-center justify-center">
                   <ShieldCheck size={22} />
@@ -313,7 +313,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
             </div>
 
             {/* Exhibition Card */}
-            <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-sm hover:border-[hsl(var(--primary)/.5)] transition-colors">
+            <div className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-sm">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-11 h-11 rounded-xl bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))] flex items-center justify-center">
                   <Store size={22} />
@@ -353,7 +353,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
       <section className="container-wide mt-14 md:mt-20">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Additional Sponsorship Packages */}
-          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-sm">
+          <div className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-sm">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-10 h-10 rounded-xl bg-[hsl(var(--secondary)/.12)] text-[hsl(var(--secondary))] flex items-center justify-center font-bold">
                 <Award size={20} />
@@ -379,7 +379,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
           </div>
 
           {/* Advertisements */}
-          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-sm">
+          <div className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 md:p-8 shadow-sm">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-10 h-10 rounded-xl bg-[hsl(var(--primary)/.12)] text-[hsl(var(--primary))] flex items-center justify-center font-bold">
                 <Sparkles size={20} />

@@ -568,7 +568,7 @@ export function HomePage({ event }: { event: EventData }) {
                 <div
                   key={speaker.name || idx}
                   onClick={() => setSelectedSpeaker(speaker)}
-                  className="group relative flex flex-col items-center text-center rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-5 shadow-sm hover:shadow-xl hover:border-[hsl(var(--primary)/.5)] transition-all duration-300 cursor-pointer overflow-hidden"
+                  className="card-lift group relative flex flex-col items-center text-center rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-5 shadow-sm cursor-pointer overflow-hidden"
                 >
                   <div className="w-10 h-1.5 rounded-full bg-[hsl(var(--border))] mb-3 group-hover:bg-[hsl(var(--primary)/.4)] transition-colors shadow-inner shrink-0" />
 
@@ -773,30 +773,41 @@ export function HomePage({ event }: { event: EventData }) {
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto divide-y divide-[hsl(var(--border))] border-t border-b border-[hsl(var(--border))]">
-          {faqs.map((faq, idx) => (
-            <div key={idx} className="faq-item border-0">
-              <button
-                type="button"
-                onClick={() => setOpenFaqIndex(openFaqIndex === idx ? null : idx)}
-                className="faq-question cursor-pointer py-5 px-1 hover:text-[hsl(var(--primary))] transition-colors"
-                aria-expanded={openFaqIndex === idx}
+        <div className="max-w-4xl mx-auto space-y-4">
+          {faqs.map((faq, idx) => {
+            const isOpen = openFaqIndex === idx;
+            return (
+              <div
+                key={idx}
+                onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                className={`group rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden bg-[hsl(var(--card))] shadow-xs hover:-translate-y-1 hover:shadow-lg ${
+                  isOpen
+                    ? 'border-[hsl(var(--secondary)/0.8)] shadow-[0_10px_25px_-5px_hsl(var(--secondary)/0.18)]'
+                    : 'border-[hsl(var(--border))] hover:border-[hsl(var(--secondary)/0.8)] hover:shadow-[0_10px_25px_-5px_hsl(var(--secondary)/0.15)]'
+                }`}
               >
-                <span className="font-semibold text-base md:text-lg pr-4">{faq.question}</span>
-                <ChevronDown
-                  size={20}
-                  className={`text-[hsl(var(--muted-foreground))] shrink-0 transition-transform duration-200 ${
-                    openFaqIndex === idx ? 'rotate-180 text-[hsl(var(--primary))]' : ''
-                  }`}
-                />
-              </button>
-              {openFaqIndex === idx && (
-                <div className="faq-answer px-1 pb-5 pt-1 text-sm md:text-base text-[hsl(var(--muted-foreground))] leading-relaxed">
-                  {faq.answer}
+                <div
+                  className="flex w-full items-center justify-between gap-5 p-5 sm:p-6 text-left font-bold text-base sm:text-lg select-none"
+                  aria-expanded={isOpen}
+                >
+                  <span className="group-hover:text-[hsl(var(--secondary))] transition-colors text-[hsl(var(--foreground))]">
+                    {faq.question}
+                  </span>
+                  <ChevronDown
+                    size={20}
+                    className={`shrink-0 text-[hsl(var(--secondary))] transition-transform duration-300 ${
+                      isOpen ? 'rotate-180' : 'group-hover:translate-y-0.5'
+                    }`}
+                  />
                 </div>
-              )}
-            </div>
-          ))}
+                {isOpen && (
+                  <div className="border-t border-[hsl(var(--border))] px-6 pb-6 pt-4 text-base sm:text-lg leading-8 text-[hsl(var(--foreground)/.85)] bg-[hsl(var(--muted)/.15)]">
+                    {faq.answer}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
       )}

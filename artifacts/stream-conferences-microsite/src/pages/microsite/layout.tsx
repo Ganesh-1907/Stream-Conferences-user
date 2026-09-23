@@ -533,7 +533,7 @@ function PersistentContactFooter({ event }: { event: EventData }) {
           </div>
 
           {/* Right Side Box: Email, Phone, Website, Address & Send Message Button */}
-          <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 sm:p-7 shadow-xl shadow-black/5 hover:border-[hsl(var(--primary)/0.4)] transition-all duration-300 relative overflow-hidden">
+          <div className="card-lift rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 sm:p-7 shadow-xl shadow-black/5 relative overflow-hidden">
             {/* Subtle decorative glow */}
             <div className="absolute -top-20 -right-20 w-44 h-44 rounded-full bg-[hsl(var(--primary)/0.08)] blur-3xl pointer-events-none" />
 
@@ -885,6 +885,68 @@ export function MicrositeLayout({ event, navItems, children }: { event: EventDat
       root.removeAttribute('data-theme-mode');
     };
   }, [event?.themeColor, event?.primaryColor, event?.colorTheme]);
+
+  // Scroll animations for microsite pages
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.05, rootMargin: '0px 0px -20px 0px' }
+    );
+
+    const applyScrollAnimations = () => {
+      // 1. Process all grid containers with card elements
+      document.querySelectorAll('.grid').forEach((grid) => {
+        const children = Array.from(grid.children);
+        if (children.length < 2) return;
+
+        children.forEach((child, index) => {
+          const el = child as HTMLElement;
+          if (el.classList.contains('reveal-on-scroll')) return;
+
+          const isLeft = index % 2 === 0;
+          el.classList.add('reveal-on-scroll');
+          if (isLeft) {
+            el.classList.add('reveal-from-left');
+          } else {
+            el.classList.add('reveal-from-right');
+          }
+          el.style.transitionDelay = `${(index % 4) * 80}ms`;
+        });
+      });
+
+      // 2. Process all standalone .card-lift, cards, or section containers
+      document.querySelectorAll('.card-lift, main section > div > div:not(.grid), .space-y-6 > div').forEach((el, index) => {
+        const htmlEl = el as HTMLElement;
+        if (!htmlEl.classList.contains('reveal-on-scroll')) {
+          htmlEl.classList.add('reveal-on-scroll', 'reveal-from-up');
+          htmlEl.style.transitionDelay = `${(index % 3) * 60}ms`;
+        }
+      });
+
+      // 3. Observe all unrevealed elements
+      document.querySelectorAll('.reveal-on-scroll:not(.is-visible)').forEach((el) => {
+        observer.observe(el);
+      });
+    };
+
+    applyScrollAnimations();
+    const t1 = setTimeout(applyScrollAnimations, 100);
+    const t2 = setTimeout(applyScrollAnimations, 400);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      observer.disconnect();
+    };
+  }, [location]);
 
   return (
     <div className="min-h-[100dvh] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] flex flex-col relative">

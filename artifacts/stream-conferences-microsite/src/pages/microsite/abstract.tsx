@@ -195,7 +195,7 @@ export function AbstractPage({ event }: { event: EventData }) {
               <button onClick={() => { setSent(false); setStep(1); setTitle('Dr.'); setFullName(''); setEmail(''); setPhone(''); setInstitution(''); setAddress(''); setCountry(''); setAbstractFile(null); }} className="mt-4 btn-main btn-primary">Submit Another</button>
             </div>
           ) : step === 1 ? (
-            <form onSubmit={handleStep1} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-5">
+            <form onSubmit={handleStep1} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-5">
                  <div>
                   <p className="label text-[hsl(var(--primary))]">Step 1 of 2</p>
                   <h3 className="display mt-2 text-xl font-bold text-[hsl(var(--foreground))]">Personal Information</h3>
@@ -257,7 +257,7 @@ export function AbstractPage({ event }: { event: EventData }) {
                 <p className="text-xs text-[hsl(var(--muted-foreground))] text-center">Your data is protected and used only for event communication.</p>
               </form>
           ) : (
-            <form onSubmit={submit} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-5">
+            <form onSubmit={submit} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-5">
                 <div>
                   <p className="label text-[hsl(var(--primary))]">Step 2 of 2</p>
                   <h3 className="display mt-2 text-xl font-bold text-[hsl(var(--foreground))]">Upload Your Abstract</h3>
@@ -302,7 +302,7 @@ export function AbstractPage({ event }: { event: EventData }) {
 
         {/* Right sidebar */}
         <div className="space-y-6 lg:sticky lg:top-6">
-          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm space-y-6">
+          <div className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm space-y-6">
             <div>
               <span className={`inline-block mb-3 rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${event.eventType === 'webinar' ? 'bg-orange-500/10 text-orange-600 border border-orange-500/20' : 'bg-green-500/10 text-green-600 border border-green-500/20'}`}>{event.eventType}</span>
               <h2 className="display text-xl font-bold tracking-tight text-[hsl(var(--foreground))]">{event.title}</h2>

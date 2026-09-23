@@ -45,7 +45,7 @@ export function VenuePage({ event }: { event: EventData }) {
         ) : (
           <>
             {/* 1. Highlighted Location Card */}
-            <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-sm">
+            <section className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-sm">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-3">
                   <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[hsl(var(--secondary)/.12)] text-[hsl(var(--secondary))] text-xs font-bold uppercase tracking-wider">
@@ -210,7 +210,7 @@ export function VenuePage({ event }: { event: EventData }) {
                   {subImages.map((imgUrl, idx) => (
                     <div
                       key={idx}
-                      className="group rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm hover:shadow-md transition-all p-4"
+                      className="card-lift group rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm p-4"
                     >
                       <div className="aspect-[4/3] h-56 sm:h-64 w-full overflow-hidden flex items-center justify-center bg-[hsl(var(--card))]">
                         <img

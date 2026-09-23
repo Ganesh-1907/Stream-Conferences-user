@@ -376,19 +376,21 @@ function EventList({ initial: initialStatus = 'upcoming' }: { initial?: Status }
         <div className="relative w-full md:w-80 lg:w-96">
           <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[hsl(var(--secondary))] pointer-events-none" />
           <input
-            type="search"
+            type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search conferences..."
-            className="w-full pl-10 pr-9 py-2.5 border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] rounded-full text-sm font-medium shadow-sm focus:outline-none focus:border-[hsl(var(--secondary))] focus:ring-2 focus:ring-[hsl(var(--secondary)/.2)] transition-all"
+            className="w-full pl-10 pr-10 py-2.5 border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] rounded-full text-sm font-medium shadow-xs focus:outline-none focus:border-[hsl(var(--secondary))] focus:ring-2 focus:ring-[hsl(var(--secondary)/.2)] transition-all"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery('')}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[hsl(var(--muted))] hover:bg-[hsl(var(--muted-foreground)/0.2)] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] flex items-center justify-center transition-all cursor-pointer hover:scale-105"
+              title="Clear search"
+              aria-label="Clear search"
             >
-              Clear
+              <X size={13} strokeWidth={2.5} />
             </button>
           )}
         </div>
@@ -401,61 +403,62 @@ function EventList({ initial: initialStatus = 'upcoming' }: { initial?: Status }
             const dateBadgeText = formatEventDateRange(e.eventDate, e.day);
 
             return (
-              <a 
-                key={e.id || (e as any)._id || index} 
-                href={detailsHref} 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full group hover:shadow-xl transition-all duration-300 cursor-pointer" 
-                data-testid={`card-event-${index}`}
-              >
-                <div className="relative aspect-[16/9] w-full bg-white dark:bg-slate-900/60 border-b border-[hsl(var(--border))] overflow-hidden flex items-center justify-center">
-                  {e.subjectImageUrl ? (
-                    <img 
-                      src={mediaUrl(e.subjectImageUrl)} 
-                      alt={`${e.title} subject`} 
-                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                    />
-                  ) : e.logoUrl ? (
-                    <img 
-                      src={mediaUrl(e.logoUrl)} 
-                      alt={`${e.title} logo`} 
-                      className="h-full w-full object-contain p-2.5 group-hover:scale-105 transition-transform duration-300" 
-                    />
-                  ) : e.bannerUrl ? (
-                    <img 
-                      src={mediaUrl(e.bannerUrl)} 
-                      alt={`${e.title} banner`} 
-                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                    />
-                  ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center">
-                      <Building2 className="text-[hsl(var(--primary-foreground))] opacity-65" size={40} />
-                    </div>
-                  )}
-                  {dateBadgeText && (
-                    <div className="absolute top-3 left-3 z-10">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3 py-1 text-xs font-extrabold shadow-md tracking-wide">
-                        <CalendarDays size={13} className="shrink-0" />
-                        {dateBadgeText}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="p-6 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="display text-xl sm:text-2xl font-black leading-snug text-[hsl(var(--foreground))] line-clamp-2 group-hover:text-[hsl(var(--primary))] transition-colors">
-                      {e.title}
-                    </h3>
-                    {e.location && (
-                      <div className="mt-4 flex items-center gap-2.5 text-base font-semibold text-[hsl(var(--foreground)/.88)]">
-                        <MapPin size={16} className="shrink-0 text-[hsl(var(--accent))]" />
-                        <span className="truncate">{formatLocation(e.location)}</span>
+              <Reveal key={e.id || (e as any)._id || index} direction="up" delay={(index % 4) * 80}>
+                <a 
+                  href={detailsHref} 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full group cursor-pointer" 
+                  data-testid={`card-event-${index}`}
+                >
+                  <div className="relative aspect-[16/9] w-full bg-white dark:bg-slate-900/60 border-b border-[hsl(var(--border))] overflow-hidden flex items-center justify-center">
+                    {e.subjectImageUrl ? (
+                      <img 
+                        src={mediaUrl(e.subjectImageUrl)} 
+                        alt={`${e.title} subject`} 
+                        className="h-full w-full object-cover group-hover:scale-108 transition-transform duration-500 ease-out" 
+                      />
+                    ) : e.logoUrl ? (
+                      <img 
+                        src={mediaUrl(e.logoUrl)} 
+                        alt={`${e.title} logo`} 
+                        className="h-full w-full object-contain p-2.5 group-hover:scale-108 transition-transform duration-500 ease-out" 
+                      />
+                    ) : e.bannerUrl ? (
+                      <img 
+                        src={mediaUrl(e.bannerUrl)} 
+                        alt={`${e.title} banner`} 
+                        className="h-full w-full object-cover group-hover:scale-108 transition-transform duration-500 ease-out" 
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center group-hover:opacity-100 transition-opacity duration-300">
+                        <Building2 className="text-[hsl(var(--primary-foreground))] opacity-75 group-hover:scale-110 transition-transform duration-300" size={40} />
+                      </div>
+                    )}
+                    {dateBadgeText && (
+                      <div className="absolute top-3 left-3 z-10">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--primary))] group-hover:bg-[hsl(var(--secondary))] text-[hsl(var(--primary-foreground))] px-3 py-1 text-xs font-extrabold shadow-md tracking-wide transition-colors duration-300">
+                          <CalendarDays size={13} className="shrink-0" />
+                          {dateBadgeText}
+                        </span>
                       </div>
                     )}
                   </div>
-                </div>
-              </a>
+                  <div className="p-6 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h3 className="display text-xl sm:text-2xl font-black leading-snug text-[hsl(var(--foreground))] line-clamp-2 group-hover:text-[hsl(var(--secondary))] transition-colors duration-300">
+                        {e.title}
+                      </h3>
+                      {e.location && (
+                        <div className="mt-4 flex items-center gap-2.5 text-base font-semibold text-[hsl(var(--foreground)/.88)] group-hover:text-[hsl(var(--secondary))] transition-colors duration-300">
+                          <MapPin size={16} className="shrink-0 text-[hsl(var(--secondary))] group-hover:scale-110 transition-transform duration-300" />
+                          <span className="truncate">{formatLocation(e.location)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </a>
+              </Reveal>
             );
           })
         ) : (
@@ -939,21 +942,21 @@ function SiteHeader() {
 
 function Footer() {
   return (
-    <footer className="border-t border-[hsl(var(--border))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]">
+    <footer className="border-t border-[hsl(var(--border))] bg-[hsl(var(--primary))] text-white">
       <div className="container-wide grid gap-10 py-16 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
         {/* Brand & Social Icons */}
         <div>
           <div className="flex items-center gap-3">
             <img src="/logo.jpg" className="h-10 w-10 rounded-[11px] object-contain bg-white p-1" alt="STREAM" />
-            <span className="display text-lg font-bold">Stream Conferences</span>
+            <span className="display text-xl font-black text-white">Stream Conferences</span>
           </div>
-          <p className="mt-4 max-w-xs text-sm leading-6 text-[hsl(var(--primary-foreground)/.68)]">
+          <p className="mt-3 max-w-xs text-sm font-bold leading-6 text-white">
             Connecting minds, advancing science.
           </p>
 
           {/* Integrated Social Icons */}
           <div className="mt-6">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--accent))]">
+            <p className="text-xs font-black uppercase tracking-wider text-white">
               Stay close to the conversation
             </p>
             <div className="mt-3 flex items-center gap-2.5">
@@ -962,7 +965,7 @@ function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Follow on X"
-                className="grid h-9 w-9 place-items-center rounded-lg border border-[hsl(var(--primary-foreground)/.2)] bg-[hsl(var(--primary-foreground)/.08)] text-[hsl(var(--primary-foreground))] hover:border-[hsl(var(--accent))] hover:text-[hsl(var(--accent))] hover:bg-[hsl(var(--primary-foreground)/.15)] transition-all"
+                className="grid h-9 w-9 place-items-center rounded-lg border border-white/30 bg-white/15 text-white hover:border-white hover:text-white hover:bg-white/30 transition-all"
                 data-testid="link-footer-social-x"
               >
                 <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
@@ -974,7 +977,7 @@ function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Follow on LinkedIn"
-                className="grid h-9 w-9 place-items-center rounded-lg border border-[hsl(var(--primary-foreground)/.2)] bg-[hsl(var(--primary-foreground)/.08)] text-[hsl(var(--primary-foreground))] hover:border-[hsl(var(--accent))] hover:text-[hsl(var(--accent))] hover:bg-[hsl(var(--primary-foreground)/.15)] transition-all"
+                className="grid h-9 w-9 place-items-center rounded-lg border border-white/30 bg-white/15 text-white hover:border-white hover:text-white hover:bg-white/30 transition-all"
                 data-testid="link-footer-social-linkedin"
               >
                 <Linkedin size={18} />
@@ -984,7 +987,7 @@ function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Subscribe on YouTube"
-                className="grid h-9 w-9 place-items-center rounded-lg border border-[hsl(var(--primary-foreground)/.2)] bg-[hsl(var(--primary-foreground)/.08)] text-[hsl(var(--primary-foreground))] hover:border-[hsl(var(--accent))] hover:text-[hsl(var(--accent))] hover:bg-[hsl(var(--primary-foreground)/.15)] transition-all"
+                className="grid h-9 w-9 place-items-center rounded-lg border border-white/30 bg-white/15 text-white hover:border-white hover:text-white hover:bg-white/30 transition-all"
                 data-testid="link-footer-social-youtube"
               >
                 <Youtube size={18} />
@@ -994,7 +997,7 @@ function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Follow on Instagram"
-                className="grid h-9 w-9 place-items-center rounded-lg border border-[hsl(var(--primary-foreground)/.2)] bg-[hsl(var(--primary-foreground)/.08)] text-[hsl(var(--primary-foreground))] hover:border-[hsl(var(--accent))] hover:text-[hsl(var(--accent))] hover:bg-[hsl(var(--primary-foreground)/.15)] transition-all"
+                className="grid h-9 w-9 place-items-center rounded-lg border border-white/30 bg-white/15 text-white hover:border-white hover:text-white hover:bg-white/30 transition-all"
                 data-testid="link-footer-social-instagram"
               >
                 <Instagram size={18} />
@@ -1006,19 +1009,19 @@ function Footer() {
         {/* Column 2: Explore & Media */}
         <div className="grid gap-6 content-start">
           <div>
-            <p className="label text-[hsl(var(--accent))] text-xs font-bold uppercase tracking-wider">Explore</p>
-            <div className="mt-3 grid gap-2.5 text-sm text-[hsl(var(--primary-foreground)/.75)]">
-              <Link href="/" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-home">Home</Link>
-              <Link href="/about" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-about">About</Link>
+            <p className="label text-white text-xs font-black uppercase tracking-wider">Explore</p>
+            <div className="mt-3 grid gap-2.5 text-sm">
+              <Link href="/" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-home">Home</Link>
+              <Link href="/about" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-about">About</Link>
             </div>
           </div>
           <div>
-            <p className="label text-[hsl(var(--accent))] text-xs font-bold uppercase tracking-wider">Media</p>
-            <div className="mt-3 grid gap-2.5 text-sm text-[hsl(var(--primary-foreground)/.75)]">
-              <Link href="/blog" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-blog">Blogs</Link>
-              <Link href="/sponsors" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-sponsors">Sponsors</Link>
-              <Link href="/gallery" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-gallery">Gallery</Link>
-              <Link href="/brochure" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-brochure">Brochure</Link>
+            <p className="label text-white text-xs font-black uppercase tracking-wider">Media</p>
+            <div className="mt-3 grid gap-2.5 text-sm">
+              <Link href="/blog" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-blog">Blogs</Link>
+              <Link href="/sponsors" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-sponsors">Sponsors</Link>
+              <Link href="/gallery" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-gallery">Gallery</Link>
+              <Link href="/brochure" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-brochure">Brochure</Link>
             </div>
           </div>
         </div>
@@ -1026,43 +1029,106 @@ function Footer() {
         {/* Column 3: Conferences & Guidelines */}
         <div className="grid gap-6 content-start">
           <div>
-            <p className="label text-[hsl(var(--accent))] text-xs font-bold uppercase tracking-wider">Conferences</p>
-            <div className="mt-3 grid gap-2.5 text-sm text-[hsl(var(--primary-foreground)/.75)]">
-              <Link href="/conferences?status=upcoming" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-upcoming">Upcoming Conferences</Link>
-              <Link href="/conferences?status=past" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-past">Past Conferences</Link>
+            <p className="label text-white text-xs font-black uppercase tracking-wider">Conferences</p>
+            <div className="mt-3 grid gap-2.5 text-sm">
+              <Link href="/conferences?status=upcoming" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-upcoming">Upcoming Conferences</Link>
+              <Link href="/conferences?status=past" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-past">Past Conferences</Link>
             </div>
           </div>
           <div>
-            <p className="label text-[hsl(var(--accent))] text-xs font-bold uppercase tracking-wider">Guidelines</p>
-            <div className="mt-3 grid gap-2.5 text-sm text-[hsl(var(--primary-foreground)/.75)]">
-              <Link href="/abstract-submission-guidelines" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-abstract-guidelines">Abstract Submission Guidelines</Link>
-              <Link href="/guidelines" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-guidelines">Program Guidelines</Link>
-              <Link href="/terms" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-terms">Terms & Conditions</Link>
-              <Link href="/faq" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-faq">FAQS</Link>
-              <Link href="/contact" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-contact">Contact</Link>
+            <p className="label text-white text-xs font-black uppercase tracking-wider">Guidelines</p>
+            <div className="mt-3 grid gap-2.5 text-sm">
+              <Link href="/abstract-submission-guidelines" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-abstract-guidelines">Abstract Submission Guidelines</Link>
+              <Link href="/guidelines" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-guidelines">Program Guidelines</Link>
+              <Link href="/terms" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-terms">Terms & Conditions</Link>
+              <Link href="/faq" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-faq">FAQS</Link>
+              <Link href="/contact" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-contact">Contact</Link>
             </div>
           </div>
         </div>
 
         {/* Column 4: Help desk only */}
         <div className="content-start">
-          <p className="label text-[hsl(var(--accent))] text-xs font-bold uppercase tracking-wider">Help desk</p>
-          <div className="mt-3 grid gap-2.5 text-sm text-[hsl(var(--primary-foreground)/.75)]">
-            <a href="mailto:info@streamconferences.com" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-email">info@streamconferences.com</a>
-            <a href="mailto:abstracts@streamconferences.com" className="hover:text-[hsl(var(--accent))] transition-colors" data-testid="link-footer-abstracts">abstracts@streamconferences.com</a>
+          <p className="label text-white text-xs font-black uppercase tracking-wider">Help desk</p>
+          <div className="mt-3 grid gap-2.5 text-sm">
+            <a href="mailto:info@streamconferences.com" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-email">info@streamconferences.com</a>
+            <a href="mailto:abstracts@streamconferences.com" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-abstracts">abstracts@streamconferences.com</a>
           </div>
         </div>
       </div>
 
-      <div className="container-wide flex flex-col justify-between gap-3 border-t border-[hsl(var(--primary-foreground)/.15)] py-5 text-[11px] text-[hsl(var(--primary-foreground)/.55)] sm:flex-row">
+      <div className="container-wide flex flex-col justify-between gap-3 border-t border-white/20 py-5 text-xs font-medium text-white/80 sm:flex-row">
         <span>© 2027 Stream Conferences. All rights reserved.</span>
-        <span>ICMLHS 2027 · Boston, USA</span>
+        <span>Developed by BYV</span>
       </div>
     </footer>
   );
 }
 
 function Layout({ children }: { children: ReactNode }) {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.05, rootMargin: '0px 0px -20px 0px' }
+    );
+
+    const applyScrollAnimations = () => {
+      // 1. Process all grid containers with card elements for side/directional animation
+      document.querySelectorAll('.grid').forEach((grid) => {
+        const children = Array.from(grid.children);
+        if (children.length < 2) return;
+
+        children.forEach((child, index) => {
+          const el = child as HTMLElement;
+          if (el.classList.contains('reveal-on-scroll')) return;
+
+          const isLeft = index % 2 === 0;
+          el.classList.add('reveal-on-scroll');
+          if (isLeft) {
+            el.classList.add('reveal-from-left');
+          } else {
+            el.classList.add('reveal-from-right');
+          }
+          el.style.transitionDelay = `${(index % 4) * 80}ms`;
+        });
+      });
+
+      // 2. Process all standalone .card-lift, cards, or section containers
+      document.querySelectorAll('.card-lift, main section > div > div:not(.grid), .space-y-6 > div').forEach((el, index) => {
+        const htmlEl = el as HTMLElement;
+        if (!htmlEl.classList.contains('reveal-on-scroll')) {
+          htmlEl.classList.add('reveal-on-scroll', 'reveal-from-up');
+          htmlEl.style.transitionDelay = `${(index % 3) * 60}ms`;
+        }
+      });
+
+      // 3. Observe all unrevealed elements
+      document.querySelectorAll('.reveal-on-scroll:not(.is-visible)').forEach((el) => {
+        observer.observe(el);
+      });
+    };
+
+    applyScrollAnimations();
+    const t1 = setTimeout(applyScrollAnimations, 100);
+    const t2 = setTimeout(applyScrollAnimations, 400);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      observer.disconnect();
+    };
+  }, [location]);
+
   return (
     <div className="site-grain min-h-[100dvh]">
       <SiteHeader />
@@ -1073,25 +1139,57 @@ function Layout({ children }: { children: ReactNode }) {
   );
 }
 
-function Reveal({ children, className = '' }: { children: ReactNode; className?: string }) {
+function Reveal({
+  children,
+  className = '',
+  direction = 'up',
+  delay = 0,
+}: {
+  children: ReactNode;
+  className?: string;
+  direction?: 'up' | 'left' | 'right' | 'fade';
+  delay?: number;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
+
   useEffect(() => {
     const element = ref.current;
     if (!element || !('IntersectionObserver' in window)) {
       setVisible(true);
       return;
     }
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setVisible(true);
-        observer.disconnect();
-      }
-    }, { threshold: 0.12 });
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -30px 0px' }
+    );
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
-  return <div ref={ref} className={`reveal-on-scroll ${visible ? 'is-visible' : ''} ${className}`}>{children}</div>;
+
+  const dirClass =
+    direction === 'left'
+      ? 'reveal-from-left'
+      : direction === 'right'
+      ? 'reveal-from-right'
+      : direction === 'fade'
+      ? 'reveal-from-fade'
+      : 'reveal-from-up';
+
+  return (
+    <div
+      ref={ref}
+      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
+      className={`reveal-on-scroll ${dirClass} ${visible ? 'is-visible' : ''} ${className}`}
+    >
+      {children}
+    </div>
+  );
 }
 
 function SectionTitle({ eyebrow, title, body, light = false, eyebrowClassName, titleClassName }: { eyebrow?: string; title?: string; body?: string; light?: boolean; eyebrowClassName?: string; titleClassName?: string }) {
@@ -1202,7 +1300,7 @@ function TestimonialCarousel() {
           The conference experience is designed to stay useful long after the final session.
         </p>
       </div>
-      <div className="relative rounded-[22px] border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.35)] p-7 md:p-10 shadow-lg">
+      <div className="card-lift relative rounded-[22px] border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.35)] p-7 md:p-10">
         <span className="display text-6xl leading-none text-[hsl(var(--secondary))]">“</span>
         <blockquote className="display mt-3 max-w-3xl text-2xl font-semibold leading-tight tracking-[-.03em] md:text-4xl text-[hsl(var(--foreground))]">“{testimonial.quote}”</blockquote>
         <div className="mt-8 flex flex-col gap-5 border-t border-[hsl(var(--border))] pt-5 sm:flex-row sm:items-end sm:justify-between">
@@ -1611,10 +1709,10 @@ function Home() {
               return (
                 <a 
                   key={item._id || item.id || index} 
-                  href={detailsHref}
+                  href={detailsHref} 
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full group hover:shadow-xl transition-all duration-300 cursor-pointer" 
+                  className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full group cursor-pointer" 
                   data-testid={`card-home-conference-${index}`}
                 >
                   <div className="relative aspect-[16/9] w-full bg-white dark:bg-slate-900/60 border-b border-[hsl(var(--border))] overflow-hidden flex items-center justify-center">
@@ -1622,28 +1720,28 @@ function Home() {
                       <img 
                         src={mediaUrl(item.subjectImageUrl)} 
                         alt={`${item.title} subject`} 
-                        className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                        className="h-full w-full object-cover group-hover:scale-108 transition-transform duration-500 ease-out" 
                       />
                     ) : item.logoUrl ? (
                       <img 
                         src={mediaUrl(item.logoUrl)} 
                         alt={`${item.title} logo`} 
-                        className="h-full w-full object-contain p-2.5 group-hover:scale-105 transition-transform duration-300" 
+                        className="h-full w-full object-contain p-2.5 group-hover:scale-108 transition-transform duration-500 ease-out" 
                       />
                     ) : item.bannerUrl ? (
                       <img 
                         src={mediaUrl(item.bannerUrl)} 
                         alt={`${item.title} banner`} 
-                        className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                        className="h-full w-full object-cover group-hover:scale-108 transition-transform duration-500 ease-out" 
                       />
                     ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center">
-                        <Building2 className="text-[hsl(var(--primary-foreground))] opacity-65" size={40} />
+                      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center group-hover:opacity-100 transition-opacity duration-300">
+                        <Building2 className="text-[hsl(var(--primary-foreground))] opacity-75 group-hover:scale-110 transition-transform duration-300" size={40} />
                       </div>
                     )}
                     {dateBadgeText && (
                       <div className="absolute top-3 left-3 z-10">
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3 py-1 text-xs font-extrabold shadow-md tracking-wide">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--primary))] group-hover:bg-[hsl(var(--secondary))] text-[hsl(var(--primary-foreground))] px-3 py-1 text-xs font-extrabold shadow-md tracking-wide transition-colors duration-300">
                           <CalendarDays size={13} className="shrink-0" />
                           {dateBadgeText}
                         </span>
@@ -1652,12 +1750,12 @@ function Home() {
                   </div>
                   <div className="p-6 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="display text-xl sm:text-[21px] font-black leading-snug text-[hsl(var(--foreground))] line-clamp-2 group-hover:text-[hsl(var(--primary))] transition-colors">
+                      <h3 className="display text-xl sm:text-[21px] font-black leading-snug text-[hsl(var(--foreground))] line-clamp-2 group-hover:text-[hsl(var(--secondary))] transition-colors duration-300">
                         {item.title}
                       </h3>
                       {item.location && (
-                        <div className="mt-4 flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
-                          <MapPin size={15} className="shrink-0 text-[hsl(var(--accent))]" />
+                        <div className="mt-4 flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)] group-hover:text-[hsl(var(--secondary))] transition-colors duration-300">
+                          <MapPin size={15} className="shrink-0 text-[hsl(var(--secondary))] group-hover:scale-110 transition-transform duration-300" />
                           <span className="truncate">{formatLocation(item.location)}</span>
                         </div>
                       )}
@@ -1848,14 +1946,16 @@ function AboutPage() {
             <SectionTitle eyebrow="Vision" title="Connecting minds and transforming global discovery." />
             <div className="mt-8 grid gap-4 grid-cols-1 md:grid-cols-2 w-full max-w-none">
               {visionPoints.map((point, i) => (
-                <div key={i} className="flex items-start gap-4 p-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] shadow-xs">
-                  <span className="flex items-center justify-center shrink-0 w-8 h-8 rounded-full bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))] font-mono font-bold text-sm">
-                    0{i + 1}
-                  </span>
-                  <p className="text-base sm:text-lg leading-7 text-[hsl(var(--foreground))] font-medium">
-                    {point}
-                  </p>
-                </div>
+                <Reveal key={i} direction={i % 2 === 0 ? 'left' : 'right'} delay={Math.floor(i / 2) * 120} className="h-full">
+                  <div className="card-lift group cursor-pointer flex items-start gap-4 p-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] shadow-xs h-full">
+                    <span className="flex items-center justify-center shrink-0 w-8 h-8 rounded-full bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))] font-mono font-bold text-sm group-hover:bg-[hsl(var(--secondary))] group-hover:text-white transition-colors">
+                      0{i + 1}
+                    </span>
+                    <p className="text-base sm:text-lg leading-7 text-[hsl(var(--foreground))] font-medium">
+                      {point}
+                    </p>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -1872,14 +1972,16 @@ function AboutPage() {
                 'Elevate emerging scholars through visibility and direct mentorship alongside recognized industry leaders.',
                 'Uphold academic excellence across every keynote, technical panel, symposium, and peer-reviewed publication.',
               ].map((item, i) => (
-                <div key={i} className="flex items-start gap-4 p-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xs">
-                  <span className="flex items-center justify-center shrink-0 w-8 h-8 rounded-full bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))] font-mono font-bold text-sm">
-                    0{i + 1}
-                  </span>
-                  <p className="text-base sm:text-lg leading-7 text-[hsl(var(--foreground))] font-medium">
-                    {item}
-                  </p>
-                </div>
+                <Reveal key={i} direction={i % 2 === 0 ? 'left' : 'right'} delay={Math.floor(i / 2) * 120} className="h-full">
+                  <div className="card-lift group cursor-pointer flex items-start gap-4 p-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xs h-full">
+                    <span className="flex items-center justify-center shrink-0 w-8 h-8 rounded-full bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))] font-mono font-bold text-sm group-hover:bg-[hsl(var(--secondary))] group-hover:text-white transition-colors">
+                      0{i + 1}
+                    </span>
+                    <p className="text-base sm:text-lg leading-7 text-[hsl(var(--foreground))] font-medium">
+                      {item}
+                    </p>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -1891,13 +1993,15 @@ function AboutPage() {
             <SectionTitle eyebrow="What guides the work" title="Four values behind every stage, review, and connection." />
             <div className="mt-6 grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full max-w-none">
               {values.map(([title, body], i) => (
-                <div key={title} className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-6 shadow-sm">
-                  <div>
-                    <span className="font-mono text-[hsl(var(--secondary))] font-bold text-sm tracking-wider">0{i + 1}</span>
-                    <h3 className="display mt-4 text-lg sm:text-xl font-bold text-[hsl(var(--foreground))] leading-snug">{title}</h3>
-                    <p className="mt-3 text-base sm:text-lg leading-7 text-[hsl(var(--muted-foreground))] font-medium">{body}</p>
+                <Reveal key={title} direction="up" delay={i * 100} className="h-full">
+                  <div className="card-lift flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-6 shadow-sm h-full">
+                    <div>
+                      <span className="font-mono text-[hsl(var(--secondary))] font-bold text-sm tracking-wider">0{i + 1}</span>
+                      <h3 className="display mt-4 text-lg sm:text-xl font-bold text-[hsl(var(--foreground))] leading-snug">{title}</h3>
+                      <p className="mt-3 text-base sm:text-lg leading-7 text-[hsl(var(--muted-foreground))] font-medium">{body}</p>
+                    </div>
                   </div>
-                </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -1909,11 +2013,13 @@ function AboutPage() {
             <SectionTitle eyebrow="Who we gather" title="A premier delegation of decision-makers and innovators." />
             <div className="mt-6 grid gap-6 grid-cols-1 md:grid-cols-2 w-full max-w-none">
               {['Clinical & Academic Leaders', 'Industry Innovators', 'Research & Advisory Authorities', 'Next-Gen Researchers'].map((item, i) => (
-                <div key={item} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
-                  <Building2 size={24} className="text-[hsl(var(--secondary))]" />
-                  <h3 className="display mt-6 text-lg sm:text-xl font-bold">{item}</h3>
-                  <p className="mt-3 text-base sm:text-lg leading-7 text-[hsl(var(--muted-foreground))] font-medium">Physicians, executives, editors, strategists, doctoral candidates, and outstanding young scientists.</p>
-                </div>
+                <Reveal key={item} direction={i % 2 === 0 ? 'left' : 'right'} delay={Math.floor(i / 2) * 120} className="h-full">
+                  <div className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 h-full">
+                    <Building2 size={24} className="text-[hsl(var(--secondary))]" />
+                    <h3 className="display mt-6 text-lg sm:text-xl font-bold">{item}</h3>
+                    <p className="mt-3 text-base sm:text-lg leading-7 text-[hsl(var(--muted-foreground))] font-medium">Physicians, executives, editors, strategists, doctoral candidates, and outstanding young scientists.</p>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -2195,7 +2301,7 @@ function BrochurePage() {
       <PageHero bgImage="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=1200&q=80" eyebrow="The delegate edition" title="Take the summit with you." body="A concise field guide to Stream Conferences: tracks, program architecture, venue notes, and the details that help you make the most of our events." />
       <main className="pt-6 pb-16">
         <div className="container-wide grid gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-center">
-          <div className="relative mx-auto aspect-[.72] w-full max-w-[360px] overflow-hidden rounded-2xl bg-[hsl(var(--primary))] p-8 text-[hsl(var(--primary-foreground))] shadow-2xl shadow-[hsl(var(--primary)/.2)]">
+          <div className="card-lift relative mx-auto aspect-[.72] w-full max-w-[360px] overflow-hidden rounded-2xl bg-[hsl(var(--primary))] p-8 text-[hsl(var(--primary-foreground))] shadow-2xl shadow-[hsl(var(--primary)/.2)] cursor-pointer">
             <div className="absolute right-[-50px] top-[-20px] h-48 w-48 rounded-full border border-[hsl(var(--accent)/.55)]" />
             <span className="label text-[hsl(var(--accent))]">Stream Conferences</span>
             <div className="mt-24">
@@ -2221,10 +2327,10 @@ function BrochurePage() {
               <button
                 type="button"
                 onClick={handleDownload}
-                className="btn-main flex items-center gap-2 cursor-pointer shadow-lg"
+                className="btn-main card-lift border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:text-[hsl(var(--secondary))] flex items-center gap-2 cursor-pointer shadow-md transition-colors"
                 data-testid="button-download-brochure-page"
               >
-                <Download size={18} /> Download Official Brochure (PDF)
+                <Download size={18} className="text-[hsl(var(--secondary))]" /> Download Official Brochure (PDF)
               </button>
             </div>
           </div>
@@ -2324,7 +2430,7 @@ function SponsorsPage() {
                   const logoUrl = sponsor.logo ? mediaUrl(sponsor.logo) : '';
                   return (
                     <div key={`${sponsor.sponsorId}-${idx}`} className="group flex flex-col items-center text-center">
-                      <div className="relative w-full h-36 sm:h-40 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm group-hover:shadow-xl group-hover:border-[hsl(var(--primary)/0.5)] transition-all duration-300 transform group-hover:-translate-y-1 p-3 flex items-center justify-center overflow-hidden">
+                      <div className="card-lift relative w-full h-36 sm:h-40 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm p-3 flex items-center justify-center overflow-hidden">
                         {logoUrl ? (
                           <img src={logoUrl} alt={displayName} className="w-full h-full object-contain filter drop-shadow-sm group-hover:scale-105 transition-transform duration-300" />
                         ) : (
@@ -3159,8 +3265,120 @@ function RegisterPage() {
 function FAQPage() {
   const [open, setOpen] = useState<number | null>(0);
   const [query, setQuery] = useState('');
-  const filtered = useMemo(() => faqs.filter(([question, answer]) => `${question} ${answer}`.toLowerCase().includes(query.toLowerCase())), [query]);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80" eyebrow="Help desk" title="The questions worth answering early." body="Find practical guidance on eligibility, submission, review, presentation formats, registration, and joining from abroad." /><main className="pt-6 pb-16"><div className="container-wide max-w-4xl"><div className="relative mb-10"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] pointer-events-none z-10" size={19} /><input className="form-field !pl-12 pr-4 py-3.5 text-base shadow-sm rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]" style={{ paddingLeft: '48px' }} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the help desk" aria-label="Search FAQs" data-testid="input-faq-search" /></div><div className="grid gap-3">{filtered.map(([question, answer], index) => { const actualIndex = faqs.findIndex(([item]) => item === question); const isOpen = open === actualIndex; return <div key={question} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"><button type="button" onClick={() => setOpen(isOpen ? null : actualIndex)} className="flex w-full items-center justify-between gap-5 p-5 text-left font-bold text-base sm:text-lg" aria-expanded={isOpen} data-testid={`button-faq-${actualIndex}`}><span>{question}</span><ChevronDown size={18} className={`shrink-0 text-[hsl(var(--secondary))] transition-transform ${isOpen ? 'rotate-180' : ''}`} /></button>{isOpen && <div className="border-t border-[hsl(var(--border))] px-6 pb-6 pt-4 text-base sm:text-lg leading-8 text-[hsl(var(--foreground)/.85)]" data-testid={`text-faq-answer-${actualIndex}`}>{answer}</div>}</div>; })}</div>{filtered.length === 0 && <div className="rounded-2xl border border-dashed border-[hsl(var(--border))] p-10 text-center"><CircleHelp className="mx-auto text-[hsl(var(--secondary))]" /><p className="mt-4 font-bold text-lg">No matching questions</p><p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">Try a shorter search, or email the scientific coordination team.</p></div>}<div className="mt-16 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm"><p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">Need further assistance?</p><p className="mt-3 max-w-2xl text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">For questions regarding abstract guidelines or technical issues, contact <a href="mailto:abstracts@streamconferences.com" className="font-bold text-[hsl(var(--secondary))]" data-testid="link-faq-email">abstracts@streamconferences.com</a>.</p><Link href="/contact" className="btn-main btn-quiet mt-6" data-testid="link-faq-contact">Contact us <ArrowUpRight size={16} /></Link></div></div></main></Layout>;
+  const filtered = useMemo(
+    () => faqs.filter(([question, answer]) => `${question} ${answer}`.toLowerCase().includes(query.toLowerCase())),
+    [query]
+  );
+
+  return (
+    <Layout>
+      <PageHero
+        bgImage="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80"
+        eyebrow="Help desk"
+        title="The questions worth answering early."
+        body="Find practical guidance on eligibility, submission, review, presentation formats, registration, and joining from abroad."
+      />
+      <main className="pt-6 pb-16">
+        <div className="container-wide max-w-4xl">
+          <div className="relative mb-10">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] pointer-events-none z-10" size={19} />
+            <input
+              className="form-field !pl-12 pr-10 py-3.5 text-base shadow-sm rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"
+              style={{ paddingLeft: '48px' }}
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search the help desk"
+              aria-label="Search FAQs"
+              data-testid="input-faq-search"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery('')}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[hsl(var(--muted))] hover:bg-[hsl(var(--muted-foreground)/0.2)] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] flex items-center justify-center transition-all cursor-pointer hover:scale-105"
+                title="Clear search"
+                aria-label="Clear search"
+              >
+                <X size={13} strokeWidth={2.5} />
+              </button>
+            )}
+          </div>
+
+          <div className="grid gap-4">
+            {filtered.map(([question, answer]) => {
+              const actualIndex = faqs.findIndex(([item]) => item === question);
+              const isOpen = open === actualIndex;
+              return (
+                <div
+                  key={question}
+                  onClick={() => setOpen(isOpen ? null : actualIndex)}
+                  className={`group rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden bg-[hsl(var(--card))] shadow-xs hover:-translate-y-1 hover:shadow-lg ${
+                    isOpen
+                      ? 'border-[hsl(var(--secondary)/0.8)] shadow-[0_10px_25px_-5px_hsl(var(--secondary)/0.18)]'
+                      : 'border-[hsl(var(--border))] hover:border-[hsl(var(--secondary)/0.8)] hover:shadow-[0_10px_25px_-5px_hsl(var(--secondary)/0.15)]'
+                  }`}
+                >
+                  <div
+                    className="flex w-full items-center justify-between gap-5 p-5 sm:p-6 text-left font-bold text-base sm:text-lg select-none"
+                    aria-expanded={isOpen}
+                    data-testid={`button-faq-${actualIndex}`}
+                  >
+                    <span className="group-hover:text-[hsl(var(--secondary))] transition-colors text-[hsl(var(--foreground))]">
+                      {question}
+                    </span>
+                    <ChevronDown
+                      size={20}
+                      className={`shrink-0 text-[hsl(var(--secondary))] transition-transform duration-300 ${
+                        isOpen ? 'rotate-180' : 'group-hover:translate-y-0.5'
+                      }`}
+                    />
+                  </div>
+                  {isOpen && (
+                    <div
+                      className="border-t border-[hsl(var(--border))] px-6 pb-6 pt-4 text-base sm:text-lg leading-8 text-[hsl(var(--foreground)/.85)] bg-[hsl(var(--muted)/.15)]"
+                      data-testid={`text-faq-answer-${actualIndex}`}
+                    >
+                      {answer}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {filtered.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-[hsl(var(--border))] p-10 text-center">
+              <CircleHelp className="mx-auto text-[hsl(var(--secondary))]" />
+              <p className="mt-4 font-bold text-lg">No matching questions</p>
+              <p className="mt-2 text-base text-[hsl(var(--muted-foreground))]">
+                Try a shorter search, or email the scientific coordination team.
+              </p>
+            </div>
+          )}
+
+          <div className="card-lift mt-16 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm">
+            <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">
+              Need further assistance?
+            </p>
+            <p className="mt-3 max-w-2xl text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">
+              For questions regarding abstract guidelines or technical issues, contact{' '}
+              <a
+                href="mailto:abstracts@streamconferences.com"
+                className="font-bold text-[hsl(var(--secondary))] hover:underline"
+                data-testid="link-faq-email"
+              >
+                abstracts@streamconferences.com
+              </a>
+              .
+            </p>
+            <Link href="/contact" className="btn-main btn-quiet mt-6" data-testid="link-faq-contact">
+              Contact us <ArrowUpRight size={16} />
+            </Link>
+          </div>
+        </div>
+      </main>
+    </Layout>
+  );
 }
 
 function AbstractSubmissionGuidelinesPage() {
@@ -3267,7 +3485,7 @@ function AbstractSubmissionGuidelinesPage() {
       <main className="pt-6 pb-16">
         <div className="container-wide w-full max-w-none">
           {/* Review turnaround notification banner */}
-          <div className="mb-10 rounded-2xl border border-[hsl(var(--secondary)/.3)] bg-[hsl(var(--secondary)/.08)] p-6 text-base sm:text-lg leading-8 flex items-center gap-4">
+          <div className="card-lift cursor-pointer mb-10 rounded-2xl border border-[hsl(var(--secondary)/.3)] bg-[hsl(var(--secondary)/.08)] p-6 text-base sm:text-lg leading-8 flex items-center gap-4">
             <Clock className="text-[hsl(var(--secondary))] shrink-0" size={24} />
             <div>
               <span className="font-bold text-[hsl(var(--foreground))]">Review Turnaround: </span>
@@ -3285,9 +3503,9 @@ function AbstractSubmissionGuidelinesPage() {
               </p>
               <div className="mt-6 grid sm:grid-cols-2 gap-4">
                 {tracks.map((track) => (
-                  <div key={track.letter} className="flex items-center gap-3.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-base font-semibold text-[hsl(var(--foreground))]">
-                    <CheckCircle2 size={18} className="text-[hsl(var(--secondary))] shrink-0" />
-                    <span><strong className="text-[hsl(var(--secondary))] font-bold">{track.letter}</strong> - {track.title}</span>
+                  <div key={track.letter} className="card-lift group cursor-pointer flex items-center gap-3.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-base font-semibold text-[hsl(var(--foreground))]">
+                    <CheckCircle2 size={18} className="text-[hsl(var(--secondary))] shrink-0 group-hover:scale-110 transition-transform" />
+                    <span className="group-hover:text-[hsl(var(--secondary))] transition-colors"><strong className="text-[hsl(var(--secondary))] font-bold">{track.letter}</strong> - {track.title}</span>
                   </div>
                 ))}
               </div>
@@ -3299,7 +3517,7 @@ function AbstractSubmissionGuidelinesPage() {
               <h2 className="display mt-2 text-2xl sm:text-3xl font-bold">Presentation Formats</h2>
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
                 {presentationFormats.map((pf) => (
-                  <div key={pf.title} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex flex-col justify-between">
+                  <div key={pf.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex flex-col justify-between">
                     <div>
                       <h3 className="font-bold text-lg sm:text-xl text-[hsl(var(--foreground))]">{pf.title}</h3>
                       <p className="mt-3 text-base leading-7 text-[hsl(var(--muted-foreground))]">{pf.desc}</p>
@@ -3318,7 +3536,7 @@ function AbstractSubmissionGuidelinesPage() {
               </p>
               <div className="mt-6 grid gap-4">
                 {formattingReqs.map((req) => (
-                  <div key={req.label} className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-base leading-7">
+                  <div key={req.label} className="card-lift rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-base leading-7">
                     <span className="font-bold text-base sm:text-lg text-[hsl(var(--foreground))]">{req.label}: </span>
                     <span className="text-[hsl(var(--muted-foreground))]">{req.text}</span>
                   </div>
@@ -3329,7 +3547,7 @@ function AbstractSubmissionGuidelinesPage() {
                 <h3 className="font-bold text-lg sm:text-xl text-[hsl(var(--foreground))] mb-4">Core Structure</h3>
                 <div className="grid gap-4">
                   {coreStructure.map((cs) => (
-                    <div key={cs.title} className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-base leading-7">
+                    <div key={cs.title} className="card-lift rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-base leading-7">
                       <span className="font-bold text-base sm:text-lg text-[hsl(var(--foreground))]">{cs.title}: </span>
                       <span className="text-[hsl(var(--muted-foreground))]">{cs.desc}</span>
                     </div>
@@ -3344,7 +3562,7 @@ function AbstractSubmissionGuidelinesPage() {
               <h2 className="display mt-2 text-2xl sm:text-3xl font-bold">Submission Terms & Conditions</h2>
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
                 {terms.map((t) => (
-                  <div key={t.title} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
+                  <div key={t.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
                     <h3 className="font-bold text-base sm:text-lg text-[hsl(var(--foreground))] flex items-center gap-2.5">
                       <FileText size={18} className="text-[hsl(var(--secondary))]" />
                       {t.title}
@@ -3361,7 +3579,7 @@ function AbstractSubmissionGuidelinesPage() {
               <h2 className="display mt-2 text-2xl sm:text-3xl font-bold">How to Submit</h2>
               <div className="mt-6 grid gap-4">
                 {steps.map((step, idx) => (
-                  <div key={idx} className="flex gap-4 items-start rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-base sm:text-lg leading-8">
+                  <div key={idx} className="card-lift flex gap-4 items-start rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 text-base sm:text-lg leading-8">
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--secondary))] text-xs font-bold text-white mt-0.5">
                       {idx + 1}
                     </span>
@@ -3389,7 +3607,7 @@ function AbstractSubmissionGuidelinesPage() {
 
 function GuidelinesPage() {
   const sections = [['Presentation day checklist', ['Arrive 30 minutes before your session.', 'Check in at the speaker desk and confirm your file.', 'Keep a backup copy on a USB drive and in cloud storage.', 'Stay for questions and support the presenters after you.']], ['Poster presentation specifications', ['A0 or A1 portrait orientation.', 'Export at print-ready resolution with accessible type sizes.', 'Include title, authors, affiliations, methods, results, and contact.', 'Mounting boards and pins are provided by the secretariat at the venue.']], ['AV & room support', ['HDMI presentation connection and confidence monitor.', 'Session chair, handheld microphone, and venue Wi-Fi.', 'Technical rehearsal windows published in the final program.', 'Tell the speaker desk about accessibility requirements early.']], ['Code of conduct', ['Be generous with questions and precise with critique.', 'Respect consent, privacy, and intellectual property.', 'No harassment, discrimination, or commercial promotion.', 'Raise concerns with the organizing committee promptly.']]];
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80" eyebrow="Practical notes" title="Arrive ready to contribute." body="A short field guide for presenters and delegates to optimize their conference experience and presentation sessions." /><main className="pt-6 pb-16"><div className="container-wide grid gap-5 md:grid-cols-2">{sections.map(([title, items], i) => <div key={String(title)} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8" data-testid={`card-guideline-${i}`}><span className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">0{i + 1}</span><h2 className="display mt-4 text-2xl font-bold">{title}</h2><ul className="mt-6 grid gap-4">{(items as string[]).map((item) => <li key={item} className="flex gap-3 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]"><Check size={18} className="mt-1.5 shrink-0 text-[hsl(var(--secondary))]" />{item}</li>)}</ul></div>)}</div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80" eyebrow="Practical notes" title="Arrive ready to contribute." body="A short field guide for presenters and delegates to optimize their conference experience and presentation sessions." /><main className="pt-6 pb-16"><div className="container-wide grid gap-5 md:grid-cols-2">{sections.map(([title, items], i) => <div key={String(title)} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8" data-testid={`card-guideline-${i}`}><span className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">0{i + 1}</span><h2 className="display mt-4 text-2xl font-bold">{title}</h2><ul className="mt-6 grid gap-4">{(items as string[]).map((item) => <li key={item} className="flex gap-3 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]"><Check size={18} className="mt-1.5 shrink-0 text-[hsl(var(--secondary))]" />{item}</li>)}</ul></div>)}</div></main></Layout>;
 }
 
 function TermsPage() {
@@ -3769,7 +3987,7 @@ function EventDetailsPage({ type = 'conference' }: { type?: 'conference' }) {
                 <SectionTitle eyebrow="Scientific tracks" title="Explore the tracks." body="Follow the thematic areas covered by this event." />
                 <div className="mt-6 grid gap-4">
                   {item.tracks.map((track: any, i: number) => (
-                    <div key={i} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
+                    <div key={i} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
                       <div className="flex items-start gap-4">
                         {track.image && <img src={mediaUrl(track.image)} alt={track.title} className="h-16 w-16 rounded-xl object-cover shrink-0 border border-[hsl(var(--border))]" />}
                         <div className="flex-1">

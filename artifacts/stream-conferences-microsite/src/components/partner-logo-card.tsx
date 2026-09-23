@@ -26,7 +26,7 @@ export function PartnerLogoCard({
   const cardContent = (
     <div className="group flex flex-col items-center justify-center w-full cursor-pointer transition-all duration-300">
       {/* Direct Logo Card Container */}
-      <div className="relative w-full h-36 sm:h-40 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm group-hover:shadow-xl group-hover:border-[hsl(var(--primary)/0.5)] transition-all duration-300 transform group-hover:-translate-y-1 p-3 flex items-center justify-center overflow-hidden">
+      <div className="card-lift relative w-full h-36 sm:h-40 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm p-3 flex items-center justify-center overflow-hidden">
         {logoUrl ? (
           <img
             src={logoUrl}

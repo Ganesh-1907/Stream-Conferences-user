@@ -48,18 +48,18 @@ export function ProgramPage({ event }: { event: EventData }) {
                 )}
                 <div className="space-y-4">
                   {currentDay.sessions.map((session, idx) => (
-                    <div key={idx} className="session-item">
-                      <div className="flex items-start gap-4">
-                        <div className="session-time min-w-[90px]">{session.time}</div>
+                    <div key={idx} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-xs">
+                      <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+                        <div className="session-time min-w-[100px] font-bold text-[hsl(var(--primary))] shrink-0">{session.time}</div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="session-title">{session.title}</h3>
+                            <h3 className="text-base font-bold text-[hsl(var(--foreground))]">{session.title}</h3>
                             {session.type && <span className="session-badge">{session.type}</span>}
                           </div>
-                          {session.description && <p className="mt-1 text-base text-[hsl(var(--muted-foreground))]">{session.description}</p>}
-                          <div className="session-meta">
-                            {session.speaker && <span>Speaker: {session.speaker}</span>}
-                            {session.location && <span>Location: {session.location}</span>}
+                          {session.description && <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{session.description}</p>}
+                          <div className="session-meta mt-2 flex flex-wrap gap-4 text-xs font-semibold text-[hsl(var(--muted-foreground))]">
+                            {session.speaker && <span>Speaker: <strong className="text-[hsl(var(--foreground))]">{session.speaker}</strong></span>}
+                            {session.location && <span>Location: <strong className="text-[hsl(var(--foreground))]">{session.location}</strong></span>}
                           </div>
                         </div>
                       </div>

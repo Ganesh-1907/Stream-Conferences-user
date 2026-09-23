@@ -91,7 +91,7 @@ export function BrochurePage({ event }: { event: EventData }) {
       </div>
 
       {step === 1 ? (
-        <form onSubmit={handleFormSubmit} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-5">
+        <form onSubmit={handleFormSubmit} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-5">
           <div className="flex items-center gap-3 rounded-xl bg-[hsl(var(--primary)/.06)] px-4 py-3">
             <FileText size={18} className="text-[hsl(var(--primary))]" />
             <span className="text-base font-medium text-[hsl(var(--foreground))]">Enter your details to access the brochure</span>
@@ -161,7 +161,7 @@ export function BrochurePage({ event }: { event: EventData }) {
           <p className="text-xs text-[hsl(var(--muted-foreground))] text-center">Your data is protected and used only for event communication.</p>
         </form>
       ) : (
-        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-10 shadow-sm text-center space-y-6">
+        <div className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-10 shadow-sm text-center space-y-6">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
             <Check size={28} className="text-green-600" />
           </div>

@@ -72,7 +72,7 @@ export function ContactPage({ event }: { event: EventData }) {
       {/* Two-Column Layout */}
       <div className="grid gap-8 lg:grid-cols-2 items-stretch">
         {/* Left Side: Organizer Contact Box */}
-        <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-xl shadow-black/5 hover:border-[hsl(var(--primary)/0.4)] transition-all duration-300 relative overflow-hidden flex flex-col justify-between">
+        <div className="card-lift rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-xl shadow-black/5 relative overflow-hidden flex flex-col justify-between">
           {/* Subtle decorative glow */}
           <div className="absolute -top-20 -left-20 w-44 h-44 rounded-full bg-[hsl(var(--primary)/0.08)] blur-3xl pointer-events-none" />
 
@@ -184,7 +184,7 @@ export function ContactPage({ event }: { event: EventData }) {
         </div>
 
         {/* Right Side: Message Form Box */}
-        <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-xl shadow-black/5 hover:border-[hsl(var(--primary)/0.4)] transition-all duration-300 relative overflow-hidden flex flex-col justify-between">
+        <div className="card-lift rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-xl shadow-black/5 relative overflow-hidden flex flex-col justify-between">
           {/* Subtle decorative glow */}
           <div className="absolute -top-20 -right-20 w-44 h-44 rounded-full bg-[hsl(var(--primary)/0.08)] blur-3xl pointer-events-none" />
 

@@ -68,7 +68,7 @@ export function TracksPage({ event }: { event: EventData }) {
           </div>
 
           {/* Down Content / Description */}
-          <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 sm:p-12 shadow-sm space-y-6">
+          <div className="card-lift rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 sm:p-12 shadow-sm space-y-6">
             <h3 className="display text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))] border-b border-[hsl(var(--border))] pb-4">
               Track Overview & Research Topics
             </h3>
@@ -84,7 +84,7 @@ export function TracksPage({ event }: { event: EventData }) {
 
           {/* Last Links / Reference Links */}
           {Array.isArray(track.referenceLinks) && track.referenceLinks.length > 0 && (
-            <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-4">
+            <div className="card-lift rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-4">
               <h4 className="text-base font-bold uppercase tracking-wider text-[hsl(var(--primary))]">
                 Track Resources & Reference Links
               </h4>
@@ -123,9 +123,9 @@ export function TracksPage({ event }: { event: EventData }) {
             <p className="text-[hsl(var(--muted-foreground))] font-medium">No tracks available for this event yet.</p>
           </div>
         ) : (
-          <div className="w-full space-y-8">
+          <div className="w-full space-y-6">
             {tracks.map((track, i) => (
-              <div key={i} className="flex flex-col sm:flex-row items-start gap-6 sm:gap-8 pb-8 border-b border-[hsl(var(--border))] last:border-0 last:pb-0">
+              <div key={i} className="card-lift flex flex-col sm:flex-row items-start gap-6 sm:gap-8 p-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xs">
                 {/* Left Side: Track Image or Number Badge */}
                 {track.image ? (
                   <img
