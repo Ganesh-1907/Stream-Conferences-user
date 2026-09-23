@@ -160,6 +160,36 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
   }, [isOpen]);
 
   useEffect(() => {
+    let active = true;
+    if (!isOpen || step !== 'chat') return;
+
+    const syncHistory = async () => {
+      const visitorId = visitorIdRef.current;
+      try {
+        const res = await fetch(`${SERVER_ORIGIN}/api/chat/visitor/${encodeURIComponent(visitorId)}/history`);
+        if (res.ok) {
+          const data = await res.json();
+          if (active && data.messages) {
+            setMessages((prev) => {
+              const prevIds = new Set(prev.map((m) => m._id).filter(Boolean));
+              const newMsgs = data.messages.filter((m: any) => m._id && !prevIds.has(m._id));
+              if (newMsgs.length === 0) return prev;
+              return [...prev, ...newMsgs];
+            });
+          }
+        }
+      } catch {}
+    };
+
+    syncHistory();
+    const interval = setInterval(syncHistory, 3000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [isOpen, step]);
+
+  useEffect(() => {
     if (isOpen && step === 'chat') {
       setHasUnread(false);
       scrollToBottom();

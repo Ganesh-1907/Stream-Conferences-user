@@ -235,7 +235,7 @@ type EventItem = {
   eventId?: string;
   day: string;
   month: string;
-  type: 'Conference' | 'Webinar';
+  type: 'Conference';
   title: string;
   location: string;
   date: Status;
@@ -257,13 +257,10 @@ type EventItem = {
 const events: EventItem[] = [
   { id: 'med-27', day: '12–14', month: 'MAR 27', type: 'Conference', title: 'International Conference on Medical, Life & Health Sciences', location: 'Boston, Massachusetts · Hybrid', date: 'upcoming', eventDate: '2027-03-12', slug: 'icmlhs-2027' },
   { id: 'ai-27', day: '08–09', month: 'MAY 27', type: 'Conference', title: 'Applied Intelligence & Emerging Technologies Forum', location: 'Singapore · In person', date: 'upcoming', eventDate: '2027-05-08', slug: 'applied-intelligence-2027' },
-  { id: 'web-26', day: '22', month: 'OCT 26', type: 'Webinar', title: 'Precision systems: turning data into better decisions', location: 'Online · 14:00 UTC', date: 'upcoming', eventDate: '2026-10-22', slug: 'precision-systems', speaker: 'Dr. Amina Rao' },
-  { id: 'climate-26', day: '04', month: 'DEC 26', type: 'Webinar', title: 'Engineering resilient cities under pressure', location: 'Online · 16:00 UTC', date: 'upcoming', eventDate: '2026-12-04', slug: 'resilient-cities', speaker: 'Prof. Daniel Okafor' },
   { id: 'past-25', day: '18–20', month: 'NOV 25', type: 'Conference', title: 'Global Forum on Research Translation', location: 'Copenhagen · Hybrid', date: 'past', eventDate: '2025-11-18', slug: 'global-forum-2025' },
-  { id: 'past-web', day: '07', month: 'JUN 25', type: 'Webinar', title: 'The evidence gap: building trust in public health', location: 'Online · 13:00 UTC', date: 'past', eventDate: '2025-06-07', slug: 'evidence-gap', speaker: 'Dr. Leila Morgan' },
 ];
 
-function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?: Status; onlyType?: 'Conference' | 'Webinar' }) {
+function EventList({ initial: initialStatus = 'upcoming' }: { initial?: Status }) {
   const [location] = useLocation();
   const { events: eventsList } = useContext(APIContext);
 
@@ -278,7 +275,6 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
 
   const [status, setStatus] = useState<Status>(getStatusFromUrl);
   const [query, setQuery] = useState('');
-  const [type, setType] = useState<'All' | 'Conference' | 'Webinar'>(onlyType ?? 'All');
 
   useEffect(() => {
     const syncStatusFromUrl = () => {
@@ -309,11 +305,10 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
   const visible = useMemo(() => {
     return eventsList.filter((e) => {
       const matchStatus = e.date === status;
-      const matchType = !onlyType ? (type === 'All' || e.type === type) : e.type === onlyType;
       const matchQuery = `${e.title} ${e.location} ${e.speaker ?? ''}`.toLowerCase().includes(query.toLowerCase());
-      return matchStatus && matchType && matchQuery;
+      return matchStatus && matchQuery;
     });
-  }, [eventsList, status, query, type, onlyType]);
+  }, [eventsList, status, query]);
 
   return (
     <>
@@ -343,25 +338,6 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
               </button>
             ))}
           </div>
-
-          {!onlyType && (
-            <div className="inline-flex p-1 bg-[hsl(var(--muted))] rounded-full border border-[hsl(var(--border))] shadow-sm">
-              {(['All', 'Conference', 'Webinar'] as const).map((tab) => (
-                <button
-                  type="button"
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
-                    type === tab
-                      ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-md'
-                      : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
-                  }`}
-                  key={tab}
-                  onClick={() => setType(tab)}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Right End: High-Contrast Search Bar on SAME row */}
@@ -371,7 +347,7 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={`Search ${onlyType?.toLowerCase() ?? 'events'}...`}
+            placeholder="Search conferences..."
             className="w-full pl-10 pr-9 py-2.5 border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] rounded-full text-sm font-medium shadow-sm focus:outline-none focus:border-[hsl(var(--secondary))] focus:ring-2 focus:ring-[hsl(var(--secondary)/.2)] transition-all"
           />
           {query && (
@@ -389,106 +365,66 @@ function EventList({ initial: initialStatus = 'upcoming', onlyType }: { initial?
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {visible.length ? (
           visible.map((e, index) => {
-            const registerHref = subdomainUrl(e, '/register') || `/register?event=${encodeURIComponent(e.eventId || e.slug || (e as any)._id || e.id)}`;
-            const detailsHref = subdomainUrl(e) || `/${e.type === 'Conference' ? 'conference' : 'webinar'}/${encodeURIComponent(e.eventId || e.slug || (e as any)._id || e.id)}`;
-            const abstractHref = subdomainUrl(e, '/submit-abstract') || `/submit-abstract?event=${encodeURIComponent(e.eventId || e.slug || (e as any)._id || e.id)}`;
+            const detailsHref = subdomainUrl(e) || `/conference/${encodeURIComponent(e.eventId || e.slug || (e as any)._id || e.id)}`;
+            const { start, end } = getStartAndEndDates(e.eventDate, e.day);
+            const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : '';
+            const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : '';
+            const dateBadgeText = startFormatted ? (endFormatted ? `${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${endFormatted}` : startFormatted) : (e.eventDate || '');
 
             return (
-              <div key={e.id || (e as any)._id || index} className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-event-${index}`}>
+              <a 
+                key={e.id || (e as any)._id || index} 
+                href={detailsHref} 
+                className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full group hover:shadow-xl transition-all duration-300 cursor-pointer" 
+                data-testid={`card-event-${index}`}
+              >
                 <div className="relative aspect-[16/9] w-full bg-white dark:bg-slate-900/60 border-b border-[hsl(var(--border))] overflow-hidden flex items-center justify-center">
                   {e.subjectImageUrl ? (
                     <img 
                       src={mediaUrl(e.subjectImageUrl)} 
                       alt={`${e.title} subject`} 
-                      className="h-full w-full object-cover" 
+                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" 
                     />
                   ) : e.logoUrl ? (
                     <img 
                       src={mediaUrl(e.logoUrl)} 
                       alt={`${e.title} logo`} 
-                      className="h-full w-full object-contain p-2.5" 
+                      className="h-full w-full object-contain p-2.5 group-hover:scale-105 transition-transform duration-300" 
                     />
                   ) : e.bannerUrl ? (
                     <img 
                       src={mediaUrl(e.bannerUrl)} 
                       alt={`${e.title} banner`} 
-                      className="h-full w-full object-cover" 
+                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" 
                     />
                   ) : (
                     <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center">
                       <Building2 className="text-[hsl(var(--primary-foreground))] opacity-65" size={40} />
                     </div>
                   )}
+                  {dateBadgeText && (
+                    <div className="absolute top-3 left-3 z-10">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3 py-1 text-xs font-extrabold shadow-md tracking-wide">
+                        <CalendarDays size={13} className="shrink-0" />
+                        {dateBadgeText}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="p-6 flex-1 flex flex-col justify-between">
                   <div>
-                    <h3 className="display text-xl sm:text-2xl font-black leading-snug text-[hsl(var(--foreground))] line-clamp-2">
+                    <h3 className="display text-xl sm:text-2xl font-black leading-snug text-[hsl(var(--foreground))] line-clamp-2 group-hover:text-[hsl(var(--primary))] transition-colors">
                       {e.title}
                     </h3>
-                    <div className="mt-4 space-y-3">
-                      {e.location && (
-                        <div className="flex items-center gap-2.5 text-base font-semibold text-[hsl(var(--foreground)/.88)]">
-                          <MapPin size={16} className="shrink-0 text-[hsl(var(--accent))]" />
-                          <span className="truncate">{e.location}</span>
-                        </div>
-                      )}
-                      {e.eventDate && (() => {
-                        const { start, end } = getStartAndEndDates(e.eventDate, e.day);
-                        const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                        const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                        return (
-                          <>
-                            <div className="flex items-center gap-2.5 text-base font-semibold text-[hsl(var(--foreground)/.88)]">
-                              <CalendarDays size={16} className="shrink-0 text-[hsl(var(--secondary))]" />
-                              <span>{startFormatted}{endFormatted ? ` – ${endFormatted}` : ''}</span>
-                            </div>
-                            {(e.startTime || e.endTime) && (
-                              <div className="flex items-center gap-2.5 text-base font-semibold text-[hsl(var(--foreground)/.88)]">
-                                <Clock3 size={16} className="shrink-0 text-[hsl(var(--secondary))]" />
-                                <span>{formatTime12h(e.startTime) || '—'} – {formatTime12h(e.endTime) || '—'}</span>
-                              </div>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </div>
-                  </div>
-
-                  <div className="mt-6 pt-5 border-t border-[hsl(var(--border))] space-y-2.5">
-                    <div className="flex items-center gap-2">
-                      <a
-                        href={registerHref}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 text-center py-2.5 px-3 rounded-full text-xs font-bold border-2 border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-[hsl(var(--primary-foreground))] transition-colors"
-                        aria-label={`Register for ${e.title}`}
-                      >
-                        Register
-                      </a>
-                      {e.type === 'Conference' && (
-                        <a
-                          href={abstractHref}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 text-center py-2.5 px-3 rounded-full text-xs font-bold border-2 border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-[hsl(var(--primary-foreground))] transition-colors"
-                          aria-label={`Submit abstract for ${e.title}`}
-                        >
-                          Submit Abstract
-                        </a>
-                      )}
-                    </div>
-                    <a
-                      href={detailsHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full text-center py-3 px-4 rounded-full text-sm font-bold bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
-                      aria-label={`View details for ${e.title}`}
-                    >
-                      Details <ArrowRight size={14} />
-                    </a>
+                    {e.location && (
+                      <div className="mt-4 flex items-center gap-2.5 text-base font-semibold text-[hsl(var(--foreground)/.88)]">
+                        <MapPin size={16} className="shrink-0 text-[hsl(var(--accent))]" />
+                        <span className="truncate">{e.location}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
+              </a>
             );
           })
         ) : (
@@ -527,7 +463,6 @@ function useCountdown(targetDate?: string | Date) {
 
 interface APIContextType {
   conferences: any[];
-  webinars: any[];
   blogs: any[];
   events: EventItem[];
   insightsList: any[];
@@ -537,14 +472,13 @@ interface APIContextType {
   mentors: any[];
   people: any[];
   venues: any[];
-  mainBrochure: { title: string; fileUrl: string; fileName?: string } | null;
+  mainBrochure: { title: string; fileUrl: string; fileName?: string; description?: string } | null;
   loading: boolean;
   error: boolean;
 }
 
 const APIContext = createContext<APIContextType>({
   conferences: [],
-  webinars: [],
   blogs: [],
   events: [],
   insightsList: [],
@@ -561,7 +495,6 @@ const APIContext = createContext<APIContextType>({
 
 function APIProvider({ children }: { children: ReactNode }) {
   const [conferences, setConferences] = useState<any[]>([]);
-  const [webinars, setWebinars] = useState<any[]>([]);
   const [blogs, setBlogs] = useState<any[]>([]);
   const [mediaPartners, setMediaPartners] = useState<any[]>([]);
   const [collaborators, setCollaborators] = useState<any[]>([]);
@@ -577,9 +510,8 @@ function APIProvider({ children }: { children: ReactNode }) {
     let active = true;
     const fetchData = async () => {
       try {
-        const [confRes, webRes, blogRes, mpRes, collabRes, exhRes, mentorsRes, peopleRes, venuesRes, brochureRes] = await Promise.all([
+        const [confRes, blogRes, mpRes, collabRes, exhRes, mentorsRes, peopleRes, venuesRes, brochureRes] = await Promise.all([
           fetch(`${API_BASE}/conferences`),
-          fetch(`${API_BASE}/webinars`),
           fetch(`${API_BASE}/blogs`),
           fetch(`${API_BASE}/media-partners`),
           fetch(`${API_BASE}/collaborators`),
@@ -590,12 +522,11 @@ function APIProvider({ children }: { children: ReactNode }) {
           fetch(`${API_BASE}/brochure/main`).catch(() => null)
         ]);
         
-        if (!confRes.ok || !webRes.ok || !blogRes.ok || !mpRes.ok || !collabRes.ok || !exhRes.ok || !mentorsRes.ok || !peopleRes.ok || !venuesRes.ok) {
+        if (!confRes.ok || !blogRes.ok || !mpRes.ok || !collabRes.ok || !exhRes.ok || !mentorsRes.ok || !peopleRes.ok || !venuesRes.ok) {
           throw new Error('API fetch failed');
         }
 
         const confData = await confRes.json();
-        const webData = await webRes.json();
         const blogData = await blogRes.json();
         const mpData = await mpRes.json();
         const collabData = await collabRes.json();
@@ -607,7 +538,6 @@ function APIProvider({ children }: { children: ReactNode }) {
 
         if (active) {
           setConferences(confData);
-          setWebinars(webData);
           setBlogs(blogData);
           setMediaPartners(mpData);
           setCollaborators(collabData);
@@ -656,47 +586,18 @@ function APIProvider({ children }: { children: ReactNode }) {
       tracks: c.tracks
     }));
 
-    const normalizedWebs: EventItem[] = webinars.map((w: any) => ({
-      id: w._id || w.id,
-      eventId: w.eventId,
-      day: w.day,
-      month: w.month,
-      type: 'Webinar',
-      title: w.title,
-      location: w.location,
-      date: w.eventDate ? (new Date(w.eventDate).getTime() >= Date.now() ? 'upcoming' : 'past') : w.date,
-      eventDate: w.eventDate,
-      slug: w.slug,
-      speaker: w.speaker,
-      description: w.description,
-      startTime: w.startTime,
-      endTime: w.endTime,
-      logoUrl: w.logoUrl,
-      subjectImageUrl: w.subjectImageUrl,
-      bannerUrl: w.bannerUrl,
-      brochureUrl: w.brochureUrl,
-      fees: w.fees,
-      organizerContact: w.organizerContact,
-      tracks: w.tracks
-    }));
-
-    const merged = [...normalizedConfs, ...normalizedWebs];
-    const hasPastConf = merged.some((e) => e.type === 'Conference' && e.date === 'past');
-    const hasPastWeb = merged.some((e) => e.type === 'Webinar' && e.date === 'past');
+    const hasPastConf = normalizedConfs.some((e) => e.date === 'past');
     const mockPastEvents = events.filter((e) => e.date === 'past');
     const extraPast: EventItem[] = [];
     if (!hasPastConf) {
       extraPast.push(...mockPastEvents.filter((e) => e.type === 'Conference'));
     }
-    if (!hasPastWeb) {
-      extraPast.push(...mockPastEvents.filter((e) => e.type === 'Webinar'));
-    }
 
-    if (merged.length === 0) {
-      return events;
+    if (normalizedConfs.length === 0) {
+      return events.filter((e) => e.type === 'Conference');
     }
-    return [...merged, ...extraPast];
-  }, [conferences, webinars]);
+    return [...normalizedConfs, ...extraPast];
+  }, [conferences]);
 
   const insightsList = useMemo(() => {
     return [...blogs]
@@ -714,7 +615,7 @@ function APIProvider({ children }: { children: ReactNode }) {
   }, [blogs]);
 
   return (
-    <APIContext.Provider value={{ conferences, webinars, blogs, events: eventsList, insightsList, mediaPartners, collaborators, exhibitors, mentors, people, venues, mainBrochure, loading, error }}>
+    <APIContext.Provider value={{ conferences, blogs, events: eventsList, insightsList, mediaPartners, collaborators, exhibitors, mentors, people, venues, mainBrochure, loading, error }}>
       {children}
     </APIContext.Provider>
   );
@@ -1162,10 +1063,10 @@ function Reveal({ children, className = '' }: { children: ReactNode; className?:
   return <div ref={ref} className={`reveal-on-scroll ${visible ? 'is-visible' : ''} ${className}`}>{children}</div>;
 }
 
-function SectionTitle({ eyebrow, title, body, light = false }: { eyebrow: string; title: string; body?: string; light?: boolean }) {
+function SectionTitle({ eyebrow, title, body, light = false, eyebrowClassName }: { eyebrow: string; title: string; body?: string; light?: boolean; eyebrowClassName?: string }) {
   return (
     <div>
-      <p className={`text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] ${light ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--secondary))]'}`}>
+      <p className={eyebrowClassName || `text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] ${light ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--secondary))]'}`}>
         {eyebrow}
       </p>
       <h2 className={`display mt-3.5 w-full text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-[-.045em] ${light ? 'text-white' : 'text-[hsl(var(--foreground))]'}`}>
@@ -1432,7 +1333,7 @@ const heroImages = [
 ];
 
 function Home() {
-  const { conferences, webinars, insightsList, mentors, mediaPartners, events: eventsList } = useContext(APIContext);
+  const { conferences, insightsList, mentors, mediaPartners, events: eventsList } = useContext(APIContext);
   const [email, setEmail] = useState('');
   const [joined, setJoined] = useState(false);
   const [heroImgIndex, setHeroImgIndex] = useState(0);
@@ -1465,28 +1366,6 @@ function Home() {
     }
     return combined.slice(0, 4);
   }, [conferences, eventsList]);
-
-  const displayWebinars = useMemo(() => {
-    const upcoming = webinars.filter((w: any) => {
-      if (w.eventDate) {
-        return new Date(w.eventDate).getTime() >= Date.now();
-      }
-      return w.date === 'upcoming';
-    });
-    const pool = upcoming.length > 0 ? upcoming : webinars;
-    if (pool.length >= 4) return pool.slice(0, 4);
-
-    const fallbackWebs = (eventsList || []).filter((e: any) => e.type === 'Webinar' || e.type === 'webinar');
-    const combined = [...pool];
-    for (const f of fallbackWebs) {
-      if (combined.length >= 4) break;
-      const fId = (f as any)._id || f.id;
-      if (!combined.some((item) => ((item as any)._id || item.id) === fId || item.title === f.title)) {
-        combined.push(f);
-      }
-    }
-    return combined.slice(0, 4);
-  }, [webinars, eventsList]);
 
   return <Layout>
     <main>
@@ -1577,14 +1456,6 @@ function Home() {
         {/* Left Side Content Container */}
         <div className="relative z-20 w-full lg:w-[58%] min-h-[90vh] lg:min-h-screen px-6 sm:px-12 lg:px-16 pt-28 sm:pt-32 lg:pt-36 pb-20 lg:pb-24 flex flex-col justify-between">
           <div className="my-auto max-w-2xl">
-            {/* Website Badge */}
-            <div className="flex flex-wrap items-center gap-2 mb-6">
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/30 bg-white/15 backdrop-blur-md text-xs font-bold uppercase tracking-wider text-white shadow-sm">
-                <Globe2 size={13} className="text-[hsl(var(--accent))]" />
-                International Scientific & Medical Summits
-              </span>
-            </div>
-
             {/* Main Headline */}
             <h1 className="font-['Space_Grotesk'] text-3xl sm:text-4xl md:text-5xl lg:text-[48px] xl:text-[56px] font-black uppercase leading-[1.1] tracking-tight text-white">
               <span className="block whitespace-nowrap">CONNECTING MINDS,</span>
@@ -1607,31 +1478,24 @@ function Home() {
                 <ArrowRight size={17} className="text-[hsl(var(--accent))]" />
               </Link>
               <Link
-                href="/webinars"
+                href="/conferences?status=upcoming"
                 className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-white/15 hover:bg-white/25 text-white font-bold text-xs uppercase tracking-wider backdrop-blur-md transition-all cursor-pointer border border-white/25"
+                data-testid="link-hero-upcoming-conferences"
               >
-                <span>Live Webinars</span>
+                <span>LIVE CONFERENCES</span>
                 <ArrowUpRight size={17} />
               </Link>
             </div>
           </div>
 
           {/* Bottom Quick Stats Counter Grid */}
-          <div className="mt-8 pt-5 border-t border-white/20 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-2xl">
+          <div className="mt-8 pt-5 border-t border-white/20 grid grid-cols-3 gap-6 max-w-2xl">
             <div>
               <p className="font-['Space_Grotesk'] text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
                 {conferences.length > 0 ? `${conferences.length}+` : '20+'}
               </p>
               <p className="font-mono text-xs font-bold uppercase tracking-wider text-white/90 mt-2">
                 CONFERENCES
-              </p>
-            </div>
-            <div>
-              <p className="font-['Space_Grotesk'] text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
-                {webinars.length > 0 ? `${webinars.length}+` : '15+'}
-              </p>
-              <p className="font-mono text-xs font-bold uppercase tracking-wider text-white/90 mt-2">
-                LIVE WEBINARS
               </p>
             </div>
             <div>
@@ -1659,24 +1523,23 @@ function Home() {
         <div className="container-wide w-full">
           <SectionTitle 
             eyebrow="About STREAM Conferences" 
+            eyebrowClassName="text-base sm:text-lg md:text-xl font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]"
             title="Operating at the intersection of academic excellence and industry innovation." 
           />
           <div className="mt-8 grid gap-6 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full max-w-none text-justify">
             <p>
               STREAM Conferences is an established global architect of elite scientific, technical, research, engineering, academic, and medical summits. Operating at the dynamic intersection of rigorous scholarship and industrial execution, we engineer high-precision platforms designed to accelerate knowledge transfer, forge high-value cross-disciplinary synergies, and catalyse theoretical discoveries into transformative global solutions.
             </p>
-            <p>
-              We redefine the international summit experience through focused, result-driven frameworks that convert intellectual capital into immediate market momentum. We deliberately cultivate environments where data scientists, clinical physicians, biotech innovators, and systems engineers converge to solve high-stakes global challenges.
+            <p className="inline sm:block">
+              We redefine the international summit experience through focused, result-driven frameworks that convert intellectual capital into immediate market momentum. We deliberately cultivate environments where data scientists, clinical physicians, biotech innovators, and systems engineers converge to solve high-stakes global challenges.{' '}
+              <Link
+                href="/about"
+                className="inline-flex items-center gap-1.5 ml-2 px-4 py-1.5 rounded-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.9)] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-sm hover:shadow transition-all align-middle cursor-pointer"
+              >
+                <span>Read More</span>
+                <ArrowRight size={14} />
+              </Link>
             </p>
-          </div>
-          <div className="mt-6 flex items-center justify-start">
-            <Link
-              href="/about"
-              className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.9)] text-white font-extrabold text-sm uppercase tracking-wider shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer"
-            >
-              <span>Read More</span>
-              <ArrowRight size={16} />
-            </Link>
           </div>
         </div>
       </section>
@@ -1696,100 +1559,66 @@ function Home() {
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {displayConferences.map((item, index) => {
-              const registerHref = subdomainUrl(item, '/register');
-              const detailsHref = subdomainUrl(item);
-              const abstractHref = subdomainUrl(item, '/submit-abstract');
+              const detailsHref = subdomainUrl(item) || `/conference/${encodeURIComponent(item.eventId || item.slug || (item as any)._id || item.id)}`;
+              const { start, end } = getStartAndEndDates(item.eventDate, item.day);
+              const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : '';
+              const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : '';
+              const dateBadgeText = startFormatted ? (endFormatted ? `${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${endFormatted}` : startFormatted) : (item.eventDate || '');
+
               return (
-                <div key={item._id || item.id || index} className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full" data-testid={`card-home-conference-${index}`}>
+                <a 
+                  key={item._id || item.id || index} 
+                  href={detailsHref}
+                  className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full group hover:shadow-xl transition-all duration-300 cursor-pointer" 
+                  data-testid={`card-home-conference-${index}`}
+                >
                   <div className="relative aspect-[16/9] w-full bg-white dark:bg-slate-900/60 border-b border-[hsl(var(--border))] overflow-hidden flex items-center justify-center">
                     {item.subjectImageUrl ? (
                       <img 
                         src={mediaUrl(item.subjectImageUrl)} 
                         alt={`${item.title} subject`} 
-                        className="h-full w-full object-cover" 
+                        className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" 
                       />
                     ) : item.logoUrl ? (
                       <img 
                         src={mediaUrl(item.logoUrl)} 
                         alt={`${item.title} logo`} 
-                        className="h-full w-full object-contain p-2.5" 
+                        className="h-full w-full object-contain p-2.5 group-hover:scale-105 transition-transform duration-300" 
                       />
                     ) : item.bannerUrl ? (
                       <img 
                         src={mediaUrl(item.bannerUrl)} 
                         alt={`${item.title} banner`} 
-                        className="h-full w-full object-cover" 
+                        className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" 
                       />
                     ) : (
                       <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] opacity-90 flex items-center justify-center">
                         <Building2 className="text-[hsl(var(--primary-foreground))] opacity-65" size={40} />
                       </div>
                     )}
+                    {dateBadgeText && (
+                      <div className="absolute top-3 left-3 z-10">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3 py-1 text-xs font-extrabold shadow-md tracking-wide">
+                          <CalendarDays size={13} className="shrink-0" />
+                          {dateBadgeText}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="p-6 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="display text-xl sm:text-[21px] font-black leading-snug text-[hsl(var(--foreground))] line-clamp-2">
+                      <h3 className="display text-xl sm:text-[21px] font-black leading-snug text-[hsl(var(--foreground))] line-clamp-2 group-hover:text-[hsl(var(--primary))] transition-colors">
                         {item.title}
                       </h3>
-                      <div className="mt-4 space-y-2.5">
-                        <div className="flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
+                      {item.location && (
+                        <div className="mt-4 flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
                           <MapPin size={15} className="shrink-0 text-[hsl(var(--accent))]" />
                           <span className="truncate">{item.location}</span>
                         </div>
-                        {item.eventDate && (() => {
-                          const { start, end } = getStartAndEndDates(item.eventDate, item.day);
-                          const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                          const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                          return (
-                            <>
-                              <div className="flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
-                                <CalendarDays size={15} className="shrink-0 text-[hsl(var(--secondary))]" />
-                                <span>{startFormatted}{endFormatted ? ` – ${endFormatted}` : ''}</span>
-                              </div>
-                              {(item.startTime || item.endTime) && (
-                                <div className="flex items-center gap-2.5 text-sm font-semibold text-[hsl(var(--foreground)/.88)]">
-                                  <Clock3 size={15} className="shrink-0 text-[hsl(var(--secondary))]" />
-                                  <span>{formatTime12h(item.startTime) || '—'} – {formatTime12h(item.endTime) || '—'}</span>
-                                </div>
-                              )}
-                            </>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                    <div className="mt-6 pt-5 border-t border-[hsl(var(--border))] space-y-2.5">
-                      <div className="flex items-center gap-2">
-                        <a 
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          href={registerHref} 
-                          className="flex-1 text-center py-2.5 px-3 rounded-full text-xs font-bold border-2 border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-[hsl(var(--primary-foreground))] transition-colors"
-                          data-testid={`btn-home-conf-register-${index}`}
-                        >
-                          Register
-                        </a>
-                        <a 
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          href={abstractHref} 
-                          className="flex-1 text-center py-2.5 px-3 rounded-full text-xs font-bold border-2 border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-[hsl(var(--primary-foreground))] transition-colors"
-                          data-testid={`btn-home-conf-abstract-${index}`}
-                        >
-                          Submit Abstract
-                        </a>
-                      </div>
-                      <a 
-                        href={detailsHref} 
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full text-center py-3 px-4 rounded-full text-sm font-bold bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
-                        data-testid={`btn-home-conf-details-${index}`}
-                      >
-                        Details <ArrowRight size={14} />
-                      </a>
+                      )}
                     </div>
                   </div>
-                </div>
+                </a>
               );
             })}
           </div>
@@ -2319,7 +2148,7 @@ function BrochurePage() {
 
 function VenuesPage() {
   const { venues } = useContext(APIContext);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1501979392350-f8c5b058a5c6?auto=format&fit=crop&w=1200&q=80" eyebrow="Our spaces" title="Venues for the conversation." body="Explore the venues available for our conferences and webinars." /><main className="pt-6 pb-16"><div className="container-wide"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{venues.length > 0 ? venues.map((venue) => <div key={venue._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6"><div className="flex items-center gap-3"><MapPin size={20} className="text-[hsl(var(--secondary))]" /><h3 className="display text-xl font-bold">{venue.name}</h3></div>{venue.address && <p className="mt-3 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{venue.address}</p>}{venue.locationUrl && <a href={venue.locationUrl} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition">View location <ExternalLink size={14} /></a>}</div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p>No venues have been added yet.</p></div>}</div></div></main></Layout>;
+  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1501979392350-f8c5b058a5c6?auto=format&fit=crop&w=1200&q=80" eyebrow="Our spaces" title="Venues for the conversation." body="Explore the venues available for our conferences." /><main className="pt-6 pb-16"><div className="container-wide"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{venues.length > 0 ? venues.map((venue) => <div key={venue._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6"><div className="flex items-center gap-3"><MapPin size={20} className="text-[hsl(var(--secondary))]" /><h3 className="display text-xl font-bold">{venue.name}</h3></div>{venue.address && <p className="mt-3 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{venue.address}</p>}{venue.locationUrl && <a href={venue.locationUrl} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--accent))] transition">View location <ExternalLink size={14} /></a>}</div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p>No venues have been added yet.</p></div>}</div></div></main></Layout>;
 }
 
 function SponsorsPage() {
@@ -2383,7 +2212,7 @@ function SponsorsPage() {
             <SectionTitle
               eyebrow="Our Partners"
               title="Sponsors across all events."
-              body="Recognizing the organizations and industry leaders supporting our conferences and webinars."
+              body="Recognizing the organizations and industry leaders supporting our conferences."
             />
 
             {loading ? (
@@ -2474,13 +2303,13 @@ function RegisterPage() {
 
   const prices = [['Student', '$245', '$320'], ['Academic', '$395', '$480'], ['Industry Delegate', '$520', '$640'], ['Virtual Attendee', '$145', '$190']];
 
-  const { conferences, webinars } = useContext(APIContext);
+  const { conferences } = useContext(APIContext);
   
   const fullEvent = useMemo(() => {
     if (!eventInfo) return null;
-    const pool = eventInfo.eventType === 'webinar' ? webinars : conferences;
+    const pool = conferences;
     return pool.find((e: any) => e.slug === eventInfo.eventSlug || e._id === eventInfo.eventId || e.eventId?.toLowerCase() === eventInfo.eventCustomId?.toLowerCase());
-  }, [eventInfo, conferences, webinars]);
+  }, [eventInfo, conferences]);
 
   const eventPrices = useMemo(() => {
     if (fullEvent?.fees && fullEvent.fees.length > 0) {
@@ -3453,19 +3282,14 @@ function AbstractSubmissionGuidelinesPage() {
                 ))}
               </div>
 
-              <div className="mt-8 rounded-2xl bg-[hsl(var(--muted))] p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                <div>
-                  <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">Technical Support & Inquiries</p>
-                  <p className="mt-2 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">
-                    For inquiries or technical support regarding abstract submissions, please contact{' '}
-                    <a href="mailto:abstracts@streamconferences.com" className="font-bold text-[hsl(var(--secondary))] hover:underline">
-                      abstracts@streamconferences.com
-                    </a>.
-                  </p>
-                </div>
-                <Link href="/submit-abstract" className="btn-main btn-solid shrink-0" data-testid="button-submit-abstract-guidelines">
-                  Submit Abstract <ArrowUpRight size={16} />
-                </Link>
+              <div className="mt-8 rounded-2xl bg-[hsl(var(--muted))] p-8">
+                <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[.18em] text-[hsl(var(--secondary))]">Technical Support & Inquiries</p>
+                <p className="mt-2 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))]">
+                  For inquiries or technical support regarding abstract submissions, please contact{' '}
+                  <a href="mailto:abstracts@streamconferences.com" className="font-bold text-[hsl(var(--secondary))] hover:underline">
+                    abstracts@streamconferences.com
+                  </a>.
+                </p>
               </div>
             </section>
           </div>
@@ -3727,10 +3551,10 @@ function ContactPage() {
   );
 }
 
-function EventDetailsPage({ type }: { type: 'conference' | 'webinar' }) {
+function EventDetailsPage({ type = 'conference' }: { type?: 'conference' }) {
   const { slug = '' } = useParams<{ slug: string }>();
-  const { conferences, webinars } = useContext(APIContext);
-  const pool = type === 'conference' ? conferences : webinars;
+  const { conferences } = useContext(APIContext);
+  const pool = conferences;
   const item = pool.find((e: any) => e.slug === slug || e._id === slug || e.eventId?.toLowerCase() === slug.toLowerCase());
   const [copied, setCopied] = useState(false);
 
@@ -4118,427 +3942,6 @@ function BlogDetailPage() {
   );
 }
 
-function AbstractSubmissionPage() {
-  const [location, navigate] = useLocation();
-  const eventSlug = new URLSearchParams(window.location.search).get('event') || '';
-  const [copied, setCopied] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phoneNum, setPhoneNum] = useState('');
-  const [countryCode, setCountryCode] = useState('+91');
-  const [institution, setInstitution] = useState('');
-  const [country, setCountry] = useState('');
-  const [abstractFile, setAbstractFile] = useState<File | null>(null);
-  const [eventInfo, setEventInfo] = useState<any>(null);
-  const [eventLoading, setEventLoading] = useState(Boolean(eventSlug));
-  const [openAccordion, setOpenAccordion] = useState<string | null>(null);
-
-  const { conferences, webinars } = useContext(APIContext);
-
-  const fullEvent = useMemo(() => {
-    if (!eventInfo) return null;
-    const pool = eventInfo.eventType === 'webinar' ? webinars : conferences;
-    return pool.find((e: any) => e.slug === eventInfo.eventSlug || e._id === eventInfo.eventId || e.eventId?.toLowerCase() === eventInfo.eventCustomId?.toLowerCase());
-  }, [eventInfo, conferences, webinars]);
-
-  useEffect(() => {
-    let active = true;
-    if (eventSlug) {
-      fetch(`${API_BASE}/registrations/link/${encodeURIComponent(eventSlug)}`)
-        .then(r => r.ok ? r.json() : Promise.reject())
-        .then(data => { if (active) { setEventInfo(data); setEventLoading(false); } })
-        .catch(() => { if (active) setEventLoading(false); });
-    }
-    return () => { active = false; };
-  }, [eventSlug]);
-
-  const copyLink = () => {
-    const url = `${window.location.origin}/submit-abstract?event=${encodeURIComponent(eventSlug)}`;
-    navigator.clipboard?.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError('');
-    if (!abstractFile) {
-      setError('Please upload your abstract as a PDF file.');
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const fd = new FormData();
-      fd.append('firstName', firstName);
-      fd.append('lastName', lastName);
-      fd.append('email', email);
-      fd.append('phone', `${countryCode} ${phoneNum}`.trim());
-      fd.append('institution', institution);
-      fd.append('country', country);
-      fd.append('abstractFile', abstractFile);
-      fd.append('eventSlug', eventSlug || '');
-      if (eventInfo) {
-        fd.append('eventId', eventInfo.eventId);
-        fd.append('eventType', eventInfo.eventType);
-      }
-      const res = await fetch(`${API_BASE}/abstracts/submit`, {
-        method: 'POST',
-        body: fd
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Abstract submission failed');
-      }
-      navigate(`/thank-you?type=abstract&eventTitle=${encodeURIComponent(eventInfo?.eventTitle || '')}`);
-    } catch (err: any) {
-      console.error('Abstract submission failed:', err);
-      setError(err.message || 'Abstract submission failed');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleReset = () => {
-    setFirstName('');
-    setLastName('');
-    setEmail('');
-    setPhoneNum('');
-    setInstitution('');
-    setCountry('');
-    setAbstractFile(null);
-    setError('');
-    setSubmitted(false);
-  };
-
-  return (
-    <Layout>
-      {/* Title Header */}
-      <div className="py-12 bg-[hsl(var(--muted)/.15)] border-b border-[hsl(var(--border))]">
-        <div className="container-wide max-w-6xl text-center md:flex md:flex-col md:items-center md:gap-4">
-          <div className="flex flex-col items-center">
-            <span className="label text-[10px] uppercase tracking-wider text-[hsl(var(--secondary))]">
-              Event Registration Gateway
-            </span>
-            <h1 className="display text-3xl md:text-4xl font-extrabold tracking-tight mt-2 text-[hsl(var(--foreground))] text-center">
-              {eventInfo ? eventInfo.eventTitle : "Submit Abstract for Stream Conferences"}
-            </h1>
-          </div>
-          <div className="flex gap-2 justify-center shrink-0 flex-wrap">
-            <span className="rounded-full bg-[hsl(var(--accent))] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--accent-foreground))] align-middle inline-flex items-center">
-              Submit Abstract
-            </span>
-            {eventInfo && (
-              <span className="rounded-full bg-[hsl(var(--primary))] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--primary-foreground))] align-middle inline-flex items-center">
-                {eventInfo.eventType}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {eventLoading && (
-        <div className="border-b border-[hsl(var(--border))] bg-[hsl(var(--muted)/.35)] py-4 text-center text-sm text-[hsl(var(--muted-foreground))]">
-          Loading event details…
-        </div>
-      )}
-
-      <main className="bg-[hsl(var(--muted)/.15)] py-12">
-        <div className="container-wide max-w-6xl">
-          <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr] items-start">
-            {/* Left Column: Form or Success panel */}
-            <div className="space-y-6">
-              {submitted ? (
-                <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm">
-                  <SuccessState 
-                    title="Abstract received" 
-                    body="Thank you. Your abstract PDF has been uploaded and a confirmation will be sent to the email provided." 
-                    reset={handleReset} 
-                    testId="status-abstract-success" 
-                  />
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-6">
-                  <div>
-                    <p className="label text-[hsl(var(--accent))]">Abstract Submission</p>
-                    <div className="rounded-xl bg-[hsl(var(--accent)/.08)] px-4 py-3 text-sm text-[hsl(var(--accent))] font-medium flex items-center justify-between mt-2">
-                      <span>Submitter Information</span>
-                      <span>PDF Required</span>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">First Name *</label>
-                      <input 
-                        required 
-                        className="form-field w-full" 
-                        placeholder="First name" 
-                        aria-label="First name" 
-                        data-testid="input-abstract-firstname" 
-                        value={firstName} 
-                        onChange={(e) => setFirstName(e.target.value)} 
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">Last Name *</label>
-                      <input 
-                        required 
-                        className="form-field w-full" 
-                        placeholder="Last name" 
-                        aria-label="Last name" 
-                        data-testid="input-abstract-lastname" 
-                        value={lastName} 
-                        onChange={(e) => setLastName(e.target.value)} 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">Email Address *</label>
-                      <input 
-                        required 
-                        type="email" 
-                        className="form-field w-full" 
-                        placeholder="Email address" 
-                        aria-label="Email address" 
-                        data-testid="input-abstract-email" 
-                        value={email} 
-                        onChange={(e) => setEmail(e.target.value)} 
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">Phone Number *</label>
-                      <div className="flex gap-2">
-                        <select 
-                          className="form-field shrink-0" 
-                          style={{ width: '96px', minWidth: '96px' }}
-                          value={countryCode} 
-                          onChange={(e) => setCountryCode(e.target.value)}
-                          aria-label="Country Code"
-                        >
-                          <option>+91</option>
-                          <option>+1</option>
-                          <option>+44</option>
-                          <option>+33</option>
-                          <option>+65</option>
-                          <option>+61</option>
-                        </select>
-                        <input 
-                          required 
-                          type="tel" 
-                          className="form-field" 
-                          style={{ flex: 1, minWidth: 0, width: '100%' }}
-                          placeholder="Mobile number" 
-                          aria-label="Phone number" 
-                          data-testid="input-abstract-phone" 
-                          value={phoneNum} 
-                          onChange={(e) => setPhoneNum(e.target.value)} 
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">Institution / Organization *</label>
-                      <input 
-                        required 
-                        className="form-field w-full" 
-                        placeholder="Institution or company" 
-                        aria-label="Institution" 
-                        data-testid="input-abstract-institution" 
-                        value={institution} 
-                        onChange={(e) => setInstitution(e.target.value)} 
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">Country *</label>
-                      <input 
-                        required 
-                        className="form-field w-full" 
-                        placeholder="Country of residence" 
-                        aria-label="Country" 
-                        data-testid="input-abstract-country" 
-                        value={country} 
-                        onChange={(e) => setCountry(e.target.value)} 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">Abstract (PDF) *</label>
-                    <div className="rounded-xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--muted)/.25)] p-5">
-                      <input 
-                        required 
-                        type="file" 
-                        accept="application/pdf,.pdf" 
-                        className="w-full text-sm text-[hsl(var(--muted-foreground))] file:mr-4 file:rounded-full file:border-0 file:bg-[hsl(var(--primary))] file:px-4 file:py-2 file:text-xs file:font-bold file:text-[hsl(var(--primary-foreground))] hover:file:opacity-90"
-                        aria-label="Abstract PDF upload" 
-                        data-testid="input-abstract-file" 
-                        onChange={(e) => setAbstractFile(e.target.files?.[0] || null)} 
-                      />
-                      <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">
-                        {abstractFile ? `Selected: ${abstractFile.name}` : 'Upload your abstract document as a PDF (max 20 MB).'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {error && (
-                    <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600">
-                      {error}
-                    </div>
-                  )}
-
-                  <button 
-                    type="submit" 
-                    disabled={submitting} 
-                    className="w-full btn-main btn-primary py-3 mt-2" 
-                    data-testid="button-submit-abstract"
-                  >
-                    {submitting ? 'Submitting...' : 'Submit Abstract'} <Send size={16} />
-                  </button>
-
-                  <p className="text-xs text-[hsl(var(--muted-foreground))] text-center">
-                    By submitting, you confirm the work is original and ethically compliant.
-                  </p>
-                </form>
-              )}
-            </div>
-
-            {/* Right Column: Sticky Event Details & Accordion */}
-            {eventInfo && (
-              <div className="space-y-6 lg:sticky lg:top-6">
-                <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm space-y-6">
-                  <div>
-                    <span className={`inline-block mb-3 rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
-                      eventInfo.eventType === 'webinar' 
-                        ? 'bg-orange-500/10 text-orange-600 border border-orange-500/20' 
-                        : 'bg-green-500/10 text-green-600 border border-green-500/20'
-                    }`}>
-                      {eventInfo.eventType}
-                    </span>
-                    <h2 className="display text-xl font-bold tracking-tight text-[hsl(var(--foreground))]">
-                      {eventInfo.eventTitle}
-                    </h2>
-                  </div>
-
-                  {fullEvent && (() => {
-                    const { start, end } = getStartAndEndDates(fullEvent.eventDate, fullEvent.day);
-                    const startFormatted = start ? start.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                    const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                    return (
-                      <div className="space-y-4 pt-2 border-t border-[hsl(var(--border))]">
-                        <div className="flex items-start gap-3 text-sm text-[hsl(var(--muted-foreground))]">
-                          <CalendarDays className="mt-0.5 text-[hsl(var(--secondary))] shrink-0" size={16} />
-                          <div>
-                            <p className="font-semibold text-[hsl(var(--foreground))] text-xs">Date</p>
-                            <p className="text-xs mt-0.5">{startFormatted} {endFormatted ? `– ${endFormatted}` : ''}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3 text-sm text-[hsl(var(--muted-foreground))]">
-                          <MapPin className="mt-0.5 text-[hsl(var(--accent))] shrink-0" size={16} />
-                          <div>
-                            <p className="font-semibold text-[hsl(var(--foreground))] text-xs">Location</p>
-                            <p className="text-xs mt-0.5">{fullEvent.location || 'Online / Virtual'}</p>
-                          </div>
-                        </div>
-                        {fullEvent.speaker && (
-                          <div className="flex items-start gap-3 text-sm text-[hsl(var(--muted-foreground))]">
-                            <Users className="mt-0.5 text-[hsl(var(--secondary))] shrink-0" size={16} />
-                            <div>
-                              <p className="font-semibold text-[hsl(var(--foreground))] text-xs">Speaker / Faculty</p>
-                              <p className="text-xs mt-0.5">{fullEvent.speaker}</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
-
-                  {fullEvent && (
-                    <div className="border-t border-[hsl(var(--border))] pt-4 space-y-2">
-                      <div className="border-b border-[hsl(var(--border))]/60 pb-3">
-                        <button
-                          type="button"
-                          onClick={() => setOpenAccordion(openAccordion === 'datetime' ? null : 'datetime')}
-                          className="w-full flex items-center justify-between font-semibold text-xs text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors"
-                        >
-                          <span className="uppercase tracking-wider">Date & Time details</span>
-                          <ChevronDown size={14} className={`transform transition-transform ${openAccordion === 'datetime' ? 'rotate-180' : ''}`} />
-                        </button>
-                        {openAccordion === 'datetime' && (() => {
-                          const { start, end } = getStartAndEndDates(fullEvent.eventDate, fullEvent.day);
-                          const startFormatted = start ? start.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                          const endFormatted = (end && start && end.getTime() !== start.getTime()) ? end.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                          return (
-                            <div className="mt-2 pl-1 space-y-1.5 text-xs text-[hsl(var(--muted-foreground))]">
-                              <p><span className="font-medium text-[hsl(var(--foreground))]">Start Date:</span> {startFormatted}</p>
-                              <p><span className="font-medium text-[hsl(var(--foreground))]">End Date:</span> {endFormatted || startFormatted}</p>
-                              <p><span className="font-medium text-[hsl(var(--foreground))]">Start Time:</span> {formatTime12h(fullEvent.startTime) || '—'}</p>
-                              <p><span className="font-medium text-[hsl(var(--foreground))]">End Time:</span> {formatTime12h(fullEvent.endTime) || '—'}</p>
-                            </div>
-                          );
-                        })()}
-                      </div>
-
-                      <div className="border-b border-[hsl(var(--border))]/60 pb-3">
-                        <button
-                          type="button"
-                          onClick={() => setOpenAccordion(openAccordion === 'organizer' ? null : 'organizer')}
-                          className="w-full flex items-center justify-between font-semibold text-xs text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors"
-                        >
-                          <span className="uppercase tracking-wider">Organizer Contact</span>
-                          <ChevronDown size={14} className={`transform transition-transform ${openAccordion === 'organizer' ? 'rotate-180' : ''}`} />
-                        </button>
-                        {openAccordion === 'organizer' && (
-                          <div className="mt-2 pl-1 space-y-1.5 text-xs text-[hsl(var(--muted-foreground))]">
-                            <p><span className="font-medium text-[hsl(var(--foreground))]">Name:</span> {fullEvent.organizerContact?.name || 'Scientific Coordination Desk'}</p>
-                            <p><span className="font-medium text-[hsl(var(--foreground))]">Email:</span> {fullEvent.organizerContact?.email || 'secretariat@streamconferences.com'}</p>
-                            <p><span className="font-medium text-[hsl(var(--foreground))]">Phone:</span> {fullEvent.organizerContact?.phone || '+1 (617) 555-0199'}</p>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="border-b border-[hsl(var(--border))]/60 pb-3">
-                        <button
-                          type="button"
-                          onClick={() => setOpenAccordion(openAccordion === 'venue' ? null : 'venue')}
-                          className="w-full flex items-center justify-between font-semibold text-xs text-[hsl(var(--foreground))] py-2 hover:text-[hsl(var(--secondary))] transition-colors"
-                        >
-                          <span className="uppercase tracking-wider">Venue & Timezone</span>
-                          <ChevronDown size={14} className={`transform transition-transform ${openAccordion === 'venue' ? 'rotate-180' : ''}`} />
-                        </button>
-                        {openAccordion === 'venue' && (
-                          <div className="mt-2 pl-1 space-y-1.5 text-xs text-[hsl(var(--muted-foreground))]">
-                            <p><span className="font-medium text-[hsl(var(--foreground))]">Venue:</span> {fullEvent.location || 'Online'}</p>
-                            <p><span className="font-medium text-[hsl(var(--foreground))]">Timezone:</span> local timezone as scheduled</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  <button 
-                    type="button" 
-                    onClick={copyLink} 
-                    className="w-full rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] py-2.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--secondary))] hover:border-[hsl(var(--secondary))] hover:bg-[hsl(var(--secondary)/.02)] transition-all"
-                  >
-                    {copied ? 'Copied ✓' : 'Copy Submission Link'}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </main>
-    </Layout>
-  );
-}
 
 
 
@@ -4558,24 +3961,6 @@ function ConferencesPage() {
       <main className="pt-6 pb-16">
         <div className="container-wide">
           <EventList key={`${location}-${statusParam}-${typeof window !== 'undefined' ? window.location.search : ''}`} initial={statusParam} onlyType="Conference" />
-        </div>
-      </main>
-    </Layout>
-  );
-}
-
-function WebinarsPage() {
-  return (
-    <Layout>
-      <PageHero 
-        bgImage="https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1200&q=80" 
-        eyebrow="Live online exchange" 
-        title="A focused room for the right questions." 
-        body="Shorter, sharper sessions for researchers, practitioners, and peers across the world." 
-      />
-      <main className="pt-6 pb-16">
-        <div className="container-wide">
-          <EventList onlyType="Webinar" />
         </div>
       </main>
     </Layout>
@@ -4784,7 +4169,7 @@ function ScrollToTop() {
 }
 
 function Router() {
-  return <RoutedErrorBoundary><ScrollToTop /><Switch><Route path="/" component={Home} /><Route path="/about" component={AboutPage} /><Route path="/submit-abstract" component={AbstractSubmissionPage} /><Route path="/abstract-submission-guidelines" component={AbstractSubmissionGuidelinesPage} /><Route path="/program" component={ProgramPage} /><Route path="/speakers" component={SpeakersPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/blog" component={BlogPage} /><Route path="/blog/:slug" component={BlogDetailPage} /><Route path="/conferences" component={ConferencesPage} /><Route path="/webinars" component={WebinarsPage} /><Route path="/brochure" component={BrochurePage} /><Route path="/venue" component={VenuesPage} /><Route path="/venues" component={VenuesPage} /><Route path="/sponsors" component={SponsorsPage} /><Route path="/media-partners" component={MediaPartnersPage} /><Route path="/collaborators" component={CollaboratorsPage} /><Route path="/exhibitors" component={ExhibitorsPage} /><Route path="/mentors/:username" component={MentorDetailsPage} /><Route path="/thank-you" component={ThankYouPage} /><Route path="/terms" component={TermsPage} /><Route path="/faq" component={FAQPage} /><Route path="/guidelines" component={GuidelinesPage} /><Route path="/contact" component={ContactPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
+  return <RoutedErrorBoundary><ScrollToTop /><Switch><Route path="/" component={Home} /><Route path="/about" component={AboutPage} /><Route path="/abstract-submission-guidelines" component={AbstractSubmissionGuidelinesPage} /><Route path="/program" component={ProgramPage} /><Route path="/speakers" component={SpeakersPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/blog" component={BlogPage} /><Route path="/blog/:slug" component={BlogDetailPage} /><Route path="/conferences" component={ConferencesPage} /><Route path="/brochure" component={BrochurePage} /><Route path="/venue" component={VenuesPage} /><Route path="/venues" component={VenuesPage} /><Route path="/sponsors" component={SponsorsPage} /><Route path="/media-partners" component={MediaPartnersPage} /><Route path="/collaborators" component={CollaboratorsPage} /><Route path="/exhibitors" component={ExhibitorsPage} /><Route path="/mentors/:username" component={MentorDetailsPage} /><Route path="/thank-you" component={ThankYouPage} /><Route path="/terms" component={TermsPage} /><Route path="/faq" component={FAQPage} /><Route path="/guidelines" component={GuidelinesPage} /><Route path="/contact" component={ContactPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
 }
 
 function App() {
