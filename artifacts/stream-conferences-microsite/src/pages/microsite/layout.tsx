@@ -5,7 +5,7 @@ import {
   Mail, Phone, Globe, ExternalLink, ChevronDown,
   Menu, X, FileText, MapPin, MessageSquare,
   Sun, Moon, Layers, Presentation, Users, CalendarDays,
-  Award, Building, FileCheck, HelpCircle, BookOpen, Download,
+  Award, Building, FileCheck, HelpCircle, BookOpen, Download, Info,
   History, ArrowRight, Facebook, Twitter, Linkedin, Instagram, Youtube,
 } from 'lucide-react';
 
@@ -151,6 +151,8 @@ export function buildNavItems(event: EventData): NavItem[] {
 function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavItem[] }) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileProgramOpen, setMobileProgramOpen] = useState(false);
+  const [mobileInfoOpen, setMobileInfoOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { dark, toggle } = useTheme();
 
@@ -297,10 +299,10 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
         ? 'absolute top-0 left-0 right-0 bg-transparent border-b-0 shadow-none'
         : 'fixed top-0 left-0 right-0 bg-[hsl(var(--primary))]/95 dark:bg-[#141820]/95 border-b border-white/15 dark:border-white/10 backdrop-blur-xl shadow-lg'
     }`}>
-      <div className="container-wide flex items-center justify-between gap-4 py-3">
-        <Link href="/" className="flex items-center gap-3 min-w-0 shrink-0">
-          <img src="/logo.jpg" alt="Stream Conferences" className="h-10 w-10 rounded-xl object-contain bg-white p-0.5 shadow-md border border-white/20 shrink-0" />
-          <span className="truncate font-['Space_Grotesk'] font-black tracking-tight text-base md:text-xl text-white">Stream Conferences</span>
+      <div className="container-wide flex items-center justify-between gap-2 sm:gap-4 py-2.5 sm:py-3">
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
+          <img src="/logo.jpg" alt="Stream Conferences" className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl object-contain bg-white p-0.5 shadow-md border border-white/20 shrink-0" />
+          <span className="truncate font-['Space_Grotesk'] font-black tracking-tight text-sm sm:text-base md:text-xl text-white">Stream Conferences</span>
         </Link>
 
         <nav className="hidden lg:flex items-center gap-1 bg-white/95 dark:bg-[#0f172a]/95 text-slate-800 dark:text-white shadow-xl backdrop-blur-xl border border-white/30 dark:border-white/20 rounded-full p-1.5 mx-auto">
@@ -423,30 +425,29 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
           )}
         </nav>
 
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <button
             type="button"
             onClick={toggle}
             aria-label="Toggle dark/light theme"
             title={dark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/95 dark:bg-[#0f172a]/95 hover:bg-white dark:hover:bg-[#1e293b] border border-white/30 dark:border-white/20 text-slate-800 dark:text-white font-extrabold text-xs sm:text-sm shadow-xl backdrop-blur-xl transition-all cursor-pointer active:scale-95"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full bg-white/95 dark:bg-[#0f172a]/95 hover:bg-white dark:hover:bg-[#1e293b] border border-white/30 dark:border-white/20 text-slate-800 dark:text-white font-extrabold text-xs sm:text-sm shadow-md backdrop-blur-xl transition-all cursor-pointer active:scale-95"
           >
             {dark ? (
               <>
-                <Sun size={18} className="text-amber-400" />
-                <span>Light</span>
+                <Sun size={15} className="sm:w-[18px] sm:h-[18px] text-amber-400" />
+                <span className="hidden sm:inline">Light</span>
               </>
             ) : (
               <>
-                <Moon size={18} className="text-slate-700" />
-                <span>Dark</span>
+                <Moon size={15} className="sm:w-[18px] sm:h-[18px] text-slate-700" />
+                <span className="hidden sm:inline">Dark</span>
               </>
             )}
           </button>
 
-          <button type="button" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden p-2 rounded-xl hover:bg-white/20 transition-colors text-white">
-            {mobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
+          <button type="button" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden p-1.5 sm:p-2 rounded-xl hover:bg-white/20 transition-colors text-white" aria-label="Toggle Navigation">
+            {mobileMenuOpen ? <X size={22} className="sm:w-[26px] sm:h-[26px]" /> : <Menu size={22} className="sm:w-[26px] sm:h-[26px]" />}
           </button>
         </div>
       </div>
@@ -455,71 +456,134 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
         <div className="lg:hidden border-t border-[hsl(var(--border))] bg-[hsl(var(--background))] py-4 max-h-[75vh] overflow-y-auto">
           <nav className="container-wide space-y-1">
             <Link href="/" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls('/')}>
-              <Globe size={16} />Home
+              <Globe size={16} /><span>Home</span>
             </Link>
             <Link href="/about" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls('/about')}>
-              <Layers size={16} />About
+              <Layers size={16} /><span>About</span>
             </Link>
 
-            <div className="pt-2 pb-1">
-              <p className="px-3 text-[10px] font-mono uppercase tracking-wider text-[hsl(var(--muted-foreground))] font-bold">Program</p>
-              <div className="mt-1 space-y-1 pl-2 border-l-2 border-[hsl(var(--border))] ml-3">
-                {programItems.map((item) => (
-                  <Link key={item.id} href={item.path} onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls(item.path)}>
-                    {item.icon}{item.label}
-                  </Link>
-                ))}
+            {/* Program Accordion */}
+            {programItems.length > 0 && (
+              <div className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => setMobileProgramOpen((prev) => !prev)}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer ${
+                    isProgramActive
+                      ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-black shadow-md'
+                      : 'text-[hsl(var(--foreground))] hover:bg-white/10 hover:text-[hsl(var(--primary))]'
+                  }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <Presentation size={16} />
+                    <span>Program</span>
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    className={`transition-transform duration-200 ${mobileProgramOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+
+                {mobileProgramOpen && (
+                  <div className="space-y-1 pl-4 border-l-2 border-[hsl(var(--border))] ml-4 py-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                    {programItems.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={item.path}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={mobileLinkCls(item.path)}
+                      >
+                        {item.icon}
+                        <span>{item.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
+            )}
 
             <Link href="/brochure" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls('/brochure')}>
-              <Download size={16} />Brochure
+              <Download size={16} /><span>Brochure</span>
             </Link>
 
             <Link href="/submit-abstract" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls('/submit-abstract')}>
-              <FileText size={16} />Submit Abstract
+              <FileText size={16} /><span>Submit Abstract</span>
             </Link>
 
             <Link href="/register" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls('/register')}>
-              <FileText size={16} />Register
+              <FileText size={16} /><span>Register</span>
             </Link>
 
             <Link href="/fees" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls('/fees')}>
-              <FileText size={16} />Fees
+              <FileText size={16} /><span>Fees</span>
             </Link>
 
-            <div className="pt-2 pb-1">
-              <p className="px-3 text-[10px] font-mono uppercase tracking-wider text-[hsl(var(--muted-foreground))] font-bold">Info</p>
-              <div className="mt-1 space-y-1 pl-2 border-l-2 border-[hsl(var(--border))] ml-3">
-                {moreItems.map((item) => (
-                  item.isDownload ? (
-                    <a key={item.id} href={item.path} download target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls(item.path)}>
-                      {item.icon}{item.label}
-                    </a>
-                  ) : item.isExternal ? (
-                    <a key={item.id} href={item.path} target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls(item.path)}>
-                      {item.icon}{item.label}
-                    </a>
-                  ) : (
-                    <Link key={item.id} href={item.path} onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls(item.path)}>
-                      {item.icon}{item.label}
-                    </Link>
-                  )
-                ))}
-              </div>
-            </div>
+            {/* Info Accordion */}
+            {moreItems.length > 0 && (
+              <div className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => setMobileInfoOpen((prev) => !prev)}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer ${
+                    isMoreActive
+                      ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-black shadow-md'
+                      : 'text-[hsl(var(--foreground))] hover:bg-white/10 hover:text-[hsl(var(--primary))]'
+                  }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <Info size={16} />
+                    <span>Info</span>
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    className={`transition-transform duration-200 ${mobileInfoOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
 
-            <div className="pt-3 border-t border-[hsl(var(--border))] space-y-2">
-              <Link href="/brochure" onClick={() => setMobileMenuOpen(false)} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm">
-                <Download size={16} />Download Brochure
-              </Link>
-              <Link href="/submit-abstract" onClick={() => setMobileMenuOpen(false)} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-sm">
-                <FileText size={16} />Submit Abstract
-              </Link>
-              <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-black text-sm shadow-md">
-                <FileText size={16} />Register Now
-              </Link>
-            </div>
+                {mobileInfoOpen && (
+                  <div className="space-y-1 pl-4 border-l-2 border-[hsl(var(--border))] ml-4 py-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                    {moreItems.map((item) => (
+                      item.isDownload ? (
+                        <a
+                          key={item.id}
+                          href={item.path}
+                          download
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={mobileLinkCls(item.path)}
+                        >
+                          {item.icon}
+                          <span>{item.label}</span>
+                        </a>
+                      ) : item.isExternal ? (
+                        <a
+                          key={item.id}
+                          href={item.path}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={mobileLinkCls(item.path)}
+                        >
+                          {item.icon}
+                          <span>{item.label}</span>
+                        </a>
+                      ) : (
+                        <Link
+                          key={item.id}
+                          href={item.path}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={mobileLinkCls(item.path)}
+                        >
+                          {item.icon}
+                          <span>{item.label}</span>
+                        </Link>
+                      )
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </nav>
         </div>
       )}

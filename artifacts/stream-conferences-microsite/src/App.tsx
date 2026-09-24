@@ -346,12 +346,12 @@ function EventList({ initial: initialStatus = 'upcoming' }: { initial?: Status }
     <>
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         {/* Left: Tab Switcher */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="inline-flex p-1 bg-[hsl(var(--muted))] rounded-full border border-[hsl(var(--border))] shadow-sm">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="inline-flex max-w-full overflow-x-auto p-1 bg-[hsl(var(--muted))] rounded-full border border-[hsl(var(--border))] shadow-sm">
             {(['upcoming', 'past'] as Status[]).map((tab) => (
               <button
                 type="button"
-                className={`px-5 py-2 rounded-full text-sm font-bold transition-all duration-200 ${
+                className={`px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all duration-200 whitespace-nowrap cursor-pointer ${
                   status === tab
                     ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-md scale-[1.02]'
                     : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
@@ -749,15 +749,15 @@ function SiteHeader() {
       <header className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ${
         location === '/'
           ? scrolled
-            ? 'bg-[hsl(var(--primary))] backdrop-blur-xl border-b border-[hsl(var(--primary-foreground)/.15)] shadow-2xl py-2.5'
-            : 'bg-transparent border-none py-4'
-          : 'bg-[hsl(var(--primary))] backdrop-blur-xl border-b border-[hsl(var(--primary-foreground)/.15)] shadow-xl py-3'
+            ? 'bg-[hsl(var(--primary))] backdrop-blur-xl border-b border-[hsl(var(--primary-foreground)/.15)] shadow-2xl py-2'
+            : 'bg-transparent border-none py-3 sm:py-4'
+          : 'bg-[hsl(var(--primary))] backdrop-blur-xl border-b border-[hsl(var(--primary-foreground)/.15)] shadow-xl py-2.5 sm:py-3'
       }`}>
-        <div className="container-wide flex h-[76px] items-center justify-between gap-4">
+        <div className="container-wide flex h-[64px] sm:h-[76px] items-center justify-between gap-2 sm:gap-4">
           {/* Brand / Logo */}
-          <Link href="/" className="group flex shrink-0 items-center gap-3.5" data-testid="link-home-logo">
-            <img src="/logo.jpg" className="h-12 w-12 rounded-[14px] object-contain bg-white p-1 shadow-lg border border-white/30" alt="STREAM" />
-            <span className="display block text-[24px] sm:text-[26px] font-black tracking-[-.02em] text-white leading-none">
+          <Link href="/" className="group flex shrink-0 items-center gap-2 sm:gap-3.5 min-w-0" data-testid="link-home-logo">
+            <img src="/logo.jpg" className="h-9 w-9 sm:h-12 sm:w-12 rounded-xl sm:rounded-[14px] object-contain bg-white p-0.5 sm:p-1 shadow-lg border border-white/30 shrink-0" alt="STREAM" />
+            <span className="display block text-[17px] sm:text-[22px] md:text-[26px] font-black tracking-[-.02em] text-white leading-none truncate">
               Stream<span className="text-[hsl(var(--accent))]">Conferences</span>
             </span>
           </Link>
@@ -840,7 +840,7 @@ function SiteHeader() {
           </nav>
 
           {/* Right Header Action Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <div className="relative">
               <button
                 type="button"
@@ -848,16 +848,16 @@ function SiteHeader() {
                   event.stopPropagation();
                   setColorPickerOpen((value) => !value);
                 }}
-                className="grid h-10 w-10 place-items-center rounded-full border border-white/40 dark:border-white/20 bg-white/95 dark:bg-[#0f172a]/95 hover:bg-white dark:hover:bg-[#1e293b] text-slate-800 dark:text-white backdrop-blur-xl shadow-xl transition-all"
+                className="grid h-8 w-8 sm:h-10 sm:w-10 place-items-center rounded-full border border-white/40 dark:border-white/20 bg-white/95 dark:bg-[#0f172a]/95 hover:bg-white dark:hover:bg-[#1e293b] text-slate-800 dark:text-white backdrop-blur-xl shadow-md transition-all"
                 aria-label="Choose color theme"
                 aria-expanded={colorPickerOpen}
                 data-testid="button-color-theme"
               >
-                <Palette size={18} />
+                <Palette size={15} className="sm:w-[18px] sm:h-[18px]" />
               </button>
               {colorPickerOpen && (
                 <div
-                  className="absolute right-0 top-12 z-50 w-48 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 shadow-2xl"
+                  className="absolute right-0 top-11 sm:top-12 z-50 w-48 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 shadow-2xl"
                   onClick={(event) => event.stopPropagation()}
                 >
                   <p className="pb-2.5 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] text-center">COLOR THEME</p>
@@ -890,11 +890,11 @@ function SiteHeader() {
             <button
               type="button"
               onClick={toggleTheme}
-              className="grid h-10 w-10 place-items-center rounded-full border border-white/40 dark:border-white/20 bg-white/95 dark:bg-[#0f172a]/95 hover:bg-white dark:hover:bg-[#1e293b] text-slate-800 dark:text-white backdrop-blur-xl shadow-xl transition-all"
+              className="grid h-8 w-8 sm:h-10 sm:w-10 place-items-center rounded-full border border-white/40 dark:border-white/20 bg-white/95 dark:bg-[#0f172a]/95 hover:bg-white dark:hover:bg-[#1e293b] text-slate-800 dark:text-white backdrop-blur-xl shadow-md transition-all"
               aria-label={dark ? 'Use light theme' : 'Use dark theme'}
               data-testid="button-theme-toggle"
             >
-              {dark ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-slate-700" />}
+              {dark ? <Sun size={15} className="sm:w-[18px] sm:h-[18px] text-amber-400" /> : <Moon size={15} className="sm:w-[18px] sm:h-[18px] text-slate-700" />}
             </button>
 
             {/* Primary Action Button (Matching Build Your Vision "Start Project" style) */}
@@ -908,11 +908,11 @@ function SiteHeader() {
             <button
               type="button"
               onClick={() => setMenuOpen((value) => !value)}
-              className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-white/10 text-white lg:hidden"
+              className="grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-full border border-white/20 bg-white/10 text-white lg:hidden"
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
               data-testid="button-mobile-menu"
             >
-              {menuOpen ? <X size={18} /> : <Menu size={18} />}
+              {menuOpen ? <X size={16} /> : <Menu size={16} />}
             </button>
           </div>
         </div>
@@ -1083,6 +1083,7 @@ function Layout({ children }: { children: ReactNode }) {
     );
 
     const applyScrollAnimations = () => {
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
       // 1. Process all grid containers with card elements for side/directional animation
       document.querySelectorAll('.grid').forEach((grid) => {
         const children = Array.from(grid.children);
@@ -1094,7 +1095,9 @@ function Layout({ children }: { children: ReactNode }) {
 
           const isLeft = index % 2 === 0;
           el.classList.add('reveal-on-scroll');
-          if (isLeft) {
+          if (isMobile) {
+            el.classList.add('reveal-from-up');
+          } else if (isLeft) {
             el.classList.add('reveal-from-left');
           } else {
             el.classList.add('reveal-from-right');
@@ -1513,9 +1516,9 @@ function Home() {
   return <Layout>
     <main>
       {/* Curved S-Wave Hero Section (Matching Reference Design) */}
-      <section className="relative w-full min-h-[90vh] lg:min-h-screen overflow-hidden bg-slate-950 text-white flex flex-col justify-center">
-        {/* Right Side Background Image Layer (Auto Rotating Carousel) */}
-        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-slate-900">
+      <section className="relative w-full min-h-[90vh] lg:min-h-screen overflow-hidden bg-gradient-to-b from-[hsl(var(--primary))] via-[hsl(var(--primary))] to-slate-950 lg:bg-slate-950 text-white flex flex-col justify-center">
+        {/* DESKTOP ONLY: Right Side Background Image Layer (Auto Rotating Carousel) */}
+        <div className="hidden lg:block absolute inset-0 w-full h-full z-0 overflow-hidden bg-slate-900">
           {heroImages.map((srcUrl, i) => (
             <div
               key={srcUrl}
@@ -1533,9 +1536,6 @@ function Home() {
               />
             </div>
           ))}
-          {/* Edge blend gradient for small screens */}
-          <div className="absolute inset-0 z-20 bg-gradient-to-r from-slate-950/90 via-slate-950/80 to-transparent lg:hidden" />
-          <div className="absolute inset-0 z-20 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
 
           {/* Slide Indicators */}
           <div className="hidden lg:flex absolute bottom-8 right-8 z-30 items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/20">
@@ -1553,7 +1553,7 @@ function Home() {
           </div>
         </div>
 
-        {/* Dual Curved Wave Dividers Overlay (Matching Reference Image) */}
+        {/* DESKTOP ONLY: Dual Curved Wave Dividers Overlay (Matching Reference Image) */}
         <div className="hidden lg:block absolute inset-0 z-10 pointer-events-none w-full h-full">
           <svg
             viewBox="0 0 1440 900"
@@ -1596,64 +1596,101 @@ function Home() {
           </svg>
         </div>
 
-        {/* Left Side Content Container */}
-        <div className="relative z-20 w-full lg:w-[58%] min-h-[90vh] lg:min-h-screen px-6 sm:px-12 lg:px-16 pt-28 sm:pt-32 lg:pt-36 pb-20 lg:pb-24 flex flex-col justify-between">
-          <div className="my-auto max-w-2xl">
+        {/* Content Container (Mobile: vertical stack with text top, carousel box, stats bottom. Desktop: left 58% column) */}
+        <div className="relative z-20 w-full lg:w-[58%] min-h-[90vh] lg:min-h-screen px-4 sm:px-10 lg:px-16 pt-24 sm:pt-32 lg:pt-36 pb-12 sm:pb-16 lg:pb-24 flex flex-col justify-between">
+          <div className="my-auto max-w-2xl w-full">
             {/* Main Headline */}
-            <h1 className="font-['Space_Grotesk'] text-3xl sm:text-4xl md:text-5xl lg:text-[48px] xl:text-[56px] font-black uppercase leading-[1.1] tracking-tight text-white">
-              <span className="block whitespace-nowrap">CONNECTING MINDS,</span>
-              <span className="block whitespace-nowrap text-[hsl(var(--accent))]">ADVANCING SCIENCE.</span>
+            <h1 className="font-['Space_Grotesk'] text-2xl sm:text-4xl md:text-5xl lg:text-[48px] xl:text-[56px] font-black uppercase leading-[1.1] tracking-tight text-white">
+              <span className="block break-words sm:whitespace-nowrap">CONNECTING MINDS,</span>
+              <span className="block break-words sm:whitespace-nowrap text-[hsl(var(--accent))]">ADVANCING SCIENCE.</span>
             </h1>
 
             {/* Description Paragraph */}
-            <p className="mt-6 text-sm sm:text-base lg:text-lg leading-relaxed text-white/90 font-medium max-w-xl">
+            <p className="mt-4 sm:mt-6 text-sm sm:text-base lg:text-lg leading-relaxed text-white/90 font-medium max-w-xl">
               The International Conferences on Medical, Life & Health Sciences brings the people who discover, test, build, and deliver better futures into one serious global conversation.
             </p>
 
             {/* Action Buttons (Matching reference pill style) */}
-            <div className="mt-9 flex flex-wrap items-center gap-4">
+            <div className="mt-6 sm:mt-9 flex flex-wrap items-center gap-3 sm:gap-4">
               <Link
                 href="/conferences"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-slate-950 hover:bg-black text-white font-extrabold text-xs uppercase tracking-wider shadow-2xl transition-all transform hover:-translate-y-0.5 border border-white/20 cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 px-5 sm:px-8 py-3 sm:py-4 rounded-full bg-slate-950 hover:bg-black text-white font-extrabold text-xs uppercase tracking-wider shadow-2xl transition-all transform hover:-translate-y-0.5 border border-white/20 cursor-pointer text-center"
                 data-testid="link-hero-conferences"
               >
                 <span>EVENTS CALENDAR</span>
-                <ArrowRight size={17} className="text-[hsl(var(--accent))]" />
+                <ArrowRight size={16} className="text-[hsl(var(--accent))]" />
               </Link>
               <Link
-                href="/conferences?status=upcoming"
-                className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-white/15 hover:bg-white/25 text-white font-bold text-xs uppercase tracking-wider backdrop-blur-md transition-all cursor-pointer border border-white/25"
-                data-testid="link-hero-upcoming-conferences"
+                href="/contact"
+                className="inline-flex items-center justify-center gap-2 px-4 sm:px-7 py-3 sm:py-4 rounded-full bg-white/15 hover:bg-white/25 text-white font-bold text-xs uppercase tracking-wider backdrop-blur-md transition-all cursor-pointer border border-white/25 text-center"
+                data-testid="link-hero-contact"
               >
-                <span>LIVE CONFERENCES</span>
-                <ArrowUpRight size={17} />
+                <span>CONTACT US</span>
+                <ArrowUpRight size={16} />
               </Link>
+            </div>
+
+            {/* MOBILE ONLY: Standalone Image Carousel Box Card */}
+            <div className="lg:hidden mt-7 w-full">
+              <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full rounded-2xl overflow-hidden shadow-2xl border border-white/25 bg-slate-900 group">
+                {heroImages.map((srcUrl, i) => (
+                  <div
+                    key={srcUrl}
+                    className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${
+                      i === heroImgIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                    }`}
+                  >
+                    <img
+                      src={srcUrl}
+                      alt={`Conference event ${i + 1}`}
+                      className="w-full h-full object-cover object-center"
+                      onError={() => {
+                        setHeroImgIndex((prev) => (prev + 1) % heroImages.length);
+                      }}
+                    />
+                  </div>
+                ))}
+                {/* Carousel Pagination Dots */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/20">
+                  {heroImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setHeroImgIndex(idx)}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        idx === heroImgIndex ? 'w-5 bg-[hsl(var(--accent))]' : 'w-1.5 bg-white/50 hover:bg-white'
+                      }`}
+                      aria-label={`Slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Bottom Quick Stats Counter Grid */}
-          <div className="mt-8 pt-5 border-t border-white/20 grid grid-cols-3 gap-6 max-w-2xl">
+          <div className="mt-6 sm:mt-8 pt-4 sm:pt-5 border-t border-white/20 grid grid-cols-3 gap-2 sm:gap-6 max-w-2xl">
             <div>
-              <p className="font-['Space_Grotesk'] text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
+              <p className="font-['Space_Grotesk'] text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
                 {conferences.length > 0 ? `${conferences.length}+` : '20+'}
               </p>
-              <p className="font-mono text-xs font-bold uppercase tracking-wider text-white/90 mt-2">
+              <p className="font-mono text-[9.5px] sm:text-xs font-bold uppercase tracking-wider text-white/90 mt-1.5 sm:mt-2">
                 CONFERENCES
               </p>
             </div>
             <div>
-              <p className="font-['Space_Grotesk'] text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
+              <p className="font-['Space_Grotesk'] text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
                 {mentors.length > 0 ? `${mentors.length}+` : '30+'}
               </p>
-              <p className="font-mono text-xs font-bold uppercase tracking-wider text-white/90 mt-2">
+              <p className="font-mono text-[9.5px] sm:text-xs font-bold uppercase tracking-wider text-white/90 mt-1.5 sm:mt-2">
                 GLOBAL MENTORS
               </p>
             </div>
             <div>
-              <p className="font-['Space_Grotesk'] text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
+              <p className="font-['Space_Grotesk'] text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
                 {insightsList.length > 0 ? `${insightsList.length}+` : '15+'}
               </p>
-              <p className="font-mono text-xs font-bold uppercase tracking-wider text-white/90 mt-2">
+              <p className="font-mono text-[9.5px] sm:text-xs font-bold uppercase tracking-wider text-white/90 mt-1.5 sm:mt-2">
                 PUBLICATIONS
               </p>
             </div>
@@ -1697,7 +1734,7 @@ function Home() {
               /* title="Conclaves of global scale." */
               body="Announcing the premier global gatherings for science, engineering, and academia." 
             />
-            <Link href="/conferences" className="btn-main btn-quiet shrink-0" data-testid="link-home-view-conferences">
+            <Link href="/conferences" className="btn-main btn-quiet shrink-0 hidden md:inline-flex" data-testid="link-home-view-conferences">
               All Conferences <ArrowUpRight size={16} />
             </Link>
           </div>
@@ -1764,6 +1801,11 @@ function Home() {
                 </a>
               );
             })}
+          </div>
+          <div className="mt-8 text-center md:hidden">
+            <Link href="/conferences" className="btn-main btn-quiet w-full justify-center inline-flex items-center gap-2" data-testid="link-home-view-conferences-mobile">
+              All Conferences <ArrowUpRight size={16} />
+            </Link>
           </div>
         </div>
       </section>

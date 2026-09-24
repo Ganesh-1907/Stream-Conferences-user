@@ -8,7 +8,7 @@ export interface MicrositeHeroProps {
 
 export function MicrositeHero({ badge, title, tagline }: MicrositeHeroProps) {
   return (
-    <section className="relative overflow-hidden bg-[hsl(var(--primary))] text-white pt-20 pb-10 sm:pt-24 sm:pb-12 md:pt-28 md:pb-12">
+    <section className="relative overflow-hidden bg-[hsl(var(--primary))] text-white pt-16 pb-8 sm:pt-24 sm:pb-12 md:pt-28 md:pb-12">
       {/* Ambient background glow */}
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/10 via-transparent to-black/10 opacity-80" />
 
@@ -20,12 +20,12 @@ export function MicrositeHero({ badge, title, tagline }: MicrositeHeroProps) {
             <span>{badge}</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-['Space_Grotesk'] font-black tracking-tight text-white leading-tight drop-shadow-sm">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-['Space_Grotesk'] font-black tracking-tight text-white leading-tight drop-shadow-sm break-words">
             {title}
           </h1>
 
           {tagline && (
-            <p className="mt-2.5 text-base sm:text-lg text-white/95 leading-relaxed pl-4 border-l-2 border-white/40 max-w-2xl font-medium">
+            <p className="mt-2.5 text-sm sm:text-lg text-white/95 leading-relaxed pl-3.5 sm:pl-4 border-l-2 border-white/40 max-w-2xl font-medium">
               {tagline}
             </p>
           )}

@@ -104,10 +104,36 @@
 
 @layer base {
   * { @apply border-border; }
-  html { scroll-behavior: smooth; }
-  body { @apply font-sans antialiased bg-background text-foreground; margin: 0; }
-  h1, h2, h3, h4, h5, h6, .display, .label, [class*="display"], [class*="label"], .btn-main, button { text-align: left; }
-  p, .prose p, .prose div, .prose li, .card p, .card-lift p, [class*="card"] p, section p, article p { text-align: justify; }
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+    max-width: 100%;
+    width: 100%;
+  }
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    margin: 0;
+    overflow-x: hidden;
+    max-width: 100%;
+    width: 100%;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root, .site-grain {
+    overflow-x: hidden;
+    max-width: 100%;
+    width: 100%;
+  }
+  h1, h2, h3, h4, h5, h6, .display, .label, [class*="display"], [class*="label"], .btn-main, button {
+    text-align: left;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  p, .prose p, .prose div, .prose li, .card p, .card-lift p, [class*="card"] p, section p, article p {
+    text-align: justify;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
   .text-left, h1.text-left, h2.text-left, h3.text-left, p.text-left, div.text-left, span.text-left { text-align: left !important; }
   button, a, input, textarea, select { font: inherit; }
   button, a { -webkit-tap-highlight-color: transparent; }
@@ -374,8 +400,12 @@
   .grid:has(> [data-testid^="gallery-item-"]) { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
 }
 @media (max-width: 767px) {
-  .container-wide { width: min(100% - 32px, 1600px); }
-  .partner-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .container-wide { width: min(100% - 24px, 1600px); }
+  .partner-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .reveal-from-left,
+  .reveal-from-right {
+    transform: translateY(20px);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

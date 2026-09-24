@@ -22,11 +22,12 @@ interface ChatMessage {
   createdAt?: string;
 }
 
-function getVisitorId(): string {
-  let id = localStorage.getItem(VISITOR_KEY);
+function getVisitorId(conferenceId?: string | null): string {
+  const key = conferenceId ? `stream-chat-visitor-${conferenceId}` : 'stream-chat-visitor-main';
+  let id = localStorage.getItem(key);
   if (!id) {
     id = `v_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
-    localStorage.setItem(VISITOR_KEY, id);
+    localStorage.setItem(key, id);
   }
   return id;
 }
@@ -50,6 +51,11 @@ interface LiveChatWidgetProps {
 }
 
 export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
+  const conferenceId = event?._id || null;
+  const eventId = event?.eventId || null;
+  const conferenceTitle = event?.title || '';
+  const scope = conferenceId ? 'conference' : 'main';
+
   const [isOpen, setIsOpen] = useState(false);
   const [visitorDetails, setVisitorDetails] = useState<VisitorDetails | null>(() => getSavedVisitorDetails());
   const [step, setStep] = useState<'form' | 'chat'>(() => (getSavedVisitorDetails() ? 'chat' : 'form'));
@@ -70,7 +76,7 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
   const [typing, setTyping] = useState(false);
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const visitorIdRef = useRef(getVisitorId());
+  const visitorIdRef = useRef(getVisitorId(conferenceId));
 
   const quickPrompts = [
     'How do I submit an abstract?',
@@ -85,12 +91,14 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
   // Initialize session and socket
   useEffect(() => {
     let active = true;
-    const visitorId = visitorIdRef.current;
+    const currentVisitorId = getVisitorId(conferenceId);
+    visitorIdRef.current = currentVisitorId;
     const saved = getSavedVisitorDetails();
 
     const ensureSession = async () => {
       try {
-        const historyRes = await fetch(`${SERVER_ORIGIN}/api/chat/visitor/${encodeURIComponent(visitorId)}/history`);
+        const queryParams = conferenceId ? `?conferenceId=${encodeURIComponent(conferenceId)}&eventId=${encodeURIComponent(eventId || '')}` : '';
+        const historyRes = await fetch(`${SERVER_ORIGIN}/api/chat/visitor/${encodeURIComponent(currentVisitorId)}/history${queryParams}`);
         if (historyRes.ok) {
           const history = await historyRes.json();
           if (!active) return;
@@ -105,7 +113,11 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            visitorId,
+            visitorId: currentVisitorId,
+            conferenceId,
+            eventId,
+            conferenceTitle,
+            scope,
             visitorName: saved?.name || 'Visitor',
             visitorEmail: saved?.email || '',
             visitorPhone: saved?.phone || '',
@@ -133,7 +145,10 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
     socket.on('connect', () => {
       setConnected(true);
       socket.emit('visitor:join', {
-        visitorId,
+        visitorId: currentVisitorId,
+        conferenceId,
+        eventId,
+        conferenceTitle,
         visitorName: saved?.name || 'Visitor',
         visitorEmail: saved?.email || '',
         visitorPhone: saved?.phone || '',
@@ -144,6 +159,14 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
     socket.on('chat:message', (msg: ChatMessage) => {
       setMessages((prev) => {
         if (msg._id && prev.some((m) => m._id === msg._id)) return prev;
+        if (msg.sender === 'visitor') {
+          const tempIdx = prev.findIndex((m) => m._id?.startsWith('temp_') && m.text === msg.text);
+          if (tempIdx !== -1) {
+            const next = [...prev];
+            next[tempIdx] = msg;
+            return next;
+          }
+        }
         return [...prev, msg];
       });
       if (!isOpen) setHasUnread(true);
@@ -157,16 +180,17 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [isOpen]);
+  }, [isOpen, conferenceId, eventId]);
 
   useEffect(() => {
     let active = true;
     if (!isOpen || step !== 'chat') return;
 
     const syncHistory = async () => {
-      const visitorId = visitorIdRef.current;
+      const visitorId = getVisitorId(conferenceId);
       try {
-        const res = await fetch(`${SERVER_ORIGIN}/api/chat/visitor/${encodeURIComponent(visitorId)}/history`);
+        const queryParams = conferenceId ? `?conferenceId=${encodeURIComponent(conferenceId)}&eventId=${encodeURIComponent(eventId || '')}` : '';
+        const res = await fetch(`${SERVER_ORIGIN}/api/chat/visitor/${encodeURIComponent(visitorId)}/history${queryParams}`);
         if (res.ok) {
           const data = await res.json();
           if (active && data.messages) {
@@ -187,7 +211,7 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
       active = false;
       clearInterval(interval);
     };
-  }, [isOpen, step]);
+  }, [isOpen, step, conferenceId, eventId]);
 
   useEffect(() => {
     if (isOpen && step === 'chat') {
@@ -212,7 +236,7 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
     localStorage.setItem(VISITOR_DETAILS_KEY, JSON.stringify(details));
     setVisitorDetails(details);
 
-    const visitorId = visitorIdRef.current;
+    const visitorId = visitorIdRef.current || getVisitorId(conferenceId);
 
     // Send session update REST
     try {
@@ -221,6 +245,10 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           visitorId,
+          conferenceId,
+          eventId,
+          conferenceTitle,
+          scope,
           visitorName: details.name,
           visitorEmail: details.email,
           visitorPhone: details.phone,
@@ -239,6 +267,9 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
     if (socketRef.current) {
       socketRef.current.emit('visitor:updateDetails', {
         visitorId,
+        conferenceId,
+        eventId,
+        conferenceTitle,
         visitorName: details.name,
         visitorEmail: details.email,
         visitorPhone: details.phone,
@@ -254,35 +285,52 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
     if (!text) return;
 
     const saved = visitorDetails || formState;
-    if (socketRef.current) {
-      socketRef.current.emit('visitor:message', {
-        visitorId: visitorIdRef.current,
-        text,
-        visitorName: saved.name || 'Visitor',
-        visitorEmail: saved.email || '',
-        visitorPhone: saved.phone || '',
-        visitorCountry: saved.country || '',
-      });
-    }
+    const optimisticId = `temp_${Date.now()}`;
+    const optimisticMsg: ChatMessage = {
+      _id: optimisticId,
+      sender: 'visitor',
+      senderName: saved.name || 'Visitor',
+      text,
+      createdAt: new Date().toISOString(),
+    };
 
-    try {
-      const confId = event?._id || (window as any).__EVENT_ID__ || 'default';
-      await fetch(`${SERVER_ORIGIN}/api/chat-messages`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conferenceId: confId,
-          senderName: saved.name || 'Visitor',
-          senderEmail: saved.email || '',
-          senderPhone: saved.phone || '',
-          senderCountry: saved.country || '',
-          senderRole: 'attendee',
-          message: text,
-        }),
-      });
-    } catch { /* ignore */ }
-
+    setMessages((prev) => [...prev, optimisticMsg]);
     setInput('');
+
+    const payload = {
+      visitorId: visitorIdRef.current || getVisitorId(conferenceId),
+      conferenceId,
+      eventId,
+      conferenceTitle,
+      scope,
+      text,
+      visitorName: saved.name || 'Visitor',
+      visitorEmail: saved.email || '',
+      visitorPhone: saved.phone || '',
+      visitorCountry: saved.country || '',
+    };
+
+    if (socketRef.current && socketRef.current.connected) {
+      socketRef.current.emit('visitor:message', payload);
+    } else {
+      try {
+        const res = await fetch(`${SERVER_ORIGIN}/api/chat/visitor/message`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.message?._id) {
+            setMessages((prev) =>
+              prev.map((m) => (m._id === optimisticId ? data.message : m))
+            );
+          }
+        }
+      } catch (err) {
+        console.error('Send visitor message error:', err);
+      }
+    }
   };
 
   const handleMessageSubmit = (e: FormEvent) => {
@@ -291,10 +339,10 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end font-sans">
+    <div className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-50 flex flex-col items-end font-sans">
       {/* Floating Chat Box Window */}
       {isOpen && (
-        <div className="mb-4 w-[350px] sm:w-[380px] max-w-[calc(100vw-2.5rem)] h-[540px] max-h-[calc(100vh-7rem)] bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="mb-3 sm:mb-4 w-[340px] sm:w-[380px] max-w-[calc(100vw-1.5rem)] h-[520px] max-h-[calc(100vh-6rem)] bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
           {/* Header */}
           <div className="bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-[hsl(var(--primary-foreground))] p-4 flex items-center justify-between border-b border-[hsl(var(--border)/.2)]">
             <div className="flex items-center gap-3 min-w-0">
@@ -305,10 +353,12 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
                 <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-[hsl(var(--primary))] rounded-full"></span>
               </div>
               <div className="min-w-0">
-                <h3 className="font-bold text-sm leading-tight text-white truncate">Stream Live Support</h3>
-                <p className="text-[11px] text-white/70 flex items-center gap-1 mt-0.5">
-                  <span className={`inline-block w-1.5 h-1.5 rounded-full ${connected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
-                  {connected ? 'Online · Team replies when active' : 'Connecting…'}
+                <h3 className="font-bold text-sm leading-tight text-white truncate">
+                  {event ? (event.title || 'Conference Support') : 'Stream Live Support'}
+                </h3>
+                <p className="text-[11px] text-white/80 flex items-center gap-1 mt-0.5 truncate">
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${connected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
+                  {event?.eventId ? `${event.eventId} · Support` : (connected ? 'Online · Team replies when active' : 'Connecting…')}
                 </p>
               </div>
             </div>
@@ -504,8 +554,8 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
                 />
                 <button
                   type="submit"
-                  disabled={!input.trim() || !connected}
-                  className="w-9 h-9 rounded-xl bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--secondary)/.9)] text-[hsl(var(--secondary-foreground))] flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                  disabled={!input.trim()}
+                  className="w-9 h-9 rounded-xl bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--secondary)/.9)] text-[hsl(var(--secondary-foreground))] flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed shrink-0 cursor-pointer shadow-xs"
                   aria-label="Send message"
                 >
                   <Send size={15} />
