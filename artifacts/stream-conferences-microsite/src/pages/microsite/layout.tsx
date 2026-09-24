@@ -123,6 +123,8 @@ export interface NavItem {
   icon: ReactNode;
   show: boolean;
   isExternal?: boolean;
+  isDownload?: boolean;
+  downloadFilename?: string;
 }
 
 export function buildNavItems(event: EventData): NavItem[] {
@@ -139,6 +141,7 @@ export function buildNavItems(event: EventData): NavItem[] {
     { id: 'venue', label: 'Venue', path: '/venue', icon: <MapPin size={16} />, show: Boolean(event.venueDetails?.name || event.venue || event.location) },
     { id: 'contact', label: 'Contact', path: '/contact', icon: <MessageSquare size={16} />, show: Boolean(event.organizerContact?.email || event.organizerContact?.phone) },
     { id: 'brochure', label: 'Brochure', path: '/brochure', icon: <Download size={16} />, show: Boolean(event.brochureUrl) },
+    { id: 'scientific-program', label: 'Scientific Program', path: mediaUrl(event.scientificProgramUrl || ''), icon: <Download size={16} />, show: Boolean(event.scientificProgramUrl), isDownload: true },
     { id: 'terms', label: 'Terms', path: '/terms', icon: <FileCheck size={16} />, show: true },
     { id: 'organizing-committee', label: 'Committee', path: '/organizing-committee', icon: <Users size={16} />, show: Boolean(event.organizingCommittee?.length) },
   ];
@@ -238,8 +241,16 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
     },
   ];
 
-  // More dropdown items: Sponsors & Exhibitors, Media Partners, Venue, Guidelines, Contact
+  // More dropdown items: Scientific Program, Sponsors & Exhibitors, Media Partners, Venue, Guidelines, Contact
   const moreItems: NavItem[] = [
+    ...(event.scientificProgramUrl ? [{
+      id: 'scientific-program',
+      label: 'Scientific Program',
+      path: mediaUrl(event.scientificProgramUrl),
+      icon: <Download size={18} />,
+      show: true,
+      isDownload: true,
+    }] : []),
     {
       id: 'sponsors',
       label: 'Sponsors & Exhibitors',
@@ -368,7 +379,19 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
               <div className="absolute right-0 top-full pt-1.5 hidden group-hover:block z-50 w-56">
                 <div className="rounded-2xl border border-slate-200/80 dark:border-white/20 bg-white dark:bg-[#0f172a] text-slate-900 dark:text-white shadow-2xl py-1.5 backdrop-blur-xl transition-colors overflow-hidden">
                   {moreItems.map((item) => (
-                    item.isExternal ? (
+                    item.isDownload ? (
+                      <a
+                        key={item.id}
+                        href={item.path}
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-4 py-2.5 text-base font-bold text-slate-700 hover:text-slate-950 hover:bg-slate-100/90 dark:text-white/90 dark:hover:text-white dark:hover:bg-white/15 transition-colors"
+                      >
+                        {item.icon}
+                        <span>{item.label}</span>
+                      </a>
+                    ) : item.isExternal ? (
                       <a
                         key={item.id}
                         href={item.path}
@@ -469,7 +492,11 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
               <p className="px-3 text-[10px] font-mono uppercase tracking-wider text-[hsl(var(--muted-foreground))] font-bold">Info</p>
               <div className="mt-1 space-y-1 pl-2 border-l-2 border-[hsl(var(--border))] ml-3">
                 {moreItems.map((item) => (
-                  item.isExternal ? (
+                  item.isDownload ? (
+                    <a key={item.id} href={item.path} download target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls(item.path)}>
+                      {item.icon}{item.label}
+                    </a>
+                  ) : item.isExternal ? (
                     <a key={item.id} href={item.path} target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls(item.path)}>
                       {item.icon}{item.label}
                     </a>
