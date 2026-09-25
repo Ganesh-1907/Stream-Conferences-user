@@ -69,7 +69,7 @@ interface DetectedSubdomain {
 
 // Build the public microsite URL for an event based on its subdomain/eventId.
 const subdomainUrl = (item: any, path = ''): string => {
-  const sub = item?.subdomain || item?.eventId || item?.slug || (item as any)?._id || item?.id;
+  const sub = item?.subdomain;
   if (!sub) return '';
   const root = ROOT_DOMAIN.toLowerCase();
   const cleanPath = path ? (path.startsWith('/') ? path : `/${path}`) : '';

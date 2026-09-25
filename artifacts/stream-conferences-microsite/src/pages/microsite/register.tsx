@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, type FormEvent } from 'react';
+import { useState, useMemo, useEffect, useRef, type FormEvent } from 'react';
 import { CalendarDays, MapPin, ChevronDown, ArrowUpRight, ArrowRight, Check, Loader2, User, CreditCard } from 'lucide-react';
 import type { EventData } from './layout';
 import { MicrositeHero } from '@/components/microsite-hero';
@@ -89,11 +89,24 @@ export function RegisterPage({ event }: { event: EventData }) {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paying, setPaying] = useState(false);
-  const [pendingOrder, setPendingOrder] = useState<any>(null);
-  const [mockPayment, setMockPayment] = useState<any>(null);
   const [paymentOrderId, setPaymentOrderId] = useState('');
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [sent, setSent] = useState(false);
+
+  // Payment gateway selection
+  const [gateway, setGateway] = useState<'razorpay' | 'stripe'>('razorpay');
+  const [orderPayload, setOrderPayload] = useState<Record<string, any> | null>(null);
+  const [payStage, setPayStage] = useState(false);
+  const [stripeKey, setStripeKey] = useState('');
+  const [stripeClientSecret, setStripeClientSecret] = useState('');
+  const [stripeInstance, setStripeInstance] = useState<any>(null);
+  const [stripeElements, setStripeElements] = useState<any>(null);
+  const [stripePaying, setStripePaying] = useState(false);
+  const [stripeError, setStripeError] = useState('');
+  const [stripePreparing, setStripePreparing] = useState(false);
+  const ordersRef = useRef<Record<string, Promise<any>>>({});
+  const stripeInitRef = useRef(false);
+  const paymentElementRef = useRef<HTMLDivElement | null>(null);
 
   // Sync billing details when sameAsPersonal is enabled
   useEffect(() => {
@@ -188,6 +201,162 @@ export function RegisterPage({ event }: { event: EventData }) {
     }
   };
 
+  const loadStripeJs = () =>
+    new Promise<any>((resolve, reject) => {
+      if ((window as any).Stripe) return resolve((window as any).Stripe);
+      const existing = document.querySelector<HTMLScriptElement>('script[data-stripe-js]');
+      if (existing) {
+        existing.addEventListener('load', () => resolve((window as any).Stripe));
+        existing.addEventListener('error', () => reject(new Error('Failed to load payment gateway')));
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://js.stripe.com/v3/';
+      script.async = true;
+      script.setAttribute('data-stripe-js', 'true');
+      script.onload = () => resolve((window as any).Stripe);
+      script.onerror = () => reject(new Error('Failed to load payment gateway'));
+      document.body.appendChild(script);
+    });
+
+  const createOrderFor = (gw: 'razorpay' | 'stripe') => {
+    if (!ordersRef.current[gw]) {
+      ordersRef.current[gw] = (async () => {
+        const res = await fetch(`${API_BASE}/orders/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...orderPayload, gateway: gw }),
+        });
+        if (!res.ok) throw new Error((await res.json()).error || 'Payment order creation failed');
+        const data = await res.json();
+        setPaymentOrderId(data.order.id);
+        setPaymentAmount(data.order.amount / 100);
+        return data;
+      })();
+    }
+    return ordersRef.current[gw];
+  };
+
+  const resetPaymentState = () => {
+    ordersRef.current = {};
+    stripeInitRef.current = false;
+    setStripeKey('');
+    setStripeClientSecret('');
+    setStripeInstance(null);
+    setStripeElements(null);
+    setStripeError('');
+    setStripePreparing(false);
+    setPaymentOrderId('');
+    setPaymentAmount(0);
+    setGateway('razorpay');
+    setPayStage(false);
+    setOrderPayload(null);
+  };
+
+  // Stripe 3DS redirects reload this page, so restore the payment session and finish verification.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentIntentId = params.get('payment_intent');
+    const redirectStatus = params.get('redirect_status');
+    if (!paymentIntentId || !redirectStatus) return;
+
+    let saved: any = {};
+    try {
+      saved = JSON.parse(sessionStorage.getItem('stripe_return') || '{}');
+    } catch {
+      saved = {};
+    }
+    sessionStorage.removeItem('stripe_return');
+
+    ['payment_intent', 'payment_intent_client_secret', 'redirect_status', 'source_type'].forEach((key) =>
+      params.delete(key),
+    );
+    const query = params.toString();
+    window.history.replaceState(
+      {},
+      '',
+      `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`,
+    );
+
+    if (saved.title) setTitle(saved.title);
+    if (saved.fullName) setFullName(saved.fullName);
+    if (saved.email) setEmail(saved.email);
+    if (saved.orderPayload) setOrderPayload(saved.orderPayload);
+    if (saved.paymentAmount) setPaymentAmount(Number(saved.paymentAmount));
+    if (saved.orderId) setPaymentOrderId(saved.orderId);
+    setGateway('stripe');
+    setPayStage(true);
+
+    if (redirectStatus !== 'succeeded') {
+      setError('Payment was not completed. Please try again.');
+      return;
+    }
+    if (!saved.orderId) {
+      setError('Payment verification failed');
+      return;
+    }
+    stripeInitRef.current = true;
+    void verifyPayment(saved.orderId, paymentIntentId, '');
+  }, []);
+
+  // Prepare the Stripe Payment Element as soon as Stripe is the chosen gateway.
+  useEffect(() => {
+    if (!payStage || gateway !== 'stripe' || stripeClientSecret || stripeInitRef.current) return;
+    stripeInitRef.current = true;
+    let cancelled = false;
+    setStripePreparing(true);
+    (async () => {
+      try {
+        const data = await createOrderFor('stripe');
+        if (cancelled) return;
+        if (data.mock) {
+          await verifyPayment(data.order.id, data.mock.paymentId, data.mock.signature);
+          return;
+        }
+        setStripeKey(data.order.key || '');
+        setStripeClientSecret(data.order.clientSecret || '');
+      } catch (err: any) {
+        if (!cancelled) {
+          stripeInitRef.current = false;
+          setStripeError(err.message || 'Payment order creation failed');
+        }
+      } finally {
+        if (!cancelled) setStripePreparing(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [payStage, gateway, stripeClientSecret]);
+
+  // Initialise the Stripe.js runtime once we have a client secret.
+  useEffect(() => {
+    if (!stripeClientSecret || !stripeKey) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const StripeCtor = await loadStripeJs();
+        if (cancelled) return;
+        const stripe = StripeCtor(stripeKey);
+        const elements = stripe.elements({ clientSecret: stripeClientSecret });
+        if (cancelled) return;
+        setStripeInstance(stripe);
+        setStripeElements(elements);
+      } catch (err: any) {
+        if (!cancelled) setStripeError(err.message || 'Failed to load payment gateway');
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [stripeClientSecret, stripeKey]);
+
+  // Mount / remount the Payment Element whenever the gateway view is shown.
+  useEffect(() => {
+    if (gateway !== 'stripe' || !stripeElements || !paymentElementRef.current) return;
+    const paymentElement = stripeElements.create('payment', { layout: 'tabs' });
+    paymentElement.mount(paymentElementRef.current);
+    return () => {
+      try { paymentElement.unmount(); } catch { /* already unmounted */ }
+    };
+  }, [stripeElements, gateway]);
+
   const openRazorpayCheckout = (order: any) => {
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
@@ -211,17 +380,77 @@ export function RegisterPage({ event }: { event: EventData }) {
     document.body.appendChild(script);
   };
 
-  const handlePayNow = () => {
+  const handlePayNow = async () => {
     setError('');
-    if (mockPayment) {
-      setPaying(true);
-      verifyPayment(paymentOrderId, mockPayment.paymentId, mockPayment.signature);
-      return;
+    setStripeError('');
+    setPaying(true);
+    try {
+      const data = await createOrderFor(gateway);
+      if (data.mock) {
+        await verifyPayment(data.order.id, data.mock.paymentId, data.mock.signature);
+        return;
+      }
+      if (gateway === 'stripe') {
+        setStripeKey(data.order.key || '');
+        setStripeClientSecret(data.order.clientSecret || '');
+        setPaying(false);
+        return;
+      }
+      openRazorpayCheckout(data.order);
+    } catch (err: any) {
+      setError(err.message || 'Payment failed');
+      setPaying(false);
     }
-    if (pendingOrder) {
-      setPaying(true);
-      openRazorpayCheckout(pendingOrder);
+  };
+
+  const handleStripeSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!stripeInstance || !stripeElements) return;
+    setStripeError('');
+    setStripePaying(true);
+    setPaying(true);
+    try {
+      sessionStorage.setItem(
+        'stripe_return',
+        JSON.stringify({
+          orderId: paymentOrderId,
+          orderPayload,
+          paymentAmount,
+          title,
+          fullName,
+          email,
+        }),
+      );
+      const { error, paymentIntent } = await stripeInstance.confirmPayment({
+        elements: stripeElements,
+        confirmParams: { return_url: window.location.href },
+        redirect: 'if_required',
+      });
+      if (error) {
+        setStripeError(error.message || 'Payment failed');
+        setStripePaying(false);
+        setPaying(false);
+        return;
+      }
+      if (paymentIntent && paymentIntent.status === 'succeeded') {
+        await verifyPayment(paymentOrderId, paymentIntent.id, '');
+      } else {
+        setStripeError(paymentIntent ? `Payment not completed (${paymentIntent.status})` : 'Payment could not be confirmed');
+        setStripePaying(false);
+        setPaying(false);
+      }
+    } catch {
+      setStripeError('Payment verification failed');
+      setStripePaying(false);
+      setPaying(false);
     }
+  };
+
+  const selectGateway = (gw: 'razorpay' | 'stripe') => {
+    if (gw === gateway) return;
+    setGateway(gw);
+    setStripeError('');
+    setPaying(false);
   };
 
   const handleStep1 = (e: FormEvent) => {
@@ -284,22 +513,14 @@ export function RegisterPage({ event }: { event: EventData }) {
       if (!regRes.ok) throw new Error((await regRes.json()).error || 'Registration failed');
       const regData = await regRes.json();
 
-      const orderRes = await fetch(`${API_BASE}/orders/create`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title, fullName, name, email, phone, category: categoryLabel, address, amount: selectedPrice || 245, currency, registrationId: regData._id,
-          eventId: event._id, eventType: event.eventType, eventTitle: event.title, eventSlug: event.slug || event.subdomain || event.eventId,
-          cohortId: event.activeCohort?.cohortId || null,
-        }),
+      resetPaymentState();
+      setOrderPayload({
+        title, fullName, name, email, phone, category: categoryLabel, address, amount: selectedPrice || 245, currency, registrationId: regData._id,
+        eventId: event._id, eventType: event.eventType, eventTitle: event.title, eventSlug: event.slug || event.subdomain || event.eventId,
+        cohortId: event.activeCohort?.cohortId || null,
       });
-      if (!orderRes.ok) throw new Error((await orderRes.json()).error || 'Payment order creation failed');
-      const orderData = await orderRes.json();
-
-      setPaymentOrderId(orderData.order.id);
-      setPaymentAmount(orderData.order.amount / 100);
-      if (orderData.mock) { setMockPayment(orderData.mock); setPendingOrder(null); }
-      else { setPendingOrder(orderData.order); setMockPayment(null); }
+      setPaymentAmount(Number(selectedPrice) || 245);
+      setPayStage(true);
     } catch (err: any) {
       setError(err.message || 'Registration failed');
     } finally {
@@ -341,7 +562,7 @@ export function RegisterPage({ event }: { event: EventData }) {
             <button
               onClick={() => {
                 setSent(false); setStep(1); setTitle('Dr.'); setFullName(''); setEmail(''); setPhoneNum('');
-                setInstitution(''); setAddress(''); setCountry(''); setSelectedOptionId(''); setPaymentOrderId('');
+                setInstitution(''); setAddress(''); setCountry(''); setSelectedOptionId(''); resetPaymentState();
                 setSameAsPersonal(false); setBillingFullName(''); setBillingEmail(''); setBillingPhone(''); setBillingAddress(''); setBillingCountry('');
               }}
               className="mt-4 btn-main btn-primary cursor-pointer"
@@ -349,7 +570,7 @@ export function RegisterPage({ event }: { event: EventData }) {
               Register Another Participant
             </button>
           </div>
-        ) : paymentOrderId && !sent ? (
+        ) : payStage && !sent ? (
           <div className="max-w-xl mx-auto card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-6">
             <div>
               <p className="label text-[hsl(var(--primary))] font-bold uppercase tracking-wider text-xs">Payment</p>
@@ -362,24 +583,85 @@ export function RegisterPage({ event }: { event: EventData }) {
               <span className="text-base font-semibold text-[hsl(var(--foreground))]">Amount due</span>
               <span className="text-2xl font-black text-[hsl(var(--primary))]">{sym}{paymentAmount.toFixed(2)}</span>
             </div>
+
+            {/* Gateway selection */}
+            <div className="space-y-2.5">
+              <span className="label text-[hsl(var(--primary))] font-bold uppercase tracking-wider text-xs">Choose payment gateway</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {([
+                  { id: 'razorpay' as const, name: 'Razorpay', desc: 'Cards, UPI, Netbanking' },
+                  { id: 'stripe' as const, name: 'Stripe', desc: 'International cards' },
+                ]).map((gw) => {
+                  const active = gateway === gw.id;
+                  return (
+                    <button
+                      key={gw.id}
+                      type="button"
+                      onClick={() => selectGateway(gw.id)}
+                      aria-pressed={active}
+                      className={`relative flex flex-col items-start gap-0.5 rounded-xl border px-4 py-3.5 text-left transition cursor-pointer ${
+                        active
+                          ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary)/.08)] ring-1 ring-[hsl(var(--primary))]'
+                          : 'border-[hsl(var(--border))] bg-[hsl(var(--muted)/.3)] hover:border-[hsl(var(--primary)/.45)]'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2 text-sm font-bold text-[hsl(var(--foreground))]">
+                        <CreditCard size={15} className={active ? 'text-[hsl(var(--primary))]' : 'text-[hsl(var(--muted-foreground))]'} />
+                        {gw.name}
+                      </span>
+                      <span className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">{gw.desc}</span>
+                      {active && (
+                        <Check size={15} className="absolute top-3 right-3 text-[hsl(var(--primary))]" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {error && <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3.5 text-sm text-red-600 font-semibold">{error}</div>}
-            <button
-              type="button"
-              onClick={handlePayNow}
-              disabled={paying}
-              className="w-full btn-main btn-primary py-3.5 text-base font-bold shadow-lg cursor-pointer"
-            >
-              {paying ? (
-                <span className="flex items-center justify-center gap-2">
-                  <Loader2 className="animate-spin" size={18} /> Processing payment...
-                </span>
-              ) : (
-                <span className="flex items-center justify-center gap-2">
-                  Pay Now · {sym}{paymentAmount.toFixed(2)} <ArrowUpRight size={18} />
-                </span>
-              )}
-            </button>
-            <p className="text-xs text-[hsl(var(--muted-foreground))] text-center">Secure payment gateway. All major cards, UPI, and net banking accepted.</p>
+            {stripeError && !error && <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3.5 text-sm text-red-600 font-semibold">{stripeError}</div>}
+
+            {gateway === 'stripe' && stripeClientSecret ? (
+              <form onSubmit={handleStripeSubmit} className="space-y-4">
+                <div ref={paymentElementRef} id="payment-element" className="min-h-[52px] rounded-xl border border-[hsl(var(--border))] bg-white p-3" />
+                <button
+                  type="submit"
+                  disabled={stripePaying || paying}
+                  className="w-full btn-main btn-primary py-3.5 text-base font-bold shadow-lg cursor-pointer disabled:opacity-60"
+                >
+                  {stripePaying || paying ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="animate-spin" size={18} /> Processing payment...
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      Pay with Stripe · {sym}{paymentAmount.toFixed(2)} <ArrowUpRight size={18} />
+                    </span>
+                  )}
+                </button>
+              </form>
+            ) : (
+              <button
+                type="button"
+                onClick={handlePayNow}
+                disabled={paying || stripePreparing}
+                className="w-full btn-main btn-primary py-3.5 text-base font-bold shadow-lg cursor-pointer disabled:opacity-60"
+              >
+                {paying || stripePreparing ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="animate-spin" size={18} /> {stripePreparing ? 'Preparing secure card form...' : 'Processing payment...'}
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    {gateway === 'stripe' ? 'Continue with Stripe' : 'Pay Now'} · {sym}{paymentAmount.toFixed(2)} <ArrowUpRight size={18} />
+                  </span>
+                )}
+              </button>
+            )}
+            <p className="text-xs text-[hsl(var(--muted-foreground))] text-center">
+              Secure payment via {gateway === 'stripe' ? 'Stripe' : 'Razorpay'}. All major cards accepted.
+            </p>
           </div>
         ) : step === 1 ? (
           /* STEP 1 - Personal Information (Left) & Billing Information (Right) Perfectly Aligned */
