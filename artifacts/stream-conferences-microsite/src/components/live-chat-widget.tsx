@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, type FormEvent } from 'react';
 import { MessageSquare, X, Send, Sparkles, CheckCheck, Minimize2, User, Mail, Phone, Globe, Edit2 } from 'lucide-react';
 import { io, type Socket } from 'socket.io-client';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { COUNTRIES } from '@/lib/countries';
 
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
 const VISITOR_KEY = 'stream-chat-visitor-id';
@@ -452,15 +454,19 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
                     Country *
                   </label>
                   <div className="relative">
-                    <Globe size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))]" />
-                    <input
-                      type="text"
-                      required
-                      value={formState.country}
-                      onChange={(e) => setFormState({ ...formState, country: e.target.value })}
-                      placeholder="United States"
-                      className="w-full pl-9 pr-3 py-2 bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl text-xs text-[hsl(var(--foreground))] focus:outline-none focus:border-[hsl(var(--secondary))] transition"
-                    />
+                    <Globe size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] z-10" />
+                    <Select value={formState.country} onValueChange={(v) => setFormState({ ...formState, country: v })}>
+                      <SelectTrigger className="w-full pl-9 pr-3 py-2 bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl text-xs text-[hsl(var(--foreground))] focus:outline-none focus:border-[hsl(var(--secondary))] transition h-10 cursor-pointer">
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xl text-[hsl(var(--foreground))] z-50 p-1 max-h-64 overflow-auto">
+                        {COUNTRIES.map((c) => (
+                          <SelectItem key={c.code} value={c.name} className="rounded-lg cursor-pointer py-2 px-3 text-xs focus:bg-[hsl(var(--secondary)/.1)] focus:text-[hsl(var(--secondary))]">
+                            {c.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

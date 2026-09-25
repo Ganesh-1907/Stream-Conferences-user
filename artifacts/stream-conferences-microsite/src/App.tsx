@@ -52,6 +52,8 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { LiveChatWidget } from '@/components/live-chat-widget';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { COUNTRIES } from '@/lib/countries';
 import NotFound from '@/pages/not-found';
 import { EventMicrosite } from '@/pages/event-microsite';
 
@@ -2195,7 +2197,7 @@ function GalleryPage() {
 }
 
 function SuccessState({ title, body, reset, testId }: { title: string; body: string; reset?: () => void; testId: string }) {
-  return <div className="flex flex-col justify-center rounded-2xl border border-[hsl(var(--accent)/.4)] bg-[hsl(var(--accent)/.1)] p-8" data-testid={testId}><div className="grid h-12 w-12 place-items-center rounded-full bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))]"><Check size={24} /></div><h3 className="display mt-6 text-3xl font-bold">{title}</h3><p className="mt-3 max-w-md text-sm leading-7 text-[hsl(var(--primary-foreground)/.7)]">{body}</p>{reset && <button type="button" onClick={reset} className="mt-7 self-start text-sm font-bold text-[hsl(var(--accent))]" data-testid="button-reset-form">Submit another response</button>}</div>;
+  return <div className="flex flex-col justify-center rounded-2xl border border-[hsl(var(--accent)/.4)] bg-[hsl(var(--accent)/.1)] p-8" data-testid={testId}><div className="grid h-12 w-12 place-items-center rounded-full bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))]"><Check size={24} /></div><h3 className="display mt-6 text-3xl font-bold">{title}</h3><p className="mt-3 max-w-md text-sm leading-7 opacity-70">{body}</p>{reset && <button type="button" onClick={reset} className="mt-7 self-start text-sm font-bold text-[hsl(var(--accent))]" data-testid="button-reset-form">Submit another response</button>}</div>;
 }
 
 function ThankYouPage() {
@@ -2913,18 +2915,21 @@ function RegisterPage() {
                           onChange={(e) => setInstitution(e.target.value)} 
                         />
                       </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">Country *</label>
-                        <input 
-                          required 
-                          className="form-field w-full" 
-                          placeholder="Country of residence" 
-                          aria-label="Country" 
-                          data-testid="input-register-country" 
-                          value={country} 
-                          onChange={(e) => setCountry(e.target.value)} 
-                        />
-                      </div>
+                       <div className="space-y-1.5">
+                         <label className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">Country *</label>
+                         <Select value={country} onValueChange={setCountry}>
+                           <SelectTrigger className="form-field w-full rounded-xl bg-[hsl(var(--card))] border-[hsl(var(--border))] text-[hsl(var(--foreground))] h-11 px-4 flex items-center justify-between cursor-pointer" aria-label="Country" data-testid="input-register-country">
+                             <SelectValue placeholder="Select country" />
+                           </SelectTrigger>
+                           <SelectContent className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xl text-[hsl(var(--foreground))] z-50 p-1 max-h-64 overflow-auto">
+                             {COUNTRIES.map((c) => (
+                               <SelectItem key={c.code} value={c.name} className="rounded-lg cursor-pointer py-2 px-3 text-sm focus:bg-[hsl(var(--primary)/.1)] focus:text-[hsl(var(--primary))]">
+                                 {c.name}
+                               </SelectItem>
+                             ))}
+                           </SelectContent>
+                         </Select>
+                       </div>
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2">
@@ -3281,7 +3286,18 @@ function RegisterPage() {
                     <input className="form-field" placeholder="Phone number" aria-label="Phone number" data-testid="input-register-phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
                     <input required className="form-field" placeholder="Institution / organization" aria-label="Institution" data-testid="input-register-institution" value={institution} onChange={(e) => setInstitution(e.target.value)} />
                   </div>
-                  <input required className="form-field" placeholder="Country" aria-label="Country" data-testid="input-register-country" value={country} onChange={(e) => setCountry(e.target.value)} />
+                  <Select value={country} onValueChange={setCountry}>
+                    <SelectTrigger className="form-field w-full rounded-xl bg-[hsl(var(--card))] border-[hsl(var(--border))] text-[hsl(var(--foreground))] h-11 px-4 flex items-center justify-between cursor-pointer" aria-label="Country" data-testid="input-register-country">
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xl text-[hsl(var(--foreground))] z-50 p-1 max-h-64 overflow-auto">
+                      {COUNTRIES.map((c) => (
+                        <SelectItem key={c.code} value={c.name} className="rounded-lg cursor-pointer py-2 px-3 text-sm focus:bg-[hsl(var(--primary)/.1)] focus:text-[hsl(var(--primary))]">
+                          {c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <select required className="form-field" value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Registration category" data-testid="select-registration-category">
                     <option value="" disabled>Registration category</option>
                     {prices.map(([category]) => <option key={category} value={category}>{category}</option>)}
@@ -3838,14 +3854,18 @@ function ContactPage() {
                   </div>
                   <div>
                     <label className="block text-xs font-semibold mb-1 text-[hsl(var(--muted-foreground))]">Country</label>
-                    <input
-                      className="form-field w-full"
-                      placeholder="e.g. United States"
-                      aria-label="Country"
-                      data-testid="input-contact-country"
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                    />
+                    <Select value={country} onValueChange={setCountry}>
+                      <SelectTrigger className="form-field w-full rounded-xl bg-[hsl(var(--card))] border-[hsl(var(--border))] text-[hsl(var(--foreground))] h-11 px-4 flex items-center justify-between cursor-pointer" aria-label="Country" data-testid="input-contact-country">
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xl text-[hsl(var(--foreground))] z-50 p-1 max-h-64 overflow-auto">
+                        {COUNTRIES.map((c) => (
+                          <SelectItem key={c.code} value={c.name} className="rounded-lg cursor-pointer py-2 px-3 text-sm focus:bg-[hsl(var(--primary)/.1)] focus:text-[hsl(var(--primary))]">
+                            {c.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div>

@@ -3,6 +3,7 @@ import { CalendarDays, MapPin, ChevronDown, FileText, ArrowRight, Check, Loader2
 import type { EventData } from './layout';
 import { MicrositeHero } from '@/components/microsite-hero';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { COUNTRIES } from '@/lib/countries';
 
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
@@ -242,7 +243,18 @@ export function AbstractPage({ event }: { event: EventData }) {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Country *</label>
-                    <input required className="form-field w-full" placeholder="Country of residence" value={country} onChange={(e) => setCountry(e.target.value)} />
+                    <Select value={country} onValueChange={setCountry}>
+                      <SelectTrigger className="form-field w-full rounded-xl bg-[hsl(var(--card))] border-[hsl(var(--border))] text-[hsl(var(--foreground))] h-11 px-4 flex items-center justify-between cursor-pointer">
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xl text-[hsl(var(--foreground))] z-50 p-1 max-h-64 overflow-auto">
+                        {COUNTRIES.map((c) => (
+                          <SelectItem key={c.code} value={c.name} className="rounded-lg cursor-pointer py-2 px-3 text-sm focus:bg-[hsl(var(--primary)/.1)] focus:text-[hsl(var(--primary))]">
+                            {c.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

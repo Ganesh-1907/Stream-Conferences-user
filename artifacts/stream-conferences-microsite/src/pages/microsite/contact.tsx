@@ -4,6 +4,8 @@ import { Mail, Phone, MapPin, Check, ExternalLink, Building, Send, Loader2 } fro
 import type { EventData } from './layout';
 import { MicrositeHero } from '@/components/microsite-hero';
 import { getNameInitials } from '@/lib/utils';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { COUNTRIES } from '@/lib/countries';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
 
@@ -265,12 +267,18 @@ export function ContactPage({ event }: { event: EventData }) {
                     <label className="text-xs font-semibold text-[hsl(var(--foreground))] flex items-center gap-1">
                       <span>Country</span>
                     </label>
-                    <input
-                      placeholder="Country of residence"
-                      className="form-field mt-1.5 w-full bg-[hsl(var(--background))] border border-[hsl(var(--border))] focus:border-[hsl(var(--primary))] rounded-xl px-3.5 py-2.5 text-sm transition-colors"
-                      value={formData.country}
-                      onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    />
+                    <Select value={formData.country} onValueChange={(v) => setFormData({ ...formData, country: v })}>
+                      <SelectTrigger className="form-field mt-1.5 w-full bg-[hsl(var(--background))] border border-[hsl(var(--border))] focus:border-[hsl(var(--primary))] rounded-xl px-3.5 py-2.5 text-sm h-11 transition-colors cursor-pointer">
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xl text-[hsl(var(--foreground))] z-50 p-1 max-h-64 overflow-auto">
+                        {COUNTRIES.map((c) => (
+                          <SelectItem key={c.code} value={c.name} className="rounded-lg cursor-pointer py-2 px-3 text-sm focus:bg-[hsl(var(--primary)/.1)] focus:text-[hsl(var(--primary))]">
+                            {c.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
