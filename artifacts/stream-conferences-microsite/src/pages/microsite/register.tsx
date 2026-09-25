@@ -9,6 +9,53 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:7867/api';
 
 const TITLE_OPTIONS = ['Dr.', 'Mr.', 'Mrs.', 'Ms.', 'Prof.', 'Assist Prof.', 'Assoc Prof.'];
 
+// ISO 3166-1 alpha-2 country codes (required by Stripe India-exports compliance).
+const COUNTRIES: { name: string; code: string }[] = [
+  { name: 'Afghanistan', code: 'AF' }, { name: 'Albania', code: 'AL' }, { name: 'Algeria', code: 'DZ' },
+  { name: 'Argentina', code: 'AR' }, { name: 'Armenia', code: 'AM' }, { name: 'Australia', code: 'AU' },
+  { name: 'Austria', code: 'AT' }, { name: 'Azerbaijan', code: 'AZ' }, { name: 'Bahrain', code: 'BH' },
+  { name: 'Bangladesh', code: 'BD' }, { name: 'Belarus', code: 'BY' }, { name: 'Belgium', code: 'BE' },
+  { name: 'Bhutan', code: 'BT' }, { name: 'Bolivia', code: 'BO' }, { name: 'Bosnia and Herzegovina', code: 'BA' },
+  { name: 'Brazil', code: 'BR' }, { name: 'Brunei', code: 'BN' }, { name: 'Bulgaria', code: 'BG' },
+  { name: 'Cambodia', code: 'KH' }, { name: 'Cameroon', code: 'CM' }, { name: 'Canada', code: 'CA' },
+  { name: 'Chile', code: 'CL' }, { name: 'China', code: 'CN' }, { name: 'Colombia', code: 'CO' },
+  { name: 'Costa Rica', code: 'CR' }, { name: 'Croatia', code: 'HR' }, { name: 'Cuba', code: 'CU' },
+  { name: 'Cyprus', code: 'CY' }, { name: 'Czechia', code: 'CZ' }, { name: 'Denmark', code: 'DK' },
+  { name: 'Ecuador', code: 'EC' }, { name: 'Egypt', code: 'EG' }, { name: 'Estonia', code: 'EE' },
+  { name: 'Ethiopia', code: 'ET' }, { name: 'Finland', code: 'FI' }, { name: 'France', code: 'FR' },
+  { name: 'Georgia', code: 'GE' }, { name: 'Germany', code: 'DE' }, { name: 'Ghana', code: 'GH' },
+  { name: 'Greece', code: 'GR' }, { name: 'Hong Kong', code: 'HK' }, { name: 'Hungary', code: 'HU' },
+  { name: 'Iceland', code: 'IS' }, { name: 'India', code: 'IN' }, { name: 'Indonesia', code: 'ID' },
+  { name: 'Iran', code: 'IR' }, { name: 'Iraq', code: 'IQ' }, { name: 'Ireland', code: 'IE' },
+  { name: 'Israel', code: 'IL' }, { name: 'Italy', code: 'IT' }, { name: 'Japan', code: 'JP' },
+  { name: 'Jordan', code: 'JO' }, { name: 'Kazakhstan', code: 'KZ' }, { name: 'Kenya', code: 'KE' },
+  { name: 'Kuwait', code: 'KW' }, { name: 'Kyrgyzstan', code: 'KG' }, { name: 'Laos', code: 'LA' },
+  { name: 'Latvia', code: 'LV' }, { name: 'Lebanon', code: 'LB' }, { name: 'Lithuania', code: 'LT' },
+  { name: 'Luxembourg', code: 'LU' }, { name: 'Malaysia', code: 'MY' }, { name: 'Maldives', code: 'MV' },
+  { name: 'Malta', code: 'MT' }, { name: 'Mauritius', code: 'MU' }, { name: 'Mexico', code: 'MX' },
+  { name: 'Moldova', code: 'MD' }, { name: 'Mongolia', code: 'MN' }, { name: 'Morocco', code: 'MA' },
+  { name: 'Myanmar', code: 'MM' }, { name: 'Nepal', code: 'NP' }, { name: 'Netherlands', code: 'NL' },
+  { name: 'New Zealand', code: 'NZ' }, { name: 'Nigeria', code: 'NG' }, { name: 'North Macedonia', code: 'MK' },
+  { name: 'Norway', code: 'NO' }, { name: 'Oman', code: 'OM' }, { name: 'Pakistan', code: 'PK' },
+  { name: 'Palestine', code: 'PS' }, { name: 'Panama', code: 'PA' }, { name: 'Paraguay', code: 'PY' },
+  { name: 'Peru', code: 'PE' }, { name: 'Philippines', code: 'PH' }, { name: 'Poland', code: 'PL' },
+  { name: 'Portugal', code: 'PT' }, { name: 'Qatar', code: 'QA' }, { name: 'Romania', code: 'RO' },
+  { name: 'Russia', code: 'RU' }, { name: 'Rwanda', code: 'RW' }, { name: 'Saudi Arabia', code: 'SA' },
+  { name: 'Serbia', code: 'RS' }, { name: 'Singapore', code: 'SG' }, { name: 'Slovakia', code: 'SK' },
+  { name: 'Slovenia', code: 'SI' }, { name: 'South Africa', code: 'ZA' }, { name: 'South Korea', code: 'KR' },
+  { name: 'Spain', code: 'ES' }, { name: 'Sri Lanka', code: 'LK' }, { name: 'Sudan', code: 'SD' },
+  { name: 'Sweden', code: 'SE' }, { name: 'Switzerland', code: 'CH' }, { name: 'Syria', code: 'SY' },
+  { name: 'Taiwan', code: 'TW' }, { name: 'Tajikistan', code: 'TJ' }, { name: 'Tanzania', code: 'TZ' },
+  { name: 'Thailand', code: 'TH' }, { name: 'Tunisia', code: 'TN' }, { name: 'Turkey', code: 'TR' },
+  { name: 'Turkmenistan', code: 'TM' }, { name: 'Uganda', code: 'UG' }, { name: 'Ukraine', code: 'UA' },
+  { name: 'United Arab Emirates', code: 'AE' }, { name: 'United Kingdom', code: 'GB' }, { name: 'United States', code: 'US' },
+  { name: 'Uruguay', code: 'UY' }, { name: 'Uzbekistan', code: 'UZ' }, { name: 'Venezuela', code: 'VE' },
+  { name: 'Vietnam', code: 'VN' }, { name: 'Yemen', code: 'YE' }, { name: 'Zambia', code: 'ZM' },
+  { name: 'Zimbabwe', code: 'ZW' },
+];
+
+const countryName = (code: string) => COUNTRIES.find((c) => c.code === code)?.name || code;
+
 export interface SelectableFeeOption {
   id: string;
   tierId: string;
@@ -490,32 +537,32 @@ export function RegisterPage({ event }: { event: EventData }) {
       const categoryLabel = `${selectedOption.categoryName} - ${selectedOption.itemName} (${selectedOption.tierTitle})`;
       const selectedPrice = selectedOption.prices[currency] || 0;
 
-      const billingPayload = {
-        title: sameAsPersonal ? title : billingTitle,
-        fullName: sameAsPersonal ? fullName : billingFullName,
-        email: sameAsPersonal ? email : billingEmail,
-        phone: sameAsPersonal ? phoneNum : billingPhone,
-        institution: sameAsPersonal ? institution : billingInstitution,
-        country: sameAsPersonal ? country : billingCountry,
-        address: sameAsPersonal ? address : billingAddress,
-      };
+       const billingPayload = {
+         title: sameAsPersonal ? title : billingTitle,
+         fullName: sameAsPersonal ? fullName : billingFullName,
+         email: sameAsPersonal ? email : billingEmail,
+         phone: sameAsPersonal ? phoneNum : billingPhone,
+         institution: sameAsPersonal ? institution : billingInstitution,
+         country: countryName(sameAsPersonal ? country : billingCountry),
+         address: sameAsPersonal ? address : billingAddress,
+       };
 
-      const regRes = await fetch(`${API_BASE}/registrations/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title, fullName, name, email, phone, institution, address, country, category: categoryLabel,
-          billingInfo: billingPayload,
-          eventId: event._id, eventType: event.eventType, eventSlug: event.slug || event.subdomain || event.eventId,
-          cohortId: event.activeCohort?.cohortId || null,
-        }),
-      });
+       const regRes = await fetch(`${API_BASE}/registrations/register`, {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({
+           title, fullName, name, email, phone, institution, address, country: countryName(country), category: categoryLabel,
+           billingInfo: billingPayload,
+           eventId: event._id, eventType: event.eventType, eventSlug: event.slug || event.subdomain || event.eventId,
+           cohortId: event.activeCohort?.cohortId || null,
+         }),
+       });
       if (!regRes.ok) throw new Error((await regRes.json()).error || 'Registration failed');
       const regData = await regRes.json();
 
       resetPaymentState();
       setOrderPayload({
-        title, fullName, name, email, phone, category: categoryLabel, address, amount: selectedPrice || 245, currency, registrationId: regData._id,
+        title, fullName, name, email, phone, category: categoryLabel, address, country: sameAsPersonal ? country : billingCountry, amount: selectedPrice || 245, currency, registrationId: regData._id,
         eventId: event._id, eventType: event.eventType, eventTitle: event.title, eventSlug: event.slug || event.subdomain || event.eventId,
         cohortId: event.activeCohort?.cohortId || null,
       });
@@ -718,7 +765,18 @@ export function RegisterPage({ event }: { event: EventData }) {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Country *</label>
-                        <input required className="form-field w-full" placeholder="Country of residence" value={country} onChange={(e) => setCountry(e.target.value)} />
+                        <Select value={country} onValueChange={(val) => setCountry(val)}>
+                          <SelectTrigger className="form-field w-full rounded-xl bg-[hsl(var(--card))] border-[hsl(var(--border))] text-[hsl(var(--foreground))] h-11 px-4 flex items-center justify-between cursor-pointer">
+                            <SelectValue placeholder="Select country" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xl text-[hsl(var(--foreground))] z-50 p-1 max-h-64 overflow-auto">
+                            {COUNTRIES.map((c) => (
+                              <SelectItem key={c.code} value={c.code} className="rounded-lg cursor-pointer py-2 px-3 text-sm focus:bg-[hsl(var(--primary)/.1)] focus:text-[hsl(var(--primary))]">
+                                {c.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
 
@@ -825,14 +883,22 @@ export function RegisterPage({ event }: { event: EventData }) {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Country *</label>
-                        <input
-                          required
-                          className="form-field w-full disabled:opacity-70 disabled:cursor-not-allowed"
-                          placeholder="Billing Country"
+                        <Select
                           value={sameAsPersonal ? country : billingCountry}
-                          onChange={(e) => setBillingCountry(e.target.value)}
+                          onValueChange={(val) => setBillingCountry(val)}
                           disabled={sameAsPersonal}
-                        />
+                        >
+                          <SelectTrigger className="form-field w-full rounded-xl bg-[hsl(var(--card))] border-[hsl(var(--border))] text-[hsl(var(--foreground))] h-11 px-4 flex items-center justify-between cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
+                            <SelectValue placeholder="Select country" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xl text-[hsl(var(--foreground))] z-50 p-1 max-h-64 overflow-auto">
+                            {COUNTRIES.map((c) => (
+                              <SelectItem key={c.code} value={c.code} className="rounded-lg cursor-pointer py-2 px-3 text-sm focus:bg-[hsl(var(--primary)/.1)] focus:text-[hsl(var(--primary))]">
+                                {c.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
 
