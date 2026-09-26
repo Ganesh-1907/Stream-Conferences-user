@@ -10,7 +10,7 @@ export function VenuePage({ event }: { event: EventData }) {
 
   const venueName = venue.name || event.venue || '';
   const venueAddress = venue.address || event.venueAddress || '';
-  const mapUrl = venue.mapUrl || venue.locationUrl || venue.venueMapUrl || event.venueMapUrl || (event as any).locationUrl || '';
+  const mapUrl = venue.mapUrl || (venue as any).locationUrl || (venue as any).venueMapUrl || event.venueMapUrl || (event as any).locationUrl || '';
   
   // Format city, state, country only if explicitly defined on the venue
   const locationParts = [venue.city, venue.state, venue.country].filter(Boolean);
@@ -22,9 +22,13 @@ export function VenuePage({ event }: { event: EventData }) {
     ? venue.subImages.filter(Boolean)
     : (venue.images && venue.images.length > 1 ? venue.images.slice(1).filter(Boolean) : []);
 
+  const cityHighlights = (venue.cityHighlights && venue.cityHighlights.length > 0)
+    ? venue.cityHighlights.filter(Boolean)
+    : [];
+
   const hasContent = Boolean(
     venueName || venueAddress || cityStateCountry || mapUrl || 
-    venue.description || venue.directions || mainImage || subImages.length > 0
+    venue.description || venue.directions || mainImage || subImages.length > 0 || cityHighlights.length > 0
   );
 
   return (
@@ -121,108 +125,111 @@ export function VenuePage({ event }: { event: EventData }) {
               )}
             </section>
 
-            {/* 2. Main Image Showcase & Venue Description (Side by Side) */}
-            <section className="grid gap-8 lg:grid-cols-2 items-start">
-              {/* Left Column: Featured Main Image */}
-              <div className="space-y-4">
-                <div className="relative overflow-hidden group">
-                  {mainImage ? (
-                    <img
-                      src={mediaUrl(mainImage)}
-                      alt={venueName || 'Venue'}
-                      className="w-full h-80 sm:h-[400px] object-contain group-hover:scale-105 transition-transform duration-500 rounded-2xl"
-                    />
-                  ) : mapUrl ? (
-                    <div className="w-full h-80 sm:h-[400px] bg-gradient-to-br from-[hsl(var(--secondary)/.12)] to-[hsl(var(--primary)/.12)] border border-[hsl(var(--border))] flex flex-col items-center justify-center p-6 text-center rounded-2xl space-y-3">
-                      <div className="w-16 h-16 rounded-2xl bg-[hsl(var(--secondary)/.15)] text-[hsl(var(--secondary))] flex items-center justify-center shadow-xs">
-                        <MapPin size={32} />
-                      </div>
-                      <p className="font-bold text-xl text-[hsl(var(--foreground))]">{venueName || 'Conference Venue'}</p>
-                      {venueAddress && <p className="text-sm text-[hsl(var(--muted-foreground))] max-w-md">{venueAddress}</p>}
-                      <a
-                        href={mapUrl.startsWith('http') ? mapUrl : `https://${mapUrl}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] font-bold text-xs shadow-sm hover:opacity-90 transition"
-                      >
-                        <Compass size={15} />
-                        Open Google Maps
-                        <ExternalLink size={12} />
-                      </a>
-                    </div>
-                  ) : (
-                    <div className="w-full h-80 sm:h-[400px] bg-gradient-to-br from-[hsl(var(--secondary)/.1)] to-[hsl(var(--primary)/.1)] flex flex-col items-center justify-center p-6 text-center rounded-2xl">
-                      <Building size={64} className="text-[hsl(var(--secondary))] mb-3 opacity-80" />
-                      <p className="font-bold text-xl text-[hsl(var(--foreground))]">{venueName || 'Conference Venue'}</p>
-                      {venueAddress && <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">{venueAddress}</p>}
-                    </div>
-                  )}
-
-                  {mainImage && (
-                    <div className="absolute top-4 left-4 bg-[hsl(var(--background)/.9)] backdrop-blur px-3 py-1 rounded-lg text-xs font-bold text-[hsl(var(--foreground))] border border-[hsl(var(--border))] shadow-sm">
-                      Main Venue Showcase
-                    </div>
-                  )}
-                </div>
+            {/* 2. Main Image Showcase & Venue Description with Fluid Text Flow */}
+            <section className="space-y-6">
+              <div>
+                <h3 className="display text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))] pb-4 border-b border-[hsl(var(--border))]">
+                  About the Venue
+                </h3>
               </div>
 
-              {/* Right Column: Venue Description & Additional Notes */}
-              <div className="space-y-6">
-                <div>
-                  <h3 className="display text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))] pb-4 border-b border-[hsl(var(--border))]">
-                    About the Venue
-                  </h3>
-                  {venue.description ? (
-                    <div
-                      className="mt-4 prose max-w-none text-[hsl(var(--foreground))] leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: venue.description }}
-                    />
-                  ) : (
-                    <p className="mt-4 text-base text-[hsl(var(--foreground))] leading-relaxed">
-                      Detailed information about the venue, presentation rooms, and delegate services.
-                    </p>
-                  )}
-                </div>
-
-                {/* Additional Info Cards (Directions, Parking, Airport) */}
-                {(venue.directions || venue.parking || (venue as any).nearestAirport) && (
-                  <div className="space-y-4 pt-4 border-t border-[hsl(var(--border))]">
-                    {venue.directions && (
-                      <div className="rounded-xl bg-[hsl(var(--muted)/.5)] p-4 border border-[hsl(var(--border))]">
-                        <h4 className="font-bold text-base flex items-center gap-2 text-[hsl(var(--foreground))]">
-                          <Map size={18} className="text-[hsl(var(--secondary))]" />
-                          How to Reach
-                        </h4>
-                        <p className="mt-2 text-sm sm:text-base text-[hsl(var(--foreground))] leading-relaxed">
-                          {venue.directions}
-                        </p>
+              <div className="w-full">
+                {/* Left Column: Featured Main Image (Floated on Desktop) */}
+                <div className="w-full lg:w-[45%] xl:w-[42%] lg:max-w-[500px] lg:float-left lg:mr-8 lg:mb-6 mb-8">
+                  <div className="relative overflow-hidden group rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 shadow-sm">
+                    {mainImage ? (
+                      <img
+                        src={mediaUrl(mainImage)}
+                        alt={venueName || 'Venue'}
+                        className="w-full h-72 sm:h-80 md:h-[360px] object-contain group-hover:scale-105 transition-transform duration-500 rounded-xl"
+                      />
+                    ) : mapUrl ? (
+                      <div className="w-full h-72 sm:h-80 md:h-[360px] bg-gradient-to-br from-[hsl(var(--secondary)/.12)] to-[hsl(var(--primary)/.12)] border border-[hsl(var(--border))] flex flex-col items-center justify-center p-6 text-center rounded-xl space-y-3">
+                        <div className="w-16 h-16 rounded-2xl bg-[hsl(var(--secondary)/.15)] text-[hsl(var(--secondary))] flex items-center justify-center shadow-xs">
+                          <MapPin size={32} />
+                        </div>
+                        <p className="font-bold text-xl text-[hsl(var(--foreground))]">{venueName || 'Conference Venue'}</p>
+                        {venueAddress && <p className="text-sm text-[hsl(var(--muted-foreground))] max-w-md">{venueAddress}</p>}
+                        <a
+                          href={mapUrl.startsWith('http') ? mapUrl : `https://${mapUrl}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] font-bold text-xs shadow-sm hover:opacity-90 transition"
+                        >
+                          <Compass size={15} />
+                          Open Google Maps
+                          <ExternalLink size={12} />
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="w-full h-72 sm:h-80 md:h-[360px] bg-gradient-to-br from-[hsl(var(--secondary)/.1)] to-[hsl(var(--primary)/.1)] flex flex-col items-center justify-center p-6 text-center rounded-xl">
+                        <Building size={64} className="text-[hsl(var(--secondary))] mb-3 opacity-80" />
+                        <p className="font-bold text-xl text-[hsl(var(--foreground))]">{venueName || 'Conference Venue'}</p>
+                        {venueAddress && <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">{venueAddress}</p>}
                       </div>
                     )}
 
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {venue.parking && (
-                        <div className="rounded-xl bg-[hsl(var(--muted)/.5)] p-4 border border-[hsl(var(--border))]">
-                          <h4 className="font-bold text-sm flex items-center gap-2 text-[hsl(var(--foreground))]">
-                            <Car size={16} className="text-[hsl(var(--secondary))]" />
-                            Parking
-                          </h4>
-                          <p className="mt-1 text-sm text-[hsl(var(--foreground))]">{venue.parking}</p>
-                        </div>
-                      )}
-
-                      {(venue as any).nearestAirport && (
-                        <div className="rounded-xl bg-[hsl(var(--muted)/.5)] p-4 border border-[hsl(var(--border))]">
-                          <h4 className="font-bold text-sm flex items-center gap-2 text-[hsl(var(--foreground))]">
-                            <Plane size={16} className="text-[hsl(var(--secondary))]" />
-                            Nearest Airport
-                          </h4>
-                          <p className="mt-1 text-sm text-[hsl(var(--foreground))]">{(venue as any).nearestAirport}</p>
-                        </div>
-                      )}
-                    </div>
+                    {mainImage && (
+                      <div className="absolute top-4 left-4 bg-[hsl(var(--background)/.9)] backdrop-blur px-3 py-1 rounded-lg text-xs font-bold text-[hsl(var(--foreground))] border border-[hsl(var(--border))] shadow-sm">
+                        Main Venue Showcase
+                      </div>
+                    )}
                   </div>
+                </div>
+
+                {/* Venue Description (Flows alongside and expands to 100% width under the image) */}
+                {venue.description ? (
+                  <div
+                    className="prose prose-lg dark:prose-invert max-w-none text-[hsl(var(--foreground))] leading-relaxed text-base sm:text-lg text-justify prose-strong:font-bold prose-strong:text-[hsl(var(--foreground))]"
+                    dangerouslySetInnerHTML={{ __html: venue.description }}
+                  />
+                ) : (
+                  <p className="text-base sm:text-lg text-[hsl(var(--foreground))] leading-relaxed">
+                    Detailed information about the venue, presentation rooms, and delegate services.
+                  </p>
                 )}
+
+                <div className="clear-both" />
               </div>
+
+              {/* Additional Info Cards (Directions, Parking, Airport) */}
+              {(venue.directions || venue.parking || (venue as any).nearestAirport) && (
+                <div className="space-y-4 pt-6 border-t border-[hsl(var(--border))]">
+                  {venue.directions && (
+                    <div className="rounded-xl bg-[hsl(var(--muted)/.5)] p-5 border border-[hsl(var(--border))]">
+                      <h4 className="font-bold text-base flex items-center gap-2 text-[hsl(var(--foreground))]">
+                        <Map size={18} className="text-[hsl(var(--secondary))]" />
+                        How to Reach
+                      </h4>
+                      <p className="mt-2 text-sm sm:text-base text-[hsl(var(--foreground))] leading-relaxed">
+                        {venue.directions}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {venue.parking && (
+                      <div className="rounded-xl bg-[hsl(var(--muted)/.5)] p-4 border border-[hsl(var(--border))]">
+                        <h4 className="font-bold text-sm flex items-center gap-2 text-[hsl(var(--foreground))]">
+                          <Car size={16} className="text-[hsl(var(--secondary))]" />
+                          Parking
+                        </h4>
+                        <p className="mt-1 text-sm text-[hsl(var(--foreground))]">{venue.parking}</p>
+                      </div>
+                    )}
+
+                    {(venue as any).nearestAirport && (
+                      <div className="rounded-xl bg-[hsl(var(--muted)/.5)] p-4 border border-[hsl(var(--border))]">
+                        <h4 className="font-bold text-sm flex items-center gap-2 text-[hsl(var(--foreground))]">
+                          <Plane size={16} className="text-[hsl(var(--secondary))]" />
+                          Nearest Airport
+                        </h4>
+                        <p className="mt-1 text-sm text-[hsl(var(--foreground))]">{(venue as any).nearestAirport}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </section>
 
             {/* 3. Three Sub Images Gallery (Sub images at last) */}
@@ -248,6 +255,37 @@ export function VenuePage({ event }: { event: EventData }) {
                           src={mediaUrl(imgUrl)}
                           alt={`Venue Photo ${idx + 1}`}
                           className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* 4. Three City Highlights Gallery */}
+            {cityHighlights.length > 0 && (
+              <section className="space-y-6 pt-6 border-t border-[hsl(var(--border))]">
+                <div>
+                  <h3 className="text-2xl font-bold text-[hsl(var(--foreground))] font-['Space_Grotesk']">
+                    City Highlights
+                  </h3>
+                  <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+                    Photo showcase of popular attractions, cultural destinations, and city landmarks.
+                  </p>
+                </div>
+
+                <div className="grid gap-6 sm:grid-cols-3">
+                  {cityHighlights.map((imgUrl, idx) => (
+                    <div
+                      key={idx}
+                      className="card-lift group rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm p-4"
+                    >
+                      <div className="aspect-[4/3] h-56 sm:h-64 w-full overflow-hidden flex items-center justify-center bg-[hsl(var(--card))]">
+                        <img
+                          src={mediaUrl(imgUrl)}
+                          alt={`City Highlight ${idx + 1}`}
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 rounded-xl"
                         />
                       </div>
                     </div>

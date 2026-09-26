@@ -751,17 +751,20 @@ function SiteHeader() {
       <header className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ${
         location === '/'
           ? scrolled
-            ? 'bg-[hsl(var(--primary))] backdrop-blur-xl border-b border-[hsl(var(--primary-foreground)/.15)] shadow-2xl py-2'
-            : 'bg-transparent border-none py-3 sm:py-4'
-          : 'bg-[hsl(var(--primary))] backdrop-blur-xl border-b border-[hsl(var(--primary-foreground)/.15)] shadow-xl py-2.5 sm:py-3'
+            ? 'bg-[hsl(var(--primary))] backdrop-blur-xl border-none shadow-2xl py-1.5'
+            : 'bg-transparent border-none py-2 sm:py-2.5'
+          : scrolled
+            ? 'bg-[hsl(var(--primary))] backdrop-blur-xl border-none shadow-xl py-1.5 sm:py-2'
+            : 'bg-[hsl(var(--primary))] border-none py-2 sm:py-2.5'
       }`}>
-        <div className="container-wide flex h-[64px] sm:h-[76px] items-center justify-between gap-2 sm:gap-4">
+        <div className="container-wide flex h-[58px] sm:h-[66px] items-center justify-between gap-2 sm:gap-4">
           {/* Brand / Logo */}
-          <Link href="/" className="group flex shrink-0 items-center gap-2 sm:gap-3.5 min-w-0" data-testid="link-home-logo">
-            <img src="/logo.jpg" className="h-9 w-9 sm:h-12 sm:w-12 rounded-xl sm:rounded-[14px] object-contain bg-white p-0.5 sm:p-1 shadow-lg border border-white/30 shrink-0" alt="STREAM" />
-            <span className="display block text-[17px] sm:text-[22px] md:text-[26px] font-black tracking-[-.02em] text-white leading-none truncate">
-              Stream<span className="text-[hsl(var(--accent))]">Conferences</span>
-            </span>
+          <Link href="/" className="group flex shrink-0 items-center min-w-fit" data-testid="link-home-logo">
+            <img
+              src="/logo.png"
+              className="h-12 sm:h-14 md:h-[58px] w-auto max-w-none shrink-0 object-contain transition-transform duration-200 group-hover:scale-105"
+              alt="Stream Conferences"
+            />
           </Link>
 
           {/* Center Navigation Options: White floating pill navigation menu bar on all pages */}
@@ -901,10 +904,11 @@ function SiteHeader() {
 
             {/* Primary Action Button (Matching Build Your Vision "Start Project" style) */}
             <Link
-              href="/conferences"
+              href="/contact"
               className="hidden sm:inline-flex items-center justify-center px-5 py-2 rounded-full bg-[hsl(var(--primary))] hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider shadow-lg transition-transform hover:-translate-y-0.5 cursor-pointer whitespace-nowrap"
+              data-testid="link-nav-contact-button"
             >
-              Explore Events
+              Contact Us
             </Link>
 
             <button
@@ -945,12 +949,15 @@ function SiteHeader() {
 function Footer() {
   return (
     <footer className="border-t border-[hsl(var(--border))] bg-[hsl(var(--primary))] text-white">
-      <div className="container-wide grid gap-10 py-16 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="container-wide grid gap-8 py-12 sm:py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
         {/* Brand & Social Icons */}
         <div>
           <div className="flex items-center gap-3">
-            <img src="/logo.jpg" className="h-10 w-10 rounded-[11px] object-contain bg-white p-1" alt="STREAM" />
-            <span className="display text-xl font-black text-white">Stream Conferences</span>
+            <img
+              src="/logo.png"
+              className="h-10 sm:h-12 w-auto object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] filter brightness-110 contrast-110"
+              alt="Stream Conferences"
+            />
           </div>
           <p className="mt-3 max-w-xs text-sm font-bold leading-6 text-white">
             Connecting minds, advancing science.
@@ -1222,7 +1229,7 @@ function SectionTitle({ eyebrow, title, body, light = false, eyebrowClassName, t
 function PageHero({ eyebrow, title, body, variant = 'wave' }: { eyebrow: string; title: string; body: string; bgImage?: string; variant?: 'standard' | 'wave' }) {
   if (variant === 'wave') {
     return (
-      <section className="relative overflow-hidden bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] pt-36 pb-20 sm:pt-40 sm:pb-24 md:pt-44 md:pb-28 shadow-none">
+      <section className="relative overflow-hidden bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] pt-20 pb-14 sm:pt-24 sm:pb-18 md:pt-28 md:pb-24 shadow-none">
         {/* Crystal-clear ambient background glow - zero overlapping line disturbance */}
         <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-[hsl(var(--accent)/0.15)] via-transparent to-[hsl(var(--secondary)/0.18)] opacity-90" />
 
@@ -1262,7 +1269,7 @@ function PageHero({ eyebrow, title, body, variant = 'wave' }: { eyebrow: string;
 
   return (
     <section className="page-intro bg-grid">
-      <div className="container-wide pt-28 pb-12 sm:pt-32 md:pt-36 md:pb-16 lg:pt-40 lg:pb-20 reveal">
+      <div className="container-wide pt-20 pb-10 sm:pt-24 sm:pb-12 md:pt-28 md:pb-16 reveal">
         <div>
           <div className="label text-[hsl(var(--accent))]">{eyebrow}</div>
           <h1 className="page-title mt-5">{title}</h1>
@@ -1518,7 +1525,7 @@ function Home() {
   return <Layout>
     <main>
       {/* Curved S-Wave Hero Section (Matching Reference Design) */}
-      <section className="relative w-full min-h-[90vh] lg:min-h-screen overflow-hidden bg-gradient-to-b from-[hsl(var(--primary))] via-[hsl(var(--primary))] to-slate-950 lg:bg-slate-950 text-white flex flex-col justify-center">
+      <section className="relative w-full lg:min-h-screen overflow-hidden bg-gradient-to-b from-[hsl(var(--primary))] via-[hsl(var(--primary))] to-slate-950 lg:bg-slate-950 text-white flex flex-col justify-center">
         {/* DESKTOP ONLY: Right Side Background Image Layer (Auto Rotating Carousel) */}
         <div className="hidden lg:block absolute inset-0 w-full h-full z-0 overflow-hidden bg-slate-900">
           {heroImages.map((srcUrl, i) => (
@@ -1598,8 +1605,8 @@ function Home() {
           </svg>
         </div>
 
-        {/* Content Container (Mobile: vertical stack with text top, carousel box, stats bottom. Desktop: left 58% column) */}
-        <div className="relative z-20 w-full lg:w-[58%] min-h-[90vh] lg:min-h-screen px-4 sm:px-10 lg:px-16 pt-24 sm:pt-32 lg:pt-36 pb-12 sm:pb-16 lg:pb-24 flex flex-col justify-between">
+        {/* Content Container (Mobile: compact vertical stack with text, buttons, stats, then carousel. Desktop: left 58% column) */}
+        <div className="relative z-20 w-full lg:w-[58%] lg:min-h-screen px-4 sm:px-10 lg:px-16 pt-24 sm:pt-30 lg:pt-36 pb-12 sm:pb-16 lg:pb-24 flex flex-col justify-between">
           <div className="my-auto max-w-2xl w-full">
             {/* Main Headline */}
             <h1 className="font-['Space_Grotesk'] text-2xl sm:text-4xl md:text-5xl lg:text-[48px] xl:text-[56px] font-black uppercase leading-[1.1] tracking-tight text-white">
@@ -1613,10 +1620,10 @@ function Home() {
             </p>
 
             {/* Action Buttons (Matching reference pill style) */}
-            <div className="mt-6 sm:mt-9 flex flex-wrap items-center gap-3 sm:gap-4">
+            <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
               <Link
                 href="/conferences"
-                className="inline-flex items-center justify-center gap-2 px-5 sm:px-8 py-3 sm:py-4 rounded-full bg-slate-950 hover:bg-black text-white font-extrabold text-xs uppercase tracking-wider shadow-2xl transition-all transform hover:-translate-y-0.5 border border-white/20 cursor-pointer text-center"
+                className="inline-flex items-center justify-center gap-2 px-5 sm:px-8 py-2.5 sm:py-4 rounded-full bg-slate-950 hover:bg-black text-white font-extrabold text-xs uppercase tracking-wider shadow-2xl transition-all transform hover:-translate-y-0.5 border border-white/20 cursor-pointer text-center"
                 data-testid="link-hero-conferences"
               >
                 <span>EVENTS CALENDAR</span>
@@ -1624,7 +1631,7 @@ function Home() {
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center gap-2 px-4 sm:px-7 py-3 sm:py-4 rounded-full bg-white/15 hover:bg-white/25 text-white font-bold text-xs uppercase tracking-wider backdrop-blur-md transition-all cursor-pointer border border-white/25 text-center"
+                className="inline-flex items-center justify-center gap-2 px-4 sm:px-7 py-2.5 sm:py-4 rounded-full bg-white/15 hover:bg-white/25 text-white font-bold text-xs uppercase tracking-wider backdrop-blur-md transition-all cursor-pointer border border-white/25 text-center"
                 data-testid="link-hero-contact"
               >
                 <span>CONTACT US</span>
@@ -1632,8 +1639,36 @@ function Home() {
               </Link>
             </div>
 
-            {/* MOBILE ONLY: Standalone Image Carousel Box Card */}
-            <div className="lg:hidden mt-7 w-full">
+            {/* Quick Stats Counter Grid (Positioned on top of carousel in mobile view) */}
+            <div className="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-white/20 grid grid-cols-3 gap-2 sm:gap-6 max-w-2xl">
+              <div>
+                <p className="font-['Space_Grotesk'] text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
+                  {conferences.length > 0 ? `${conferences.length}+` : '20+'}
+                </p>
+                <p className="font-mono text-[9.5px] sm:text-xs font-bold uppercase tracking-wider text-white/90 mt-1.5 sm:mt-2">
+                  CONFERENCES
+                </p>
+              </div>
+              <div>
+                <p className="font-['Space_Grotesk'] text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
+                  {mentors.length > 0 ? `${mentors.length}+` : '30+'}
+                </p>
+                <p className="font-mono text-[9.5px] sm:text-xs font-bold uppercase tracking-wider text-white/90 mt-1.5 sm:mt-2">
+                  GLOBAL MENTORS
+                </p>
+              </div>
+              <div>
+                <p className="font-['Space_Grotesk'] text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
+                  {insightsList.length > 0 ? `${insightsList.length}+` : '15+'}
+                </p>
+                <p className="font-mono text-[9.5px] sm:text-xs font-bold uppercase tracking-wider text-white/90 mt-1.5 sm:mt-2">
+                  PUBLICATIONS
+                </p>
+              </div>
+            </div>
+
+            {/* MOBILE ONLY: Standalone Image Carousel Box Card (Below Quick Stats) */}
+            <div className="lg:hidden mt-6 sm:mt-7 w-full">
               <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full rounded-2xl overflow-hidden shadow-2xl border border-white/25 bg-slate-900 group">
                 {heroImages.map((srcUrl, i) => (
                   <div
@@ -1669,34 +1704,6 @@ function Home() {
               </div>
             </div>
           </div>
-
-          {/* Bottom Quick Stats Counter Grid */}
-          <div className="mt-6 sm:mt-8 pt-4 sm:pt-5 border-t border-white/20 grid grid-cols-3 gap-2 sm:gap-6 max-w-2xl">
-            <div>
-              <p className="font-['Space_Grotesk'] text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
-                {conferences.length > 0 ? `${conferences.length}+` : '20+'}
-              </p>
-              <p className="font-mono text-[9.5px] sm:text-xs font-bold uppercase tracking-wider text-white/90 mt-1.5 sm:mt-2">
-                CONFERENCES
-              </p>
-            </div>
-            <div>
-              <p className="font-['Space_Grotesk'] text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
-                {mentors.length > 0 ? `${mentors.length}+` : '30+'}
-              </p>
-              <p className="font-mono text-[9.5px] sm:text-xs font-bold uppercase tracking-wider text-white/90 mt-1.5 sm:mt-2">
-                GLOBAL MENTORS
-              </p>
-            </div>
-            <div>
-              <p className="font-['Space_Grotesk'] text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-none tracking-tight">
-                {insightsList.length > 0 ? `${insightsList.length}+` : '15+'}
-              </p>
-              <p className="font-mono text-[9.5px] sm:text-xs font-bold uppercase tracking-wider text-white/90 mt-1.5 sm:mt-2">
-                PUBLICATIONS
-              </p>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -1710,7 +1717,7 @@ function Home() {
           />
           <div className="mt-8 grid gap-6 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full max-w-none text-justify">
             <p>
-              STREAM Conferences is an established global architect of elite scientific, technical, research, engineering, academic, and medical summits. Operating at the dynamic intersection of rigorous scholarship and industrial execution, we engineer high-precision platforms designed to accelerate knowledge transfer, forge high-value cross-disciplinary synergies, and catalyse theoretical discoveries into transformative global solutions.
+              <strong>STREAM</strong> Conferences is an established global architect of elite scientific, technical, research, engineering, academic, and medical summits. Operating at the dynamic intersection of rigorous scholarship and industrial execution, we engineer high-precision platforms designed to accelerate knowledge transfer, forge high-value cross-disciplinary synergies, and catalyse theoretical discoveries into transformative global solutions.
             </p>
             <p className="inline sm:block">
               We redefine the international summit experience through focused, result-driven frameworks that convert intellectual capital into immediate market momentum. We deliberately cultivate environments where data scientists, clinical physicians, biotech innovators, and systems engineers converge to solve high-stakes global challenges.......{' '}
@@ -1969,17 +1976,17 @@ function AboutPage() {
           <div className="container-wide w-full">
             <div className="grid gap-6 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full max-w-none text-justify">
               <p>
-                STREAM Conferences is an established global architect of elite scientific, technical, research, engineering, academic, and medical summits. Operating at the dynamic intersection of rigorous scholarship and industrial execution, we engineer high-precision platforms designed to accelerate knowledge transfer, forge high-value cross-disciplinary synergies, and catalyse theoretical discoveries into transformative global solutions.
+                <strong>STREAM</strong> Conferences is an established global architect of elite scientific, technical, research, engineering, academic, and medical summits. Operating at the dynamic intersection of rigorous scholarship and industrial execution, we engineer high-precision platforms designed to accelerate knowledge transfer, forge high-value cross-disciplinary synergies, and catalyse theoretical discoveries into transformative global solutions.
               </p>
               <p>
                 We redefine the international summit experience through focused, result-driven frameworks that convert intellectual capital into immediate market momentum. We deliberately cultivate environments where data scientists, clinical physicians, biotech innovators, and systems engineers converge to solve high-stakes global challenges.
               </p>
-              <p>Where pioneering ideas meet global expertise, STREAM Conferences creates a space for discovery, innovation, and meaningful exchange across Conference platforms fostering knowledge and Academia. We bring together leading researchers, scientists, academicians, healthcare professionals, engineers, technology experts, industry leaders, innovators, and emerging professionals to create meaningful opportunities for knowledge exchange and collaboration. Operating at the intersection of academic excellence and industry innovation.</p>
+              <p>Where pioneering ideas meet global expertise, <strong>STREAM</strong> Conferences creates a space for discovery, innovation, and meaningful exchange across Conference platforms fostering knowledge and Academia. We bring together leading researchers, scientists, academicians, healthcare professionals, engineers, technology experts, industry leaders, innovators, and emerging professionals to create meaningful opportunities for knowledge exchange and collaboration. Operating at the intersection of academic excellence and industry innovation.</p>
               <p>We create focused platforms where research, expertise, and real-world applications can come together. Our conferences are designed to encourage the exchange of groundbreaking research, emerging technologies, practical insights, and diverse perspectives across disciplines.</p>
               <p>We go beyond traditional conference formats by creating engaging, knowledge-driven environments that encourage meaningful discussions, interdisciplinary connections, and professional networking. Through keynote presentations, plenary sessions, technical talks, research presentations, panel discussions, workshops, and interactive forums, participants gain opportunities to present their work, discover emerging developments, and connect with peers and experts from around the world.</p>
               <p>Our conferences span diverse areas including Science, Technology, Research, Engineering, Academia, Medicine, and other emerging fields, enabling cross-disciplinary dialogue on some of the most important challenges and opportunities shaping the world today. By bringing complementary areas of expertise together, we aim to encourage collaboration that can transform innovative concepts and research findings into practical applications and impactful solutions.</p>
-              <p>At STREAM Conferences, we believe that progress begins with connection. Every conference is designed to create a space where ideas can be shared, perspectives can be challenged, partnerships can be formed, and new possibilities can emerge. Our goal is to strengthen the global exchange of knowledge while supporting researchers, professionals, and innovators in contributing to the advancement of their fields.</p>
-              <p>Through a growing international network of scientific and professional communities, STREAM Conferences strives to connect minds, facilitate knowledge transfer, encourage innovation, and contribute to meaningful progress across science, technology, healthcare, engineering, and academia.</p>
+              <p>At <strong>STREAM</strong> Conferences, we believe that progress begins with connection. Every conference is designed to create a space where ideas can be shared, perspectives can be challenged, partnerships can be formed, and new possibilities can emerge. Our goal is to strengthen the global exchange of knowledge while supporting researchers, professionals, and innovators in contributing to the advancement of their fields.</p>
+              <p>Through a growing international network of scientific and professional communities, <strong>STREAM</strong> Conferences strives to connect minds, facilitate knowledge transfer, encourage innovation, and contribute to meaningful progress across science, technology, healthcare, engineering, and academia.</p>
             </div>
           </div>
         </section>
@@ -2074,7 +2081,7 @@ function AboutPage() {
           <div className="container-wide w-full">
             <SectionTitle eyebrow="Publishing & Indexing" title="Research Dissemination & Healthcare Publishing" />
             <div className="mt-8 grid gap-5 text-base sm:text-lg leading-8 text-[hsl(var(--muted-foreground))] w-full max-w-none">
-              <p>A fundamental pillar of Stream Conferences is ensuring that presented research secures permanent global reach. We move beyond ephemeral conversations, systematically documenting and indexing scientific discoveries through high-level publishing alliances across healthcare, medical, and technology sectors.</p>
+              <p>A fundamental pillar of <strong>STREAM</strong> Conferences is ensuring that presented research secures permanent global reach. We move beyond ephemeral conversations, systematically documenting and indexing scientific discoveries through high-level publishing alliances across healthcare, medical, and technology sectors.</p>
               <p>High-impact submissions receive direct channels for peer-reviewed evaluation in reputed international journals. Furthermore, all accepted abstracts and manuscripts are published in official digital proceedings assigned dedicated DOIs—ensuring universal indexability, citation permanence, and international prestige for researchers at every stage of their trajectory.</p>
             </div>
           </div>
@@ -4328,7 +4335,7 @@ function ConferencesPage() {
       />
       <main className="pt-6 pb-16">
         <div className="container-wide">
-          <EventList key={`${location}-${statusParam}-${typeof window !== 'undefined' ? window.location.search : ''}`} initial={statusParam} onlyType="Conference" />
+          <EventList key={`${location}-${statusParam}-${typeof window !== 'undefined' ? window.location.search : ''}`} initial={statusParam} />
         </div>
       </main>
     </Layout>

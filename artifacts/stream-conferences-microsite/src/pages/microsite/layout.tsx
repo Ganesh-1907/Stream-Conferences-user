@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
+const MAIN_WEBSITE_URL = import.meta.env.VITE_MAIN_WEBSITE_URL || 'https://streamconferences.com';
 const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
 
 export interface EventData {
@@ -58,7 +59,7 @@ export interface EventData {
   guidelines?: string;
   scientificProgramUrl?: string;
   termsAndConditions?: string;
-  venueDetails?: { name?: string; address?: string; city?: string; state?: string; country?: string; pincode?: string; description?: string; mainImage?: string; subImages?: string[]; images?: string[]; mapUrl?: string; directions?: string; parking?: string; accommodation?: string; nearestAirport?: string };
+  venueDetails?: { name?: string; address?: string; city?: string; state?: string; country?: string; pincode?: string; description?: string; mainImage?: string; subImages?: string[]; cityHighlights?: string[]; images?: string[]; mapUrl?: string; directions?: string; parking?: string; accommodation?: string; nearestAirport?: string };
   organizingCommittee?: { name?: string; image?: string; degree?: string; specialization?: string; country?: string; biography?: string; researchArea?: string }[];
   itinerary?: any[];
   about?: string;
@@ -178,7 +179,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
     if (event?.logoUrl) {
       iconLink.href = mediaUrl(event.logoUrl);
     } else {
-      iconLink.href = '/logo.jpg';
+      iconLink.href = '/logo.png';
     }
 
     if (event?.title) {
@@ -296,13 +297,16 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
   return (
     <header className={`z-40 transition-all duration-300 text-white ${
       !scrolled
-        ? 'absolute top-0 left-0 right-0 bg-transparent border-b-0 shadow-none'
-        : 'fixed top-0 left-0 right-0 bg-[hsl(var(--primary))]/95 dark:bg-[#141820]/95 border-b border-white/15 dark:border-white/10 backdrop-blur-xl shadow-lg'
+        ? 'absolute top-0 left-0 right-0 bg-transparent border-b-0 shadow-none pt-2 sm:pt-2.5'
+        : 'fixed top-0 left-0 right-0 bg-[hsl(var(--primary))]/95 dark:bg-[#141820]/95 border-b border-white/15 dark:border-white/10 backdrop-blur-xl shadow-lg py-1'
     }`}>
-      <div className="container-wide flex items-center justify-between gap-2 sm:gap-4 py-2.5 sm:py-3">
-        <Link href="/" className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
-          <img src="/logo.jpg" alt="Stream Conferences" className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl object-contain bg-white p-0.5 shadow-md border border-white/20 shrink-0" />
-          <span className="truncate font-['Space_Grotesk'] font-black tracking-tight text-sm sm:text-base md:text-xl text-white">Stream Conferences</span>
+      <div className="container-wide flex h-[52px] sm:h-[58px] items-center justify-between gap-2 sm:gap-4">
+        <Link href="/" className="group flex shrink-0 items-center min-w-fit" data-testid="link-microsite-logo">
+          <img
+            src="/logo.png"
+            alt="Stream Conferences"
+            className="h-14 w-auto max-w-none shrink-0 object-contain transition-transform duration-200 group-hover:scale-105"
+          />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-1 bg-white/95 dark:bg-[#0f172a]/95 text-slate-800 dark:text-white shadow-xl backdrop-blur-xl border border-white/30 dark:border-white/20 rounded-full p-1.5 mx-auto">
@@ -804,9 +808,15 @@ function MicrositeFooter({ event, navItems }: { event: EventData; navItems: NavI
           <div>
             <div className="flex items-center gap-3">
               {event?.logoUrl ? (
-                <img src={mediaUrl(event.logoUrl)} alt={event?.title || "Conference Logo"} className="h-10 w-10 rounded-xl object-contain bg-white/10 p-1 border border-white/20 shrink-0" />
+                <img
+                  src={mediaUrl(event.logoUrl)}
+                  alt={event?.title || "Conference Logo"}
+                  className="h-11 w-11 rounded-xl object-contain bg-white/15 p-1 border border-white/25 shrink-0"
+                />
               ) : (
-                <img src="/logo.jpg" alt="Conference Logo" className="h-10 w-10 rounded-xl object-contain bg-white p-1 shrink-0" />
+                <div className="h-11 w-11 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center font-black text-sm font-['Space_Grotesk'] text-white shrink-0 shadow-sm">
+                  {((event?.title || 'SC').split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('') || 'SC').toUpperCase()}
+                </div>
               )}
               <h3 className="font-['Space_Grotesk'] text-lg font-bold line-clamp-2 !text-white">{event?.title || 'Stream Conferences'}</h3>
             </div>
@@ -851,7 +861,17 @@ function MicrositeFooter({ event, navItems }: { event: EventData; navItems: NavI
           </div>
         </div>
         <div className="mt-10 pt-6 border-t border-white/15 text-center text-xs text-white/75">
-          <p>Powered by Stream Conferences</p>
+          <p>
+            Powered by{' '}
+            <a
+              href={MAIN_WEBSITE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white underline underline-offset-2 transition-colors font-medium"
+            >
+              Stream Conferences
+            </a>
+          </p>
         </div>
       </div>
     </footer>

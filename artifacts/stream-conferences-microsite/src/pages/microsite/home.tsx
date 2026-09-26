@@ -18,6 +18,7 @@ import {
 import { getNameInitials, formatTime12h } from '@/lib/utils';
 
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
+const MAIN_WEBSITE_URL = import.meta.env.VITE_MAIN_WEBSITE_URL || 'https://streamconferences.com';
 const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
 
 function formatDateRange(event: EventData): string {
@@ -292,12 +293,12 @@ export function HomePage({ event }: { event: EventData }) {
   return (
     <>
       {/* Full-Bleed Edge-to-Edge Dynamic Theme Hero Section with Ambient Glow (Plain Color) */}
-      <section className="relative w-full hero-slant-bg text-white pt-20 sm:pt-24 md:pt-28 pb-10 sm:pb-14 overflow-hidden flex flex-col justify-between min-h-screen">
+      <section className="relative w-full hero-slant-bg text-white pt-32 sm:pt-40 md:pt-48 pb-12 sm:pb-16 overflow-hidden flex flex-col">
         {/* Ambient Center & Corner Soft Glows */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[450px] bg-white/8 rounded-full blur-[140px] pointer-events-none" />
         <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-white/10 rounded-full blur-[120px] pointer-events-none" />
 
-        <div className="container-wide relative z-10 space-y-7 my-auto">
+        <div className="container-wide relative z-10 space-y-7 sm:space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
             {/* Left Column: Info, Countdown & Action CTAs */}
             <div className="order-2 lg:order-1 lg:col-span-7 space-y-4 text-center lg:text-left flex flex-col items-center lg:items-start">
@@ -371,19 +372,33 @@ export function HomePage({ event }: { event: EventData }) {
 
             {/* Right Column: 3D Circular Logo Card & Reminder Button */}
             <div className="order-1 lg:order-2 lg:col-span-5 flex flex-col items-center justify-center space-y-6 sm:space-y-10 text-center">
-              {/* 3D Circular Card containing the Logo */}
+              {/* 3D Circular Card containing the Logo (Click to visit main website) */}
               {event.logoUrl ? (
-                <div className="relative w-48 h-48 sm:w-72 sm:h-72 lg:w-96 lg:h-96 max-w-[70vw] max-h-[70vw] rounded-full ring-4 sm:ring-8 lg:ring-12 ring-white/30 bg-white shadow-[0_30px_70px_-15px_rgba(0,0,0,0.45)] flex items-center justify-center p-4 sm:p-7 lg:p-8 overflow-hidden transition-all duration-300 transform hover:scale-105 hover:shadow-[0_35px_80px_-10px_rgba(0,0,0,0.55)] group shrink-0">
+                <a
+                  href={MAIN_WEBSITE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative w-48 h-48 sm:w-72 sm:h-72 lg:w-96 lg:h-96 max-w-[70vw] max-h-[70vw] rounded-full ring-4 sm:ring-8 lg:ring-12 ring-white/30 bg-white shadow-[0_30px_70px_-15px_rgba(0,0,0,0.45)] flex items-center justify-center p-4 sm:p-7 lg:p-8 overflow-hidden transition-all duration-300 transform hover:scale-105 hover:shadow-[0_35px_80px_-10px_rgba(0,0,0,0.55)] group shrink-0 cursor-pointer"
+                  title="Visit Stream Conferences"
+                  data-testid="link-hero-logo"
+                >
                   <img
                     src={mediaUrl(event.logoUrl)}
                     alt={event.title}
                     className="w-full h-full object-contain max-h-full max-w-full transition-transform duration-300 group-hover:scale-105"
                   />
-                </div>
+                </a>
               ) : (
-                <div className="relative w-48 h-48 sm:w-72 sm:h-72 lg:w-96 lg:h-96 max-w-[70vw] max-h-[70vw] rounded-full ring-4 sm:ring-8 lg:ring-12 ring-white/30 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.45)] flex items-center justify-center p-4 shrink-0 text-white text-4xl sm:text-6xl font-extrabold font-['Space_Grotesk']">
+                <a
+                  href={MAIN_WEBSITE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative w-48 h-48 sm:w-72 sm:h-72 lg:w-96 lg:h-96 max-w-[70vw] max-h-[70vw] rounded-full ring-4 sm:ring-8 lg:ring-12 ring-white/30 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.45)] flex items-center justify-center p-4 shrink-0 text-white text-4xl sm:text-6xl font-extrabold font-['Space_Grotesk'] transition-all duration-300 transform hover:scale-105 hover:shadow-[0_35px_80px_-10px_rgba(0,0,0,0.55)] cursor-pointer"
+                  title="Visit Stream Conferences"
+                  data-testid="link-hero-logo"
+                >
                   {getNameInitials(event.title, 'SC')}
-                </div>
+                </a>
               )}
 
               {/* Action Button: Reminder to Join !! (White Theme with Dropdown) */}
