@@ -187,7 +187,11 @@ export function FeesPage({ event }: { event: EventData }) {
               ? 'max-w-md mx-auto grid-cols-1'
               : deadlineTiers.length === 2
               ? 'max-w-4xl mx-auto grid-cols-1 md:grid-cols-2'
-              : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+              : deadlineTiers.length === 3
+              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+              : deadlineTiers.length === 4
+              ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+              : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
           }`}>
             {deadlineTiers.map((tier, tIdx) => (
               <div
