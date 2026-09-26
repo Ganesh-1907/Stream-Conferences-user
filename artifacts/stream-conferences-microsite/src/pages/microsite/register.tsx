@@ -942,8 +942,12 @@ export function RegisterPage({ event }: { event: EventData }) {
                 deadlineTiers.length === 1
                   ? 'max-w-xl mx-auto grid-cols-1'
                   : deadlineTiers.length === 2
-                  ? 'grid-cols-1 md:grid-cols-2'
-                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                  ? 'max-w-4xl mx-auto grid-cols-1 md:grid-cols-2'
+                  : deadlineTiers.length === 3
+                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                  : deadlineTiers.length === 4
+                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+                  : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
               }`}>
                 {deadlineTiers.map((tier, tIdx) => {
                   const isExpired = isFeeDateExpired(tier);
