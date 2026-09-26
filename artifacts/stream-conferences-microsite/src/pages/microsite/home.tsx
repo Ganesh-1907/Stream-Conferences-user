@@ -246,278 +246,249 @@ export function HomePage({ event }: { event: EventData }) {
     return list;
   }, [event.headerBanners, event.bannerUrl]);
 
-  interface QuickLinkItem {
-    title: string;
-    icon: any;
-    href: string;
-    isExternal?: boolean;
-    hasNew?: boolean;
-  }
-
-  const quickLinks: QuickLinkItem[] = [
-    {
-      title: 'Tracks',
-      icon: Layers,
-      href: '/tracks',
-    },
-    {
-      title: 'Speakers',
-      icon: Users,
-      href: '/speakers',
-      hasNew: true,
-    },
-    {
-      title: 'Venue',
-      icon: MapPin,
-      href: '/venue',
-    },
-    {
-      title: 'Fees',
-      icon: FileEdit,
-      href: '/fees',
-    },
-    {
-      title: 'Committee',
-      icon: Users,
-      href: '/organizing-committee',
-    },
-    {
-      title: 'Brochure',
-      icon: Download,
-      href: '/brochure',
-    },
-  ];
-
   const heroImage = headerBanners[0] || (event.bannerUrl && !event.bannerUrl.endsWith('.pdf') ? mediaUrl(event.bannerUrl) : '') || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop';
 
   return (
     <>
-      {/* Full-Bleed Edge-to-Edge Dynamic Theme Hero Section with Ambient Glow (Plain Color) */}
-      <section className="relative w-full hero-slant-bg text-white pt-32 sm:pt-40 md:pt-48 pb-12 sm:pb-16 overflow-hidden flex flex-col">
-        {/* Ambient Center & Corner Soft Glows */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[450px] bg-white/8 rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-white/10 rounded-full blur-[120px] pointer-events-none" />
+      {/* Full-Bleed Edge-to-Edge Dynamic Theme Hero Section with Ambient Glow & Wave Curve */}
+      <section className="relative w-full hero-slant-bg text-white pt-28 sm:pt-32 md:pt-36 lg:pt-40 pb-16 sm:pb-20 md:pb-24 overflow-hidden flex flex-col justify-center">
+        {/* Subtle Ambient Center Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[450px] bg-white/5 rounded-full blur-[140px] pointer-events-none" />
 
-        <div className="container-wide relative z-10 space-y-7 sm:space-y-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
-            {/* Left Column: Info, Countdown & Action CTAs */}
-            <div className="order-2 lg:order-1 lg:col-span-7 space-y-4 text-center lg:text-left flex flex-col items-center lg:items-start">
-              {/* Main Title, Theme & Cohort */}
-              <div className="space-y-2 flex flex-col items-center lg:items-start w-full">
-                <h1 className="display text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-white tracking-tight drop-shadow-md text-center lg:text-left break-words max-w-full">
+        <div className="container-wide relative z-10 my-auto pb-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
+            {/* Left Column: Title, Theme, and Action CTA Buttons (REGISTER NOW, SUBMIT ABSTRACT) */}
+            <div className="lg:col-span-7 space-y-4 sm:space-y-6 text-center lg:text-left flex flex-col items-center lg:items-start">
+              {/* Main Title & Theme */}
+              <div className="space-y-3 flex flex-col items-center lg:items-start w-full">
+                <h1 className="display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] text-white tracking-tight drop-shadow-md text-center lg:text-left break-words max-w-full">
                   {event.title}
                 </h1>
                 {event.theme && (
-                  <p
-                    className="text-sm sm:text-lg md:text-2xl font-extrabold tracking-wide italic drop-shadow-sm text-center lg:text-left"
-                    style={{ color: event.heroThemeColor || '#ffffff' }}
-                  >
-                    Theme: {event.theme}
+                  <p className="text-sm sm:text-base md:text-lg font-medium text-white/90 text-center lg:text-left leading-relaxed max-w-2xl">
+                    <span className="font-bold text-white uppercase tracking-wider text-xs sm:text-sm mr-1.5 opacity-90">Theme:</span>
+                    {event.theme}
                   </p>
                 )}
               </div>
 
-              {/* Meta Info Line */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 sm:gap-3 text-xs sm:text-base md:text-lg font-bold text-white text-center lg:text-left">
-                {formatDateRange(event) && <span>{formatDateRange(event)}</span>}
-                {(event.startTime || event.endTime) && (
-                  <>
-                    <span>·</span>
-                    <span>{formatTime12h(event.startTime) || '—'} – {formatTime12h(event.endTime) || '—'}</span>
-                  </>
-                )}
-                {(event.venue || event.location) && (
-                  <>
-                    <span>·</span>
-                    <span>{event.venue || event.location}</span>
-                  </>
-                )}
-              </div>
-
-              {/* Countdown Timer Row */}
-              {cd && !cd.expired && (
-                <div className="space-y-2 pt-1 flex flex-col items-center lg:items-start w-full">
-                  <span className="text-xs sm:text-sm font-mono uppercase tracking-wider text-white/90 block font-bold text-center lg:text-left">Conference Starts In</span>
-                  <div className="flex items-center justify-center lg:justify-start gap-2 sm:gap-2.5 flex-wrap">
-                    {[
-                      { v: cd.days, l: 'D' },
-                      { v: cd.hours, l: 'H' },
-                      { v: cd.mins, l: 'M' },
-                      { v: cd.secs, l: 'S' },
-                    ].map((s) => (
-                      <div key={s.l} className="flex items-baseline gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-black/40 border border-white/30 text-white backdrop-blur-md font-mono shadow-lg">
-                        <span className="text-lg sm:text-2xl md:text-3xl font-extrabold">{s.v}</span>
-                        <span className="text-[10px] sm:text-xs font-bold opacity-80 uppercase">{s.l}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Action CTAs */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-3.5 pt-2">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-1">
                 <Link
                   href="/register"
-                  className="inline-flex items-center gap-2 px-5 sm:px-7 py-2.5 sm:py-3 rounded-full bg-white text-[hsl(var(--primary))] font-extrabold text-xs sm:text-base uppercase tracking-wider shadow-2xl hover:bg-white/90 hover:scale-105 transition-all transform cursor-pointer border border-white/40"
+                  className="inline-flex items-center gap-2 px-6 sm:px-7 py-2.5 sm:py-3 rounded-full bg-white text-[hsl(var(--primary))] font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-xl hover:bg-white/95 hover:scale-105 transition-all transform cursor-pointer border border-white/40"
                 >
                   <span>REGISTER NOW</span>
-                  <ArrowRight size={16} />
+                  <ArrowRight size={15} />
                 </Link>
                 <Link
                   href="/submit-abstract"
-                  className="inline-flex items-center gap-2 px-5 sm:px-7 py-2.5 sm:py-3 rounded-full bg-white/15 hover:bg-white/25 text-white font-bold text-xs sm:text-base uppercase tracking-wider backdrop-blur-md border border-white/35 transition-all cursor-pointer shadow-lg"
+                  className="inline-flex items-center gap-2 px-6 sm:px-7 py-2.5 sm:py-3 rounded-full bg-white/20 hover:bg-white/30 text-white font-bold text-xs sm:text-sm uppercase tracking-wider backdrop-blur-md border border-white/40 transition-all cursor-pointer shadow-md hover:scale-105"
                 >
                   <span>SUBMIT ABSTRACT</span>
-                  <ArrowUpRight size={16} />
+                  <ArrowUpRight size={15} />
                 </Link>
               </div>
             </div>
 
-            {/* Right Column: 3D Circular Logo Card & Reminder Button */}
-            <div className="order-1 lg:order-2 lg:col-span-5 flex flex-col items-center justify-center space-y-6 sm:space-y-10 text-center">
-              {/* 3D Circular Card containing the Logo (Click to visit main website) */}
-              {event.logoUrl ? (
-                <a
-                  href={MAIN_WEBSITE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative w-48 h-48 sm:w-72 sm:h-72 lg:w-96 lg:h-96 max-w-[70vw] max-h-[70vw] rounded-full ring-4 sm:ring-8 lg:ring-12 ring-white/30 bg-[#FAF8F5] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.45)] flex items-center justify-center p-4 sm:p-7 lg:p-8 overflow-hidden transition-all duration-300 transform hover:scale-105 hover:shadow-[0_35px_80px_-10px_rgba(0,0,0,0.55)] group shrink-0 cursor-pointer"
-                  title="Visit Stream Conferences"
-                  data-testid="link-hero-logo"
-                >
-                  <img
-                    src={mediaUrl(event.logoUrl)}
-                    alt={event.title}
-                    className="w-full h-full object-contain max-h-full max-w-full transition-transform duration-300 group-hover:scale-105"
-                  />
-                </a>
-              ) : (
-                <a
-                  href={MAIN_WEBSITE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative w-48 h-48 sm:w-72 sm:h-72 lg:w-96 lg:h-96 max-w-[70vw] max-h-[70vw] rounded-full ring-4 sm:ring-8 lg:ring-12 ring-white/30 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.45)] flex items-center justify-center p-4 shrink-0 text-white text-4xl sm:text-6xl font-extrabold font-['Space_Grotesk'] transition-all duration-300 transform hover:scale-105 hover:shadow-[0_35px_80px_-10px_rgba(0,0,0,0.55)] cursor-pointer"
-                  title="Visit Stream Conferences"
-                  data-testid="link-hero-logo"
-                >
-                  {getNameInitials(event.title, 'SC')}
-                </a>
-              )}
-
-              {/* Action Button: Reminder to Join !! (White Theme with Dropdown) */}
-              <div ref={calendarRef} className="pt-1 sm:pt-4 relative inline-block text-left">
-                <button
-                  type="button"
-                  onClick={() => setCalendarMenuOpen((prev) => !prev)}
-                  className="inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-2.5 sm:py-3 rounded-full bg-white text-[hsl(var(--primary))] font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-2xl hover:bg-white/90 hover:scale-105 transition-all transform cursor-pointer border border-white/40 whitespace-nowrap"
-                  title="Add to Calendar"
-                >
-                  <Calendar size={16} className="text-[hsl(var(--primary))]" />
-                  <span>Reminder to Join !!</span>
-                  <ChevronDown size={15} className={`transition-transform duration-200 ${calendarMenuOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {calendarMenuOpen && (
-                  <div className="absolute right-0 sm:left-0 mt-2 w-56 sm:w-60 rounded-2xl bg-white shadow-2xl border border-gray-200 py-1.5 z-50 overflow-hidden">
-                    <div className="px-3.5 py-1.5 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100 bg-gray-50">
-                      Select Calendar Platform
+            {/* Right Column: Date, Venue, and Countdown Timer in a Taller, Prominent Glass Panel */}
+            <div className="lg:col-span-5 w-full flex flex-col items-center lg:items-end lg:pr-2">
+              <div className="w-full max-w-md rounded-2xl md:rounded-3xl bg-black/25 backdrop-blur-md border border-white/20 p-6 sm:p-7 md:p-8 shadow-2xl">
+                {/* Date, Venue & Timer Rows with Enhanced Height and Spacing */}
+                <div className="space-y-5 sm:space-y-6 text-left">
+                  {formatDateRange(event) && (
+                    <div className="flex items-center gap-3.5 text-xs sm:text-sm font-semibold text-white/95">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center shrink-0 shadow-sm">
+                        <CalendarDays size={18} className="text-white" />
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-white/70 font-semibold">Conference Dates</span>
+                        <span className="font-bold text-white text-sm sm:text-base leading-snug">{formatDateRange(event)}</span>
+                      </div>
                     </div>
+                  )}
 
-                    {/* Google Calendar Option */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        createGoogleCalendarReminder(event);
-                        setCalendarMenuOpen(false);
-                      }}
-                      className="w-full text-left px-3.5 py-2.5 text-sm font-bold text-gray-900 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2.5 transition-colors cursor-pointer border-b border-gray-100"
-                    >
-                      <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-                          <path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" stroke="#4285F4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="#4285F4" fillOpacity="0.1"/>
-                          <path d="M16 2V6M8 2V6M3 10H21" stroke="#4285F4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <rect x="7" y="13" width="4" height="4" rx="1" fill="#EA4335" />
-                          <rect x="13" y="13" width="4" height="4" rx="1" fill="#FBBC04" />
-                        </svg>
+                  {(event.venue || event.location) && (
+                    <div className="flex items-center gap-3.5 text-xs sm:text-sm font-semibold text-white/95">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center shrink-0 shadow-sm">
+                        <MapPin size={18} className="text-white" />
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-xs sm:text-sm font-extrabold text-gray-900 leading-tight">Google Calendar</span>
-                        <span className="text-[10px] font-medium text-gray-500">Opens in web browser</span>
+                        <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-white/70 font-semibold">Venue / Location</span>
+                        <span className="font-bold text-white text-sm sm:text-base leading-snug">{event.venue || event.location}</span>
                       </div>
-                    </button>
+                    </div>
+                  )}
 
-                    {/* Apple / Mac Calendar Option */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        downloadIcsCalendarReminder(event);
-                        setCalendarMenuOpen(false);
-                      }}
-                      className="w-full text-left px-3.5 py-2.5 text-sm font-bold text-gray-900 hover:bg-slate-100 hover:text-black flex items-center gap-2.5 transition-colors cursor-pointer"
-                    >
-                      <div className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
-                        <svg className="w-4 h-4 fill-current text-slate-900" viewBox="0 0 24 24">
-                          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.09c.68-.82 1.14-1.96.99-3.09-.98.04-2.18.66-2.88 1.47-.63.73-1.18 1.89-1.03 3.01 1.09.09 2.22-.55 2.92-1.39z"/>
-                        </svg>
+                  {/* Countdown Timer Row */}
+                  {cd && !cd.expired && (
+                    <div className="flex items-center gap-3.5 text-xs sm:text-sm font-semibold text-white/95">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center shrink-0 shadow-sm">
+                        <Clock3 size={18} className="text-white" />
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-xs sm:text-sm font-extrabold text-gray-900 leading-tight">Apple / Mac Calendar</span>
-                        <span className="text-[10px] font-medium text-gray-500">Opens Mac Calendar app</span>
+                        <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-white/70 font-semibold">Starts In</span>
+                        <div className="flex items-center gap-1.5 sm:gap-2 pt-1">
+                          {[
+                            { v: cd.days, l: 'Days' },
+                            { v: cd.hours, l: 'Hours' },
+                            { v: cd.mins, l: 'Mins' },
+                            { v: cd.secs, l: 'Secs' },
+                          ].map((s) => (
+                            <div
+                              key={s.l}
+                              className="flex flex-col items-center justify-center min-w-[46px] sm:min-w-[52px] px-2 py-1 rounded-xl bg-black/40 border border-white/20 text-white font-mono shadow-inner"
+                            >
+                              <span className="text-sm sm:text-base font-black leading-none text-white">
+                                {String(s.v).padStart(2, '0')}
+                              </span>
+                              <span className="text-[8px] sm:text-[9px] font-semibold tracking-wider opacity-80 uppercase mt-0.5">
+                                {s.l}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </button>
-                  </div>
-                )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Bottom Registrations Ticker Bar & Rectangular Glass Quick Nav Tab Cards */}
-          <div className="pt-6 border-t border-white/20 flex flex-col items-center gap-5">
-            <div className="inline-flex items-center gap-2.5 px-5 sm:px-6 py-1.5 sm:py-2 rounded-full bg-black/40 border border-white/30 text-emerald-300 text-xs sm:text-sm font-mono font-extrabold tracking-widest uppercase backdrop-blur-md shadow-lg">
-              <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-emerald-400 animate-ping" />
-              <span>REGISTRATIONS OPEN</span>
-            </div>
-
-            {/* Rectangular Glass Tab Cards Row */}
-            <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-5 max-w-6xl">
-              {quickLinks.map((ql) => {
-                const IconComponent = ql.icon;
-                return (
-                  <Link
-                    key={ql.title}
-                    href={ql.href}
-                    className="relative group w-28 sm:w-36 md:w-40 py-3 sm:py-4 px-2 sm:px-4 flex flex-col items-center justify-center gap-1.5 sm:gap-2 rounded-2xl bg-black/40 hover:bg-black/60 text-white border border-white/30 hover:border-white/50 backdrop-blur-md transition-all transform hover:-translate-y-1 cursor-pointer shadow-lg text-center"
-                  >
-                    {ql.hasNew && (
-                      <span className="absolute -top-2 right-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-black bg-amber-400 text-black uppercase shadow-md border border-amber-300">
-                        NEW
-                      </span>
-                    )}
-                    <IconComponent size={24} className="text-white group-hover:scale-110 transition-transform sm:w-7 sm:h-7" />
-                    <span className="text-sm sm:text-lg font-extrabold text-white tracking-wide">{ql.title}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
+        {/* Dynamic & Distinct Organic SVG Wave Curve at Bottom of Hero */}
+        <div className="absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none pointer-events-none z-10">
+          <svg
+            className="relative block w-full h-16 sm:h-20 md:h-24 lg:h-32 text-[hsl(var(--background))]"
+            viewBox="0 0 1440 160"
+            preserveAspectRatio="none"
+            fill="currentColor"
+            shapeRendering="geometricPrecision"
+          >
+            <path d="M0,65 C480,155 960,5 1440,65 L1440,160 L0,160 Z"></path>
+          </svg>
         </div>
       </section>
 
-
-      {/* Centered Banner Carousel Section */}
-      {headerBanners.length > 0 && (
-        <section className="container-wide py-4 md:py-6">
-          <div className="max-w-[1220px] w-full mx-auto flex flex-col items-center justify-center">
-            <div className="w-full">
+      {/* Side-by-Side Carousel and Logo Section After the Wave */}
+      <section className="container-wide pt-2 sm:pt-3 md:pt-4 pb-8 sm:pb-10 md:pb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-center">
+          {/* Carousel (Left 8 columns) */}
+          <div className="lg:col-span-8 w-full flex flex-col justify-center">
+            {headerBanners.length > 0 ? (
               <HeaderBannerCarousel
                 banners={headerBanners}
                 title={event.title}
                 location={event.venue || event.location || ''}
               />
+            ) : (
+              <div className="relative w-full aspect-[1500/500] rounded-2xl md:rounded-3xl overflow-hidden shadow-xl border border-[hsl(var(--border))] bg-gradient-to-r from-emerald-600/20 to-teal-600/20 flex items-center justify-center p-6 text-center">
+                <p className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">
+                  {event.title}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Direct Circular Logo & Reminder (Right 4 columns) */}
+          <div className="lg:col-span-4 w-full flex flex-col items-center justify-center gap-4 sm:gap-5">
+            {/* Direct Circular Logo Disc */}
+            {event.logoUrl ? (
+              <a
+                href={MAIN_WEBSITE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-60 md:h-60 lg:w-64 lg:h-64 rounded-full ring-4 sm:ring-6 ring-[hsl(var(--primary)/0.25)] bg-[#FAF8F5] shadow-2xl flex items-center justify-center p-6 overflow-hidden transition-all duration-300 transform hover:scale-105 group shrink-0 cursor-pointer"
+                title="Visit Stream Conferences"
+                data-testid="link-hero-logo"
+              >
+                <img
+                  src={mediaUrl(event.logoUrl)}
+                  alt={event.title}
+                  className="w-full h-full object-contain max-h-full max-w-full transition-transform duration-300 group-hover:scale-105"
+                />
+              </a>
+            ) : (
+              <a
+                href={MAIN_WEBSITE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-60 md:h-60 lg:w-64 lg:h-64 rounded-full ring-4 sm:ring-6 ring-[hsl(var(--primary)/0.25)] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] shadow-2xl flex items-center justify-center p-6 shrink-0 text-white text-4xl sm:text-5xl lg:text-6xl font-extrabold font-['Space_Grotesk'] transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                title="Visit Stream Conferences"
+                data-testid="link-hero-logo"
+              >
+                {getNameInitials(event.title, 'SC')}
+              </a>
+            )}
+
+            {/* Action Button: Reminder to Join !! with Dropdown */}
+            <div ref={calendarRef} className="relative inline-block text-left">
+              <button
+                type="button"
+                onClick={() => setCalendarMenuOpen((prev) => !prev)}
+                className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-2.5 sm:py-3 rounded-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.9)] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-lg hover:scale-105 transition-all transform cursor-pointer whitespace-nowrap"
+                title="Add to Calendar"
+              >
+                <Calendar size={16} />
+                <span>Reminder to Join !!</span>
+                <ChevronDown size={15} className={`transition-transform duration-200 ${calendarMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {calendarMenuOpen && (
+                <div className="absolute right-0 sm:left-1/2 sm:-translate-x-1/2 mt-2 w-56 sm:w-60 rounded-2xl bg-white dark:bg-slate-900 shadow-2xl border border-gray-200 dark:border-slate-800 py-1.5 z-50 overflow-hidden text-left">
+                  <div className="px-3.5 py-1.5 text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50">
+                    Select Calendar Platform
+                  </div>
+
+                  {/* Google Calendar Option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      createGoogleCalendarReminder(event);
+                      setCalendarMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3.5 py-2.5 text-sm font-bold text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-700 flex items-center gap-2.5 transition-colors cursor-pointer border-b border-gray-100 dark:border-slate-800"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-slate-800 border border-blue-100 dark:border-slate-700 flex items-center justify-center shrink-0">
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                        <path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" stroke="#4285F4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="#4285F4" fillOpacity="0.1"/>
+                        <path d="M16 2V6M8 2V6M3 10H21" stroke="#4285F4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <rect x="7" y="13" width="4" height="4" rx="1" fill="#EA4335" />
+                        <rect x="13" y="13" width="4" height="4" rx="1" fill="#FBBC04" />
+                      </svg>
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white leading-tight">Google Calendar</span>
+                      <span className="text-[10px] font-medium text-gray-500 dark:text-slate-400">Opens in web browser</span>
+                    </div>
+                  </button>
+
+                  {/* Apple / Mac Calendar Option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      downloadIcsCalendarReminder(event);
+                      setCalendarMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3.5 py-2.5 text-sm font-bold text-gray-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 transition-colors cursor-pointer"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0">
+                      <svg className="w-4 h-4 fill-current text-slate-900 dark:text-white" viewBox="0 0 24 24">
+                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.09c.68-.82 1.14-1.96.99-3.09-.98.04-2.18.66-2.88 1.47-.63.73-1.18 1.89-1.03 3.01 1.09.09 2.22-.55 2.92-1.39z"/>
+                      </svg>
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white leading-tight">Apple / Mac Calendar</span>
+                      <span className="text-[10px] font-medium text-gray-500 dark:text-slate-400">Opens Mac Calendar app</span>
+                    </div>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* Welcome Message Banner Section */}
       {(event.welcomeBannerTitle || event.welcomeBannerDescription) && (
@@ -540,7 +511,7 @@ export function HomePage({ event }: { event: EventData }) {
 
       {/* Featured Speakers Section */}
       {featuredSpeakers.length > 0 ? (
-        <section className="container-wide py-6 md:py-8">
+        <section className="container-wide py-10 md:py-14 border-t border-[hsl(var(--border)/0.6)]">
           <div className="mb-6">
             <div>
               <p className="display w-full text-left text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))]">
@@ -622,7 +593,7 @@ export function HomePage({ event }: { event: EventData }) {
           </div>
         </section>
       ) : (
-        <section className="container-wide py-6 md:py-8 text-center">
+        <section className="container-wide py-10 md:py-14 border-t border-[hsl(var(--border)/0.6)] text-center">
           <div className="max-w-2xl mx-auto bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-3xl p-8 sm:p-10 shadow-lg space-y-4">
             <div className="w-16 h-16 rounded-2xl bg-[hsl(var(--primary)/0.12)] text-[hsl(var(--primary))] flex items-center justify-center mx-auto">
               <Users size={32} />

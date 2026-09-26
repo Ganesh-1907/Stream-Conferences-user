@@ -71,42 +71,57 @@ interface DetectedSubdomain {
 
 // Build the public microsite URL for an event based on its subdomain/eventId.
 const subdomainUrl = (item: any, path = ''): string => {
-  const sub = item?.subdomain;
+  const sub = (item?.subdomain || item?.slug || item?.eventId || '').trim().toLowerCase();
   if (!sub) return '';
-  const root = ROOT_DOMAIN.toLowerCase();
+  const root = ROOT_DOMAIN ? ROOT_DOMAIN.toLowerCase() : '';
   const cleanPath = path ? (path.startsWith('/') ? path : `/${path}`) : '';
+  const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
+  const port = typeof window !== 'undefined' && window.location.port ? `:${window.location.port}` : '';
+  const hostname = typeof window !== 'undefined' ? window.location.hostname.toLowerCase() : '';
 
-  if (!root || root === 'localhost' || root === '127.0.0.1') {
-    const typePath = item?.type === 'Webinar' || item?.eventType === 'webinar' ? 'webinar' : 'conference';
-    return `${window.location.origin}/${typePath}/${encodeURIComponent(sub)}${cleanPath}`;
+  // Localhost environment: always use http://<subdomain>.localhost:<port>/
+  if (
+    hostname === 'localhost' ||
+    hostname.endsWith('.localhost') ||
+    hostname === '127.0.0.1' ||
+    !root ||
+    root === 'localhost' ||
+    root === '127.0.0.1'
+  ) {
+    return `${protocol}//${sub}.localhost${port}${cleanPath}`;
   }
 
-  const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
-  return `${protocol}//${sub}.${root}${cleanPath}`;
+  // Production environment: https://<subdomain>.<rootDomain>/
+  const targetRoot = root || (hostname.includes('.') ? hostname.split('.').slice(-2).join('.') : hostname);
+  return `${protocol}//${sub}.${targetRoot}${cleanPath}`;
 };
 
 function detectSubdomainInfo(hostname: string, pathname: string, search: string): DetectedSubdomain | null {
+  const root = ROOT_DOMAIN ? ROOT_DOMAIN.toLowerCase() : '';
+  const host = hostname.toLowerCase().split(':')[0];
+  const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
+  const port = typeof window !== 'undefined' && window.location.port ? `:${window.location.port}` : '';
+  const isLocal = host === 'localhost' || host.endsWith('.localhost') || host === '127.0.0.1' || !root || root === 'localhost' || root === '127.0.0.1';
+
   try {
     const params = new URLSearchParams(search);
     const querySub = params.get('subdomain') || params.get('event');
     if (querySub) {
-      return { subdomain: querySub.trim().toLowerCase() };
+      const sub = querySub.trim().toLowerCase();
+      const targetPath = pathname && pathname !== '/' ? pathname : '';
+      const targetUrl = isLocal
+        ? `${protocol}//${sub}.localhost${port}${targetPath}`
+        : `${protocol}//${sub}.${root || (host.includes('.') ? host.split('.').slice(-2).join('.') : host)}${targetPath}`;
+      if (typeof window !== 'undefined') {
+        window.location.replace(targetUrl);
+      }
+      return { subdomain: sub };
     }
   } catch {
     /* ignore */
   }
 
-  // Check path-based microsite routes: /conference/:id, /webinar/:id, /events/:id, /event/:id
-  const match = pathname.match(/^\/(conference|webinar|events|event)\/([^/]+)/i);
-  if (match) {
-    const sub = decodeURIComponent(match[2]).trim().toLowerCase();
-    const customBase = `/${match[1]}/${match[2]}`;
-    return { subdomain: sub, customBase };
-  }
-
   // Check hostname subdomains: e.g. scc00006.streamconferences.com or icmlhs.localhost
-  const root = ROOT_DOMAIN.toLowerCase();
-  const host = hostname.toLowerCase().split(':')[0];
   if (host.endsWith('.localhost')) {
     const sub = host.slice(0, host.length - '.localhost'.length);
     if (sub && sub !== 'www') return { subdomain: sub };
@@ -114,6 +129,26 @@ function detectSubdomainInfo(hostname: string, pathname: string, search: string)
   if (root && host !== root && host.endsWith('.' + root)) {
     const sub = host.slice(0, host.length - root.length - 1);
     if (sub && sub !== 'www') return { subdomain: sub };
+  }
+
+  // Automatically redirect any legacy path-based routes: /conference/:id, /webinar/:id, /events/:id, /event/:id
+  const match = pathname.match(/^\/(conference|webinar|events|event)\/([^/]+)/i);
+  if (match) {
+    const sub = decodeURIComponent(match[2]).trim().toLowerCase();
+    const cleanRemainder = pathname.replace(/^\/(conference|webinar|events|event)\/[^/]+/i, '') || '/';
+    const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
+    const port = typeof window !== 'undefined' && window.location.port ? `:${window.location.port}` : '';
+    let targetUrl = '';
+    if (host === 'localhost' || host.endsWith('.localhost') || host === '127.0.0.1' || !root || root === 'localhost' || root === '127.0.0.1') {
+      targetUrl = `${protocol}//${sub}.localhost${port}${cleanRemainder}`;
+    } else {
+      const targetRoot = root || (host.includes('.') ? host.split('.').slice(-2).join('.') : host);
+      targetUrl = `${protocol}//${sub}.${targetRoot}${cleanRemainder}`;
+    }
+    if (typeof window !== 'undefined') {
+      window.location.replace(targetUrl);
+    }
+    return { subdomain: sub };
   }
 
   return null;
@@ -401,7 +436,7 @@ function EventList({ initial: initialStatus = 'upcoming' }: { initial?: Status }
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {visible.length ? (
           visible.map((e, index) => {
-            const detailsHref = subdomainUrl(e) || `/conference/${encodeURIComponent(e.eventId || e.slug || (e as any)._id || e.id)}`;
+            const detailsHref = subdomainUrl(e);
             const dateBadgeText = formatEventDateRange(e.eventDate, e.day);
 
             return (
@@ -1743,7 +1778,7 @@ function Home() {
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {displayConferences.map((item, index) => {
-              const detailsHref = subdomainUrl(item) || `/conference/${encodeURIComponent(item.eventId || item.slug || (item as any)._id || item.id)}`;
+              const detailsHref = subdomainUrl(item);
               const dateBadgeText = formatEventDateRange(item.eventDate, item.day);
 
               return (

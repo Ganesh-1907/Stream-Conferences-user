@@ -193,14 +193,14 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
   const isHomeTop = location === '/' && !scrolled;
 
   const navLinkCls = (path: string) => {
-    const base = 'flex items-center gap-2 px-4 py-2 text-sm sm:text-base font-bold transition-all rounded-full ';
+    const base = 'flex items-center gap-1.5 xl:gap-2 px-2.5 lg:px-3 xl:px-4 py-1.5 xl:py-2 text-xs lg:text-sm font-bold transition-all rounded-full whitespace-nowrap ';
     return isActive(path)
       ? base + 'bg-[hsl(var(--primary))] text-white font-black shadow-md'
       : base + 'text-slate-800 dark:text-slate-100 hover:text-[hsl(var(--primary))] hover:bg-slate-100 dark:hover:bg-white/10';
   };
 
   const mobileLinkCls = (path: string) => {
-    const base = 'w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-base font-bold transition-all ';
+    const base = 'w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-base font-bold transition-all whitespace-nowrap ';
     return isActive(path)
       ? base + 'bg-[hsl(var(--primary))] text-white font-black shadow-md'
       : base + 'text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-white/10';
@@ -306,32 +306,32 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
           <img
             src="/logo.png"
             alt="Stream Conferences"
-            className="h-14 sm:h-16 md:h-[68px] lg:h-[72px] w-auto max-w-none shrink-0 object-contain drop-shadow-md brightness-105 transition-transform duration-200 group-hover:scale-105"
+            className="h-12 sm:h-14 md:h-16 lg:h-[64px] xl:h-[72px] w-auto max-w-none shrink-0 object-contain drop-shadow-md brightness-105 transition-transform duration-200 group-hover:scale-105"
           />
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-1 bg-[#FAF8F5]/95 dark:bg-[#0f172a]/95 text-slate-800 dark:text-white shadow-xl backdrop-blur-xl border border-white/30 dark:border-white/20 rounded-full p-1.5 mx-auto">
+        <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 bg-[#FAF8F5]/95 dark:bg-[#0f172a]/95 text-slate-800 dark:text-white shadow-xl backdrop-blur-xl border border-white/30 dark:border-white/20 rounded-full p-1 xl:p-1.5 mx-auto">
           <Link href="/" className={navLinkCls('/')}>
-            <Globe size={18} />Home
+            <Globe size={16} />Home
           </Link>
 
           <Link href="/about" className={navLinkCls('/about')}>
-            <Layers size={18} />About
+            <Layers size={16} />About
           </Link>
 
           {/* Program Dropdown */}
           <div className="relative group">
             <button
               type="button"
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm sm:text-base font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1 xl:gap-1.5 px-2.5 lg:px-3 xl:px-4 py-1.5 xl:py-2 rounded-full text-xs lg:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
                 isProgramActive
                   ? 'bg-[hsl(var(--primary))] text-white font-black shadow-md'
                   : 'text-slate-800 dark:text-slate-100 hover:text-[hsl(var(--primary))] hover:bg-slate-100 dark:hover:bg-white/10'
               }`}
             >
-              <Presentation size={18} />
+              <Presentation size={16} />
               <span>Program</span>
-              <ChevronDown size={16} className="group-hover:rotate-180 transition-transform duration-200" />
+              <ChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-200" />
             </button>
             <div className="absolute left-0 top-full pt-1.5 hidden group-hover:block z-50 w-56">
               <div className="rounded-2xl border border-slate-200/80 dark:border-white/20 bg-[#FAF8F5] dark:bg-[#0f172a] text-slate-900 dark:text-white shadow-2xl py-1.5 backdrop-blur-xl transition-colors overflow-hidden">
@@ -368,19 +368,19 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
           </div>
 
           <Link href="/brochure" className={navLinkCls('/brochure')}>
-            <Download size={18} />Brochure
+            <Download size={16} />Brochure
           </Link>
 
           <Link href="/submit-abstract" className={navLinkCls('/submit-abstract')}>
-            <FileText size={18} />Submit Abstract
+            <FileText size={16} />Submit Abstract
           </Link>
 
           <Link href="/register" className={navLinkCls('/register')}>
-            <FileText size={18} />Register
+            <FileText size={16} />Register
           </Link>
 
           <Link href="/fees" className={navLinkCls('/fees')}>
-            <FileText size={18} />Fees
+            <FileText size={16} />Fees
           </Link>
 
           {/* Info Dropdown */}
@@ -388,14 +388,14 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
             <div className="relative group">
               <button
                 type="button"
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm sm:text-base font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1 xl:gap-1.5 px-2.5 lg:px-3 xl:px-4 py-1.5 xl:py-2 rounded-full text-xs lg:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
                   isMoreActive
                     ? 'bg-[hsl(var(--primary))] text-white font-black shadow-md'
                     : 'text-slate-800 dark:text-slate-100 hover:text-[hsl(var(--primary))] hover:bg-slate-100 dark:hover:bg-white/10'
                 }`}
               >
                 <span>Info</span>
-                <ChevronDown size={16} className="group-hover:rotate-180 transition-transform duration-200" />
+                <ChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-200" />
               </button>
               <div className="absolute right-0 top-full pt-1.5 hidden group-hover:block z-50 w-56">
                 <div className="rounded-2xl border border-slate-200/80 dark:border-white/20 bg-[#FAF8F5] dark:bg-[#0f172a] text-slate-900 dark:text-white shadow-2xl py-1.5 backdrop-blur-xl transition-colors overflow-hidden">
