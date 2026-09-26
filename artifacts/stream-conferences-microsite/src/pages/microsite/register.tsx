@@ -537,7 +537,7 @@ export function RegisterPage({ event }: { event: EventData }) {
         tagline="Complete your registration in simple steps to confirm your attendance and participation."
       />
 
-      <div className="container-wide max-w-6xl mx-auto py-8 space-y-8">
+      <div className="container-wide py-8 sm:py-12 space-y-8">
         {/* Step Indicators */}
         <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
           <div className={`flex items-center gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition ${step === 1 ? 'bg-[hsl(var(--primary))] text-white shadow-md' : 'bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))]'}`}>
@@ -666,7 +666,7 @@ export function RegisterPage({ event }: { event: EventData }) {
           </div>
         ) : step === 1 ? (
           /* STEP 1 - Personal Information (Left) & Billing Information (Right) Perfectly Aligned */
-          <form onSubmit={handleStep1} className="w-full space-y-8">
+          <form onSubmit={handleStep1} className="w-full max-w-5xl mx-auto space-y-8">
             <div className="grid gap-6 md:grid-cols-2 items-stretch">
               {/* Left Column: Personal Information */}
               <div className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 sm:p-7 shadow-sm space-y-5 flex flex-col justify-between">
@@ -940,7 +940,7 @@ export function RegisterPage({ event }: { event: EventData }) {
             ) : (
               <div className={`grid gap-6 lg:gap-8 ${
                 deadlineTiers.length === 1
-                  ? 'max-w-xl mx-auto grid-cols-1'
+                  ? 'max-w-md mx-auto grid-cols-1'
                   : deadlineTiers.length === 2
                   ? 'max-w-4xl mx-auto grid-cols-1 md:grid-cols-2'
                   : deadlineTiers.length === 3
