@@ -546,11 +546,9 @@ function APIProvider({ children }: { children: ReactNode }) {
     let active = true;
     const fetchData = async () => {
       try {
-        const [confRes, blogRes, mpRes, collabRes, exhRes, mentorsRes, peopleRes, venuesRes, brochureRes] = await Promise.all([
+        const [confRes, blogRes, exhRes, mentorsRes, peopleRes, venuesRes, brochureRes] = await Promise.all([
           fetch(`${API_BASE}/conferences`),
           fetch(`${API_BASE}/blogs`),
-          fetch(`${API_BASE}/media-partners`),
-          fetch(`${API_BASE}/collaborators`),
           fetch(`${API_BASE}/exhibitors`),
           fetch(`${API_BASE}/mentors`),
           fetch(`${API_BASE}/people`),
@@ -558,14 +556,12 @@ function APIProvider({ children }: { children: ReactNode }) {
           fetch(`${API_BASE}/brochure/main`).catch(() => null)
         ]);
         
-        if (!confRes.ok || !blogRes.ok || !mpRes.ok || !collabRes.ok || !exhRes.ok || !mentorsRes.ok || !peopleRes.ok || !venuesRes.ok) {
+        if (!confRes.ok || !blogRes.ok || !exhRes.ok || !mentorsRes.ok || !peopleRes.ok || !venuesRes.ok) {
           throw new Error('API fetch failed');
         }
 
         const confData = await confRes.json();
         const blogData = await blogRes.json();
-        const mpData = await mpRes.json();
-        const collabData = await collabRes.json();
         const exhData = await exhRes.json();
         const mentorsData = await mentorsRes.json();
         const peopleData = await peopleRes.json();
@@ -575,8 +571,6 @@ function APIProvider({ children }: { children: ReactNode }) {
         if (active) {
           setConferences(confData);
           setBlogs(blogData);
-          setMediaPartners(mpData);
-          setCollaborators(collabData);
           setExhibitors(exhData);
           setMentors(mentorsData);
           setPeople(peopleData);
@@ -768,7 +762,7 @@ function SiteHeader() {
           </Link>
 
           {/* Center Navigation Options: White floating pill navigation menu bar on all pages */}
-          <nav className="hidden lg:flex items-center gap-1 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl p-1.5 rounded-full shadow-2xl border border-white/40 dark:border-white/20 text-slate-800 dark:text-white" aria-label="Primary">
+          <nav className="hidden lg:flex items-center gap-1 bg-[#FAF8F5]/95 dark:bg-[#0f172a]/95 backdrop-blur-xl p-1.5 rounded-full shadow-2xl border border-white/40 dark:border-white/20 text-slate-800 dark:text-white" aria-label="Primary">
             <Link
               href="/"
               className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
@@ -853,7 +847,7 @@ function SiteHeader() {
                   event.stopPropagation();
                   setColorPickerOpen((value) => !value);
                 }}
-                className="grid h-8 w-8 sm:h-10 sm:w-10 place-items-center rounded-full border border-white/40 dark:border-white/20 bg-white/95 dark:bg-[#0f172a]/95 hover:bg-white dark:hover:bg-[#1e293b] text-slate-800 dark:text-white backdrop-blur-xl shadow-md transition-all"
+                className="grid h-8 w-8 sm:h-10 sm:w-10 place-items-center rounded-full border border-white/40 dark:border-white/20 bg-[#FAF8F5]/95 dark:bg-[#0f172a]/95 hover:bg-[#FAF8F5] dark:hover:bg-[#1e293b] text-slate-800 dark:text-white backdrop-blur-xl shadow-md transition-all"
                 aria-label="Choose color theme"
                 aria-expanded={colorPickerOpen}
                 data-testid="button-color-theme"
@@ -895,7 +889,7 @@ function SiteHeader() {
             <button
               type="button"
               onClick={toggleTheme}
-              className="grid h-8 w-8 sm:h-10 sm:w-10 place-items-center rounded-full border border-white/40 dark:border-white/20 bg-white/95 dark:bg-[#0f172a]/95 hover:bg-white dark:hover:bg-[#1e293b] text-slate-800 dark:text-white backdrop-blur-xl shadow-md transition-all"
+              className="grid h-8 w-8 sm:h-10 sm:w-10 place-items-center rounded-full border border-white/40 dark:border-white/20 bg-[#FAF8F5]/95 dark:bg-[#0f172a]/95 hover:bg-[#FAF8F5] dark:hover:bg-[#1e293b] text-slate-800 dark:text-white backdrop-blur-xl shadow-md transition-all"
               aria-label={dark ? 'Use light theme' : 'Use dark theme'}
               data-testid="button-theme-toggle"
             >
@@ -1488,7 +1482,7 @@ const heroImages = [
 ];
 
 function Home() {
-  const { conferences, insightsList, mentors, mediaPartners, events: eventsList } = useContext(APIContext);
+  const { conferences, insightsList, mentors, events: eventsList } = useContext(APIContext);
   const [email, setEmail] = useState('');
   const [joined, setJoined] = useState(false);
   const [heroImgIndex, setHeroImgIndex] = useState(0);
@@ -4342,16 +4336,6 @@ function ConferencesPage() {
   );
 }
 
-function MediaPartnersPage() {
-  const { mediaPartners } = useContext(APIContext);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1200&q=80" eyebrow="The amplification network" title="Media partners." body="Organizations that carry our conversations further and keep our community informed." /><main className="pt-6 pb-16"><div className="container-wide"><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{mediaPartners.length > 0 ? mediaPartners.map((partner) => <div key={partner._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex items-start gap-4">{partner.logo ? <img src={mediaUrl(partner.logo)} alt={partner.name} className="h-14 w-14 rounded-xl object-contain border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] shrink-0" /> : <div className="h-14 w-14 rounded-xl bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] shrink-0"><Building2 size={20} /></div>}<div className="min-w-0"><h3 className="display text-lg sm:text-xl font-bold text-[hsl(var(--foreground))]">{partner.name}</h3>{partner.description && <p className="mt-2 text-base leading-7 text-[hsl(var(--muted-foreground))]">{partner.description}</p>}</div></div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p className="text-base sm:text-lg">No media partners have been added yet.</p></div>}</div></div></main></Layout>;
-}
-
-function CollaboratorsPage() {
-  const { collaborators } = useContext(APIContext);
-  return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=1200&q=80" eyebrow="Working together" title="Collaborators." body="Institutions, partners, and research groups advancing the summit with us." /><main className="pt-6 pb-16"><div className="container-wide"><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{collaborators.length > 0 ? collaborators.map((collaborator) => <div key={collaborator._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex items-start gap-4">{collaborator.logo ? <img src={mediaUrl(collaborator.logo)} alt={collaborator.name} className="h-14 w-14 rounded-xl object-contain border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] shrink-0" /> : <div className="h-14 w-14 rounded-xl bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] shrink-0"><Handshake size={20} /></div>}<div className="min-w-0"><h3 className="display text-lg sm:text-xl font-bold text-[hsl(var(--foreground))]">{collaborator.name}</h3>{collaborator.description && <p className="mt-2 text-base leading-7 text-[hsl(var(--muted-foreground))]">{collaborator.description}</p>}</div></div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p className="text-base sm:text-lg">No collaborators have been added yet.</p></div>}</div></div></main></Layout>;
-}
-
 function ExhibitorsPage() {
   const { exhibitors } = useContext(APIContext);
   return <Layout><PageHero bgImage="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80" eyebrow="On the floor" title="Exhibitors." body="Organizations showcasing the tools, services, and ideas shaping their fields." /><main className="pt-6 pb-16"><div className="container-wide"><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{exhibitors.length > 0 ? exhibitors.map((exhibitor) => <div key={exhibitor._id} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex items-start gap-4">{exhibitor.logo ? <img src={mediaUrl(exhibitor.logo)} alt={exhibitor.name} className="h-14 w-14 rounded-xl object-contain border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.4)] shrink-0" /> : <div className="h-14 w-14 rounded-xl bg-[hsl(var(--muted)/.4)] flex items-center justify-center text-[hsl(var(--muted-foreground))] shrink-0"><Store size={20} /></div>}<div className="min-w-0"><h3 className="display text-lg sm:text-xl font-bold text-[hsl(var(--foreground))]">{exhibitor.name}</h3>{exhibitor.description && <p className="mt-2 text-base leading-7 text-[hsl(var(--muted-foreground))]">{exhibitor.description}</p>}</div></div>) : <div className="col-span-full py-16 text-center text-[hsl(var(--muted-foreground))]"><p className="text-base sm:text-lg">No exhibitors have been added yet.</p></div>}</div></div></main></Layout>;
@@ -4544,7 +4528,7 @@ function ScrollToTop() {
 }
 
 function Router() {
-  return <RoutedErrorBoundary><ScrollToTop /><Switch><Route path="/" component={Home} /><Route path="/about" component={AboutPage} /><Route path="/abstract-submission-guidelines" component={AbstractSubmissionGuidelinesPage} /><Route path="/program" component={ProgramPage} /><Route path="/speakers" component={SpeakersPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/blog" component={BlogPage} /><Route path="/blog/:slug" component={BlogDetailPage} /><Route path="/conferences" component={ConferencesPage} /><Route path="/brochure" component={BrochurePage} /><Route path="/venue" component={VenuesPage} /><Route path="/venues" component={VenuesPage} /><Route path="/sponsors" component={SponsorsPage} /><Route path="/media-partners" component={MediaPartnersPage} /><Route path="/collaborators" component={CollaboratorsPage} /><Route path="/exhibitors" component={ExhibitorsPage} /><Route path="/mentors/:username" component={MentorDetailsPage} /><Route path="/thank-you" component={ThankYouPage} /><Route path="/terms" component={TermsPage} /><Route path="/faq" component={FAQPage} /><Route path="/guidelines" component={GuidelinesPage} /><Route path="/contact" component={ContactPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
+  return <RoutedErrorBoundary><ScrollToTop /><Switch><Route path="/" component={Home} /><Route path="/about" component={AboutPage} /><Route path="/abstract-submission-guidelines" component={AbstractSubmissionGuidelinesPage} /><Route path="/program" component={ProgramPage} /><Route path="/speakers" component={SpeakersPage} /><Route path="/gallery" component={GalleryPage} /><Route path="/blog" component={BlogPage} /><Route path="/blog/:slug" component={BlogDetailPage} /><Route path="/conferences" component={ConferencesPage} /><Route path="/brochure" component={BrochurePage} /><Route path="/venue" component={VenuesPage} /><Route path="/venues" component={VenuesPage} /><Route path="/sponsors" component={SponsorsPage} /><Route path="/exhibitors" component={ExhibitorsPage} /><Route path="/mentors/:username" component={MentorDetailsPage} /><Route path="/thank-you" component={ThankYouPage} /><Route path="/terms" component={TermsPage} /><Route path="/faq" component={FAQPage} /><Route path="/guidelines" component={GuidelinesPage} /><Route path="/contact" component={ContactPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
 }
 
 function App() {

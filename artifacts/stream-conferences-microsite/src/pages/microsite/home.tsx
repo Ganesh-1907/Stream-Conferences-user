@@ -381,7 +381,7 @@ export function HomePage({ event }: { event: EventData }) {
                   href={MAIN_WEBSITE_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="relative w-48 h-48 sm:w-72 sm:h-72 lg:w-96 lg:h-96 max-w-[70vw] max-h-[70vw] rounded-full ring-4 sm:ring-8 lg:ring-12 ring-white/30 bg-white shadow-[0_30px_70px_-15px_rgba(0,0,0,0.45)] flex items-center justify-center p-4 sm:p-7 lg:p-8 overflow-hidden transition-all duration-300 transform hover:scale-105 hover:shadow-[0_35px_80px_-10px_rgba(0,0,0,0.55)] group shrink-0 cursor-pointer"
+                  className="relative w-48 h-48 sm:w-72 sm:h-72 lg:w-96 lg:h-96 max-w-[70vw] max-h-[70vw] rounded-full ring-4 sm:ring-8 lg:ring-12 ring-white/30 bg-[#FAF8F5] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.45)] flex items-center justify-center p-4 sm:p-7 lg:p-8 overflow-hidden transition-all duration-300 transform hover:scale-105 hover:shadow-[0_35px_80px_-10px_rgba(0,0,0,0.55)] group shrink-0 cursor-pointer"
                   title="Visit Stream Conferences"
                   data-testid="link-hero-logo"
                 >

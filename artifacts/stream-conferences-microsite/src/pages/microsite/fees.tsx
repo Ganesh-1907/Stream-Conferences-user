@@ -192,7 +192,7 @@ export function FeesPage({ event }: { event: EventData }) {
             {deadlineTiers.map((tier, tIdx) => (
               <div
                 key={tier.id || tIdx}
-                className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0f172a] shadow-lg overflow-hidden flex flex-col transition-all hover:shadow-xl"
+                className="rounded-2xl border border-slate-200 dark:border-white/10 bg-card dark:bg-[#0f172a] shadow-lg overflow-hidden flex flex-col transition-all hover:shadow-xl"
               >
                 {/* Tier Top Header Banner */}
                 <div className="bg-gradient-to-br from-[#d98b76] via-[#cb7386] to-[#a85a85] dark:from-[#9c513e] dark:to-[#743557] text-white p-5 text-center flex flex-col items-center justify-center min-h-[125px] shadow-inner">

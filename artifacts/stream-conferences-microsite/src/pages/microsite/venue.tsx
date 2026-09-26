@@ -272,7 +272,7 @@ export function VenuePage({ event }: { event: EventData }) {
 
             {/* 3. Three Sub Images Gallery */}
             {subImages.length > 0 && (
-              <section className="space-y-6 pt-6 border-t border-[hsl(var(--border))]">
+              <section className="space-y-6">
                 <div>
                   <h3 className="text-2xl font-bold text-[hsl(var(--foreground))] font-['Space_Grotesk']">
                     Venue Gallery & Photos
@@ -300,7 +300,7 @@ export function VenuePage({ event }: { event: EventData }) {
 
             {/* 4. Three City Attractions Gallery */}
             {cityHighlights.length > 0 && (
-              <section className="space-y-6 pt-6 border-t border-[hsl(var(--border))]">
+              <section className="space-y-6">
                 <div>
                   <h3 className="text-2xl font-bold text-[hsl(var(--foreground))] font-['Space_Grotesk']">
                     City Attractions

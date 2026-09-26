@@ -70,6 +70,8 @@ function parseCohortPath(pathname: string): { year: string; batch: string | null
 import { MediaPartnersPage } from './microsite/media-partners';
 import { SponsorsPage } from './microsite/sponsors';
 
+import { STREAM_LOGO_DARK_B64, STREAM_LOGO_LIGHT_B64 } from '@/components/stream-logo-data';
+
 export function EventMicrosite({ subdomain, customBase }: { subdomain: string; customBase?: string }) {
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -101,9 +103,25 @@ export function EventMicrosite({ subdomain, customBase }: { subdomain: string; c
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-sm text-[hsl(var(--muted-foreground))] font-semibold">
-        <Loader2 className="animate-spin text-[hsl(var(--primary))]" size={32} />
-        <span>Loading event data…</span>
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0b0f17] px-4 font-serif">
+        <div className="flex flex-col items-center gap-5 max-w-sm text-center">
+          <div className="relative">
+            <img
+              src={STREAM_LOGO_LIGHT_B64}
+              alt="Stream Conferences"
+              className="h-14 sm:h-16 w-auto object-contain"
+            />
+          </div>
+
+          <div className="flex flex-col items-center gap-2.5">
+            <div className="w-36 h-1 bg-white/10 rounded-full overflow-hidden relative">
+              <div className="h-full w-1/2 bg-cyan-500 rounded-full animate-pulse" />
+            </div>
+            <p className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+              Connecting Minds · Advancing Science
+            </p>
+          </div>
+        </div>
       </div>
     );
   }

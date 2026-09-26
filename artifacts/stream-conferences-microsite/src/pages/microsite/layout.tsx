@@ -206,8 +206,16 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
       : base + 'text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-white/10';
   };
 
-  // Program dropdown items: Speakers, Tracks, Committee, FAQ, Terms
+  // Program dropdown items: Scientific Program, Speakers, Tracks, Committee, FAQ, Terms
   const programItems: NavItem[] = [
+    ...(event.scientificProgramUrl ? [{
+      id: 'scientific-program',
+      label: 'Scientific Program',
+      path: mediaUrl(event.scientificProgramUrl),
+      icon: <Download size={18} />,
+      show: true,
+      isDownload: true,
+    }] : []),
     {
       id: 'speakers',
       label: 'Speakers',
@@ -245,16 +253,8 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
     },
   ];
 
-  // More dropdown items: Scientific Program, Sponsors & Exhibitors, Media Partners, Venue, Guidelines, Contact
+  // More dropdown items: Sponsors & Exhibitors, Media Partners, Venue, Guidelines, Contact
   const moreItems: NavItem[] = [
-    ...(event.scientificProgramUrl ? [{
-      id: 'scientific-program',
-      label: 'Scientific Program',
-      path: mediaUrl(event.scientificProgramUrl),
-      icon: <Download size={18} />,
-      show: true,
-      isDownload: true,
-    }] : []),
     {
       id: 'sponsors',
       label: 'Sponsors & Exhibitors',
@@ -310,7 +310,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
           />
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-1 bg-white/95 dark:bg-[#0f172a]/95 text-slate-800 dark:text-white shadow-xl backdrop-blur-xl border border-white/30 dark:border-white/20 rounded-full p-1.5 mx-auto">
+        <nav className="hidden lg:flex items-center gap-1 bg-[#FAF8F5]/95 dark:bg-[#0f172a]/95 text-slate-800 dark:text-white shadow-xl backdrop-blur-xl border border-white/30 dark:border-white/20 rounded-full p-1.5 mx-auto">
           <Link href="/" className={navLinkCls('/')}>
             <Globe size={18} />Home
           </Link>
@@ -334,20 +334,34 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
               <ChevronDown size={16} className="group-hover:rotate-180 transition-transform duration-200" />
             </button>
             <div className="absolute left-0 top-full pt-1.5 hidden group-hover:block z-50 w-56">
-              <div className="rounded-2xl border border-slate-200/80 dark:border-white/20 bg-white dark:bg-[#0f172a] text-slate-900 dark:text-white shadow-2xl py-1.5 backdrop-blur-xl transition-colors overflow-hidden">
+              <div className="rounded-2xl border border-slate-200/80 dark:border-white/20 bg-[#FAF8F5] dark:bg-[#0f172a] text-slate-900 dark:text-white shadow-2xl py-1.5 backdrop-blur-xl transition-colors overflow-hidden">
                 {programItems.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={item.path}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-base font-bold transition-colors ${
-                      isActive(item.path)
-                        ? 'bg-[hsl(var(--primary))] text-white font-extrabold'
-                        : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/90 dark:text-white/90 dark:hover:text-white dark:hover:bg-white/15'
-                    }`}
-                  >
-                    {item.icon}
-                    <span>{item.label}</span>
-                  </Link>
+                  item.isDownload ? (
+                    <a
+                      key={item.id}
+                      href={item.path}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 px-4 py-2.5 text-base font-bold text-slate-700 hover:text-slate-950 hover:bg-slate-100/90 dark:text-white/90 dark:hover:text-white dark:hover:bg-white/15 transition-colors"
+                    >
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </a>
+                  ) : (
+                    <Link
+                      key={item.id}
+                      href={item.path}
+                      className={`flex items-center gap-3 px-4 py-2.5 text-base font-bold transition-colors ${
+                        isActive(item.path)
+                          ? 'bg-[hsl(var(--primary))] text-white font-extrabold'
+                          : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/90 dark:text-white/90 dark:hover:text-white dark:hover:bg-white/15'
+                      }`}
+                    >
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </Link>
+                  )
                 ))}
               </div>
             </div>
@@ -384,7 +398,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
                 <ChevronDown size={16} className="group-hover:rotate-180 transition-transform duration-200" />
               </button>
               <div className="absolute right-0 top-full pt-1.5 hidden group-hover:block z-50 w-56">
-                <div className="rounded-2xl border border-slate-200/80 dark:border-white/20 bg-white dark:bg-[#0f172a] text-slate-900 dark:text-white shadow-2xl py-1.5 backdrop-blur-xl transition-colors overflow-hidden">
+                <div className="rounded-2xl border border-slate-200/80 dark:border-white/20 bg-[#FAF8F5] dark:bg-[#0f172a] text-slate-900 dark:text-white shadow-2xl py-1.5 backdrop-blur-xl transition-colors overflow-hidden">
                   {moreItems.map((item) => (
                     item.isDownload ? (
                       <a
@@ -436,7 +450,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
             onClick={toggle}
             aria-label="Toggle dark/light theme"
             title={dark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full bg-white/95 dark:bg-[#0f172a]/95 hover:bg-white dark:hover:bg-[#1e293b] border border-white/30 dark:border-white/20 text-slate-800 dark:text-white font-extrabold text-xs sm:text-sm shadow-md backdrop-blur-xl transition-all cursor-pointer active:scale-95"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full bg-[#FAF8F5]/95 dark:bg-[#0f172a]/95 hover:bg-[#FAF8F5] dark:hover:bg-[#1e293b] border border-white/30 dark:border-white/20 text-slate-800 dark:text-white font-extrabold text-xs sm:text-sm shadow-md backdrop-blur-xl transition-all cursor-pointer active:scale-95"
           >
             {dark ? (
               <>
@@ -492,15 +506,30 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
                 {mobileProgramOpen && (
                   <div className="space-y-1 pl-4 border-l-2 border-[hsl(var(--border))] ml-4 py-1 animate-in fade-in slide-in-from-top-2 duration-200">
                     {programItems.map((item) => (
-                      <Link
-                        key={item.id}
-                        href={item.path}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={mobileLinkCls(item.path)}
-                      >
-                        {item.icon}
-                        <span>{item.label}</span>
-                      </Link>
+                      item.isDownload ? (
+                        <a
+                          key={item.id}
+                          href={item.path}
+                          download
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={mobileLinkCls(item.path)}
+                        >
+                          {item.icon}
+                          <span>{item.label}</span>
+                        </a>
+                      ) : (
+                        <Link
+                          key={item.id}
+                          href={item.path}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={mobileLinkCls(item.path)}
+                        >
+                          {item.icon}
+                          <span>{item.label}</span>
+                        </Link>
+                      )
                     ))}
                   </div>
                 )}
