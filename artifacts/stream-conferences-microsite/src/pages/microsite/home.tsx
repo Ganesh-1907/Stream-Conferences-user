@@ -308,7 +308,10 @@ export function HomePage({ event }: { event: EventData }) {
                   {event.title}
                 </h1>
                 {event.theme && (
-                  <p className="text-sm sm:text-lg md:text-2xl font-extrabold text-white tracking-wide italic drop-shadow-sm text-center lg:text-left">
+                  <p
+                    className="text-sm sm:text-lg md:text-2xl font-extrabold tracking-wide italic drop-shadow-sm text-center lg:text-left"
+                    style={{ color: event.heroThemeColor || '#ffffff' }}
+                  >
                     Theme: {event.theme}
                   </p>
                 )}
@@ -718,6 +721,7 @@ export function HomePage({ event }: { event: EventData }) {
         </section>
       )}
 
+
       {/* Media Partners Section (Directly Above FAQs) */}
       {Array.isArray(event.mediaPartners) && event.mediaPartners.length > 0 && (
         <section className="container-wide py-6 md:py-8">
@@ -742,13 +746,7 @@ export function HomePage({ event }: { event: EventData }) {
             </Link>
           </div>
 
-          <div className="flex flex-wrap gap-6 sm:gap-8 items-start">
-            {event.mediaPartners.slice(0, 5).map((partner, idx) => (
-              <div key={idx} className="w-56 sm:w-64 md:w-72 shrink-0">
-                <PartnerLogoCard item={partner} defaultType={`Media Partner ${idx + 1}`} />
-              </div>
-            ))}
-          </div>
+          <MediaPartnersMarquee partners={event.mediaPartners} />
         </section>
       )}
 
@@ -933,5 +931,78 @@ export function HomePage({ event }: { event: EventData }) {
         )}
       </Dialog>
     </>
+  );
+}
+
+function MediaPartnersMarquee({ partners }: { partners: any[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Build a repeated list so that there are enough items to loop seamlessly across all viewports
+  const repeatedList = useMemo(() => {
+    if (!partners || partners.length === 0) return [];
+    let list = [...partners];
+    while (list.length < 8) {
+      list = [...list, ...partners];
+    }
+    return list;
+  }, [partners]);
+
+  const handleScroll = (dir: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = 300;
+      scrollRef.current.scrollBy({
+        left: dir === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  return (
+    <div className="relative group/marquee w-full overflow-hidden py-2">
+      {/* Subtle fade edges for clean transition */}
+      <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-[hsl(var(--background))] to-transparent z-10" />
+      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-[hsl(var(--background))] to-transparent z-10" />
+
+      {/* Manual Left/Right Scroll Arrows (Visible on hover) */}
+      <button
+        type="button"
+        onClick={() => handleScroll('left')}
+        aria-label="Scroll left"
+        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/95 dark:bg-slate-900/95 text-slate-800 dark:text-white shadow-xl border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center opacity-0 group-hover/marquee:opacity-100 transition-all duration-200 hover:scale-110 cursor-pointer backdrop-blur-md"
+      >
+        <ChevronLeft size={20} />
+      </button>
+
+      <button
+        type="button"
+        onClick={() => handleScroll('right')}
+        aria-label="Scroll right"
+        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/95 dark:bg-slate-900/95 text-slate-800 dark:text-white shadow-xl border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center opacity-0 group-hover/marquee:opacity-100 transition-all duration-200 hover:scale-110 cursor-pointer backdrop-blur-md"
+      >
+        <ChevronRight size={20} />
+      </button>
+
+      {/* Infinite Scrolling Track */}
+      <div
+        ref={scrollRef}
+        className="flex w-full overflow-x-auto scrollbar-none"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        <div className="animate-marquee-infinite flex gap-6 sm:gap-8 items-center shrink-0 pr-6 sm:pr-8">
+          {repeatedList.map((partner, idx) => (
+            <div key={`m1-${idx}`} className="w-56 sm:w-64 md:w-72 shrink-0">
+              <PartnerLogoCard item={partner} defaultType={`Media Partner ${idx + 1}`} />
+            </div>
+          ))}
+        </div>
+        <div className="animate-marquee-infinite flex gap-6 sm:gap-8 items-center shrink-0 pr-6 sm:pr-8" aria-hidden="true">
+          {repeatedList.map((partner, idx) => (
+            <div key={`m2-${idx}`} className="w-56 sm:w-64 md:w-72 shrink-0">
+              <PartnerLogoCard item={partner} defaultType={`Media Partner ${idx + 1}`} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

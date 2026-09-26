@@ -8,7 +8,7 @@ export interface MicrositeHeroProps {
 
 export function MicrositeHero({ badge, title, tagline }: MicrositeHeroProps) {
   return (
-    <section className="relative overflow-hidden bg-[hsl(var(--primary))] text-white pt-16 pb-8 sm:pt-24 sm:pb-12 md:pt-28 md:pb-12">
+    <section className="relative overflow-hidden bg-[hsl(var(--hero-primary,var(--primary)))] text-white pt-16 pb-8 sm:pt-24 sm:pb-12 md:pt-28 md:pb-12">
       {/* Ambient background glow */}
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/10 via-transparent to-black/10 opacity-80" />
 

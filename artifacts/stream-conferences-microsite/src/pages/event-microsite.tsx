@@ -147,6 +147,7 @@ export function EventMicrosite({ subdomain, customBase }: { subdomain: string; c
         description: activeCohort.content?.description || event.description || '',
         theme: activeCohort.content?.theme || event.theme || '',
         themeColor: activeCohort.content?.themeColor || event.themeColor || '',
+        heroThemeColor: activeCohort.content?.heroThemeColor || event.heroThemeColor || '',
         primaryColor: activeCohort.content?.primaryColor || event.primaryColor || '',
         colorTheme: activeCohort.content?.colorTheme || event.colorTheme || '',
         day: activeCohort.content?.day || event.day || '',

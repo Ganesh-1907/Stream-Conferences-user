@@ -757,12 +757,12 @@ function SiteHeader() {
             ? 'bg-[hsl(var(--primary))] backdrop-blur-xl border-none shadow-xl py-1.5 sm:py-2'
             : 'bg-[hsl(var(--primary))] border-none py-2 sm:py-2.5'
       }`}>
-        <div className="container-wide flex h-[58px] sm:h-[66px] items-center justify-between gap-2 sm:gap-4">
+        <div className="container-wide flex h-[64px] sm:h-[72px] md:h-[78px] items-center justify-between gap-2 sm:gap-4">
           {/* Brand / Logo */}
           <Link href="/" className="group flex shrink-0 items-center min-w-fit" data-testid="link-home-logo">
             <img
               src="/logo.png"
-              className="h-12 sm:h-14 md:h-[58px] w-auto max-w-none shrink-0 object-contain transition-transform duration-200 group-hover:scale-105"
+              className="h-14 sm:h-16 md:h-[68px] lg:h-[72px] w-auto max-w-none shrink-0 object-contain drop-shadow-md brightness-105 transition-transform duration-200 group-hover:scale-105"
               alt="Stream Conferences"
             />
           </Link>
@@ -955,7 +955,7 @@ function Footer() {
           <div className="flex items-center gap-3">
             <img
               src="/logo.png"
-              className="h-10 sm:h-12 w-auto object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] filter brightness-110 contrast-110"
+              className="h-12 sm:h-14 md:h-16 w-auto object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] filter brightness-110"
               alt="Stream Conferences"
             />
           </div>

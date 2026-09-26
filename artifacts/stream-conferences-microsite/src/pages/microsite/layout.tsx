@@ -27,6 +27,7 @@ export interface EventData {
   country?: string;
   theme?: string;
   themeColor?: string;
+  heroThemeColor?: string;
   primaryColor?: string;
   colorTheme?: string;
   day?: string;
@@ -179,7 +180,7 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
     if (event?.logoUrl) {
       iconLink.href = mediaUrl(event.logoUrl);
     } else {
-      iconLink.href = '/logo.png';
+      iconLink.href = '/logo-icon.png';
     }
 
     if (event?.title) {
@@ -300,12 +301,12 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
         ? 'absolute top-0 left-0 right-0 bg-transparent border-b-0 shadow-none pt-2 sm:pt-2.5'
         : 'fixed top-0 left-0 right-0 bg-[hsl(var(--primary))]/95 dark:bg-[#141820]/95 border-b border-white/15 dark:border-white/10 backdrop-blur-xl shadow-lg py-1'
     }`}>
-      <div className="container-wide flex h-[52px] sm:h-[58px] items-center justify-between gap-2 sm:gap-4">
+      <div className="container-wide flex h-[64px] sm:h-[72px] md:h-[78px] items-center justify-between gap-2 sm:gap-4">
         <Link href="/" className="group flex shrink-0 items-center min-w-fit" data-testid="link-microsite-logo">
           <img
             src="/logo.png"
             alt="Stream Conferences"
-            className="h-14 w-auto max-w-none shrink-0 object-contain transition-transform duration-200 group-hover:scale-105"
+            className="h-14 sm:h-16 md:h-[68px] lg:h-[72px] w-auto max-w-none shrink-0 object-contain drop-shadow-md brightness-105 transition-transform duration-200 group-hover:scale-105"
           />
         </Link>
 
