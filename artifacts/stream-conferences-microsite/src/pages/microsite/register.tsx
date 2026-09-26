@@ -883,9 +883,6 @@ export function RegisterPage({ event }: { event: EventData }) {
                 <span>Continue to Fee Selection</span>
                 <ArrowRight size={18} className="ml-1 inline" />
               </button>
-              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-3">
-                Your information is encrypted & secure. By continuing, you agree to the conference Terms & Conditions.
-              </p>
             </div>
           </form>
         ) : (
