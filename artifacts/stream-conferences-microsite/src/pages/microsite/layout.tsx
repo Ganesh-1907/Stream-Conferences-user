@@ -48,6 +48,7 @@ export interface EventData {
   subjectImageUrl?: string;
   headerBanners?: string[];
   fees?: { type: string; dateLabel: string; deadline?: string | Date; usd: number; gbp: number; eur: number }[];
+  accommodationFees?: { id?: string; title: string; usd: number; gbp: number; eur: number }[];
   tracks?: { title: string; description?: string; image?: string; referenceLinks?: { label: string; url: string }[] }[];
   organizerContact?: { name?: string; email?: string; phone?: string; website?: string; address?: string; country?: string; socials?: any };
   speakers?: { name: string; degree?: string; designation?: string; organization?: string; bio?: string; avatar?: string; linkedin?: string; twitter?: string; website?: string; topic?: string; isKeynote?: boolean; category?: string }[];

@@ -178,6 +178,32 @@ export function RegisterPage({ event }: { event: EventData }) {
     return null;
   }, [allFeeOptions, selectedOptionId]);
 
+  // Accommodation selection state
+  const [selectedAccId, setSelectedAccId] = useState<string>('none');
+  const accommodationOptions = useMemo(() => {
+    return Array.isArray(event.accommodationFees) ? event.accommodationFees : [];
+  }, [event.accommodationFees]);
+
+  const selectedAccommodation = useMemo(() => {
+    if (!selectedAccId || selectedAccId === 'none') return null;
+    return accommodationOptions.find((a, idx) => (a.id || String(idx)) === selectedAccId) || null;
+  }, [accommodationOptions, selectedAccId]);
+
+  const accPrice = useMemo(() => {
+    if (!selectedAccommodation) return 0;
+    const currKey = currency.toLowerCase() as 'usd' | 'gbp' | 'eur';
+    return Number(selectedAccommodation[currKey] ?? (selectedAccommodation as any)[currency] ?? 0);
+  }, [selectedAccommodation, currency]);
+
+  const regPrice = useMemo(() => {
+    if (!selectedOption) return 0;
+    return Number(selectedOption.prices[currency] || 0);
+  }, [selectedOption, currency]);
+
+  const totalPrice = useMemo(() => {
+    return regPrice + accPrice;
+  }, [regPrice, accPrice]);
+
   const phone = phoneNum.trim();
   const name = title ? `${title} ${fullName}`.trim() : fullName.trim();
   const sym = CURRENCY_INFO[currency].symbol;
@@ -489,38 +515,52 @@ export function RegisterPage({ event }: { event: EventData }) {
     setIsSubmitting(true);
     try {
       const categoryLabel = `${selectedOption.categoryName} - ${selectedOption.itemName} (${selectedOption.tierTitle})`;
-      const selectedPrice = selectedOption.prices[currency] || 0;
+      const accommodationTitle = selectedAccommodation ? selectedAccommodation.title : '';
 
-       const billingPayload = {
-         title: sameAsPersonal ? title : billingTitle,
-         fullName: sameAsPersonal ? fullName : billingFullName,
-         email: sameAsPersonal ? email : billingEmail,
-         phone: sameAsPersonal ? phoneNum : billingPhone,
-         institution: sameAsPersonal ? institution : billingInstitution,
-         country: countryName(sameAsPersonal ? country : billingCountry),
-         address: sameAsPersonal ? address : billingAddress,
-       };
+      const billingPayload = {
+        title: sameAsPersonal ? title : billingTitle,
+        fullName: sameAsPersonal ? fullName : billingFullName,
+        email: sameAsPersonal ? email : billingEmail,
+        phone: sameAsPersonal ? phoneNum : billingPhone,
+        institution: sameAsPersonal ? institution : billingInstitution,
+        country: countryName(sameAsPersonal ? country : billingCountry),
+        address: sameAsPersonal ? address : billingAddress,
+      };
 
-       const regRes = await fetch(`${API_BASE}/registrations/register`, {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({
-           title, fullName, name, email, phone, institution, address, country: countryName(country), category: categoryLabel,
-           billingInfo: billingPayload,
-           eventId: event._id, eventType: event.eventType, eventSlug: event.slug || event.subdomain || event.eventId,
-           cohortId: event.activeCohort?.cohortId || null,
-         }),
-       });
+      const regRes = await fetch(`${API_BASE}/registrations/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title, fullName, name, email, phone, institution, address, country: countryName(country),
+          category: categoryLabel,
+          accommodation: accommodationTitle,
+          accommodationFee: accPrice,
+          registrationFee: regPrice,
+          totalAmount: totalPrice,
+          currency,
+          billingInfo: billingPayload,
+          eventId: event._id, eventType: event.eventType, eventSlug: event.slug || event.subdomain || event.eventId,
+          cohortId: event.activeCohort?.cohortId || null,
+        }),
+      });
       if (!regRes.ok) throw new Error((await regRes.json()).error || 'Registration failed');
       const regData = await regRes.json();
 
       resetPaymentState();
       setOrderPayload({
-        title, fullName, name, email, phone, category: categoryLabel, address, country: sameAsPersonal ? country : billingCountry, amount: selectedPrice || 245, currency, registrationId: regData._id,
+        title, fullName, name, email, phone,
+        category: categoryLabel,
+        accommodation: accommodationTitle,
+        accommodationFee: accPrice,
+        registrationFee: regPrice,
+        address, country: sameAsPersonal ? country : billingCountry,
+        amount: totalPrice,
+        currency,
+        registrationId: regData._id,
         eventId: event._id, eventType: event.eventType, eventTitle: event.title, eventSlug: event.slug || event.subdomain || event.eventId,
         cohortId: event.activeCohort?.cohortId || null,
       });
-      setPaymentAmount(Number(selectedPrice) || 245);
+      setPaymentAmount(Number(totalPrice) || 245);
       setPayStage(true);
     } catch (err: any) {
       setError(err.message || 'Registration failed');
@@ -1052,6 +1092,94 @@ export function RegisterPage({ event }: { event: EventData }) {
               </div>
             )}
 
+            {/* Accommodation Package (Optional Add-On) */}
+            {accommodationOptions.length > 0 && (
+              <div className="bg-card border border-[hsl(var(--border))] rounded-2xl shadow-sm overflow-hidden mt-6">
+                <div className="bg-slate-900 text-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-lg">
+                        Optional Add-On
+                      </span>
+                      <h4 className="text-base font-bold text-white tracking-tight">Accommodation Package</h4>
+                    </div>
+                    <p className="text-xs text-slate-300 mt-1">
+                      Select your preferred accommodation package to be billed alongside your conference registration.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-4 sm:p-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {/* Option 1: No Accommodation */}
+                  <div
+                    onClick={() => setSelectedAccId('none')}
+                    className={`rounded-xl border p-4 transition-all cursor-pointer flex flex-col justify-between ${
+                      selectedAccId === 'none'
+                        ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary)/.08)] shadow-xs ring-2 ring-[hsl(var(--primary))]'
+                        : 'border-[hsl(var(--border))] bg-background hover:bg-[hsl(var(--muted)/.5)]'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="font-bold text-sm text-[hsl(var(--foreground))]">No Accommodation</p>
+                        <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">Registration only (Self-arranged stay)</p>
+                      </div>
+                      <input
+                        type="radio"
+                        name="selectedAccRadio"
+                        checked={selectedAccId === 'none'}
+                        onChange={() => setSelectedAccId('none')}
+                        className="h-4.5 w-4.5 text-[hsl(var(--primary))] accent-[hsl(var(--primary))] cursor-pointer mt-0.5"
+                      />
+                    </div>
+                    <div className="mt-3 pt-2 border-t border-[hsl(var(--border))] text-xs font-semibold text-[hsl(var(--muted-foreground))]">
+                      + {sym}0
+                    </div>
+                  </div>
+
+                  {/* Accommodation Levels */}
+                  {accommodationOptions.map((acc, idx) => {
+                    const accId = acc.id || String(idx);
+                    const isSelected = selectedAccId === accId;
+                    const currKey = currency.toLowerCase() as 'usd' | 'gbp' | 'eur';
+                    const price = acc[currKey] ?? (acc as any)[currency] ?? 0;
+
+                    return (
+                      <div
+                        key={accId}
+                        onClick={() => setSelectedAccId(accId)}
+                        className={`rounded-xl border p-4 transition-all cursor-pointer flex flex-col justify-between ${
+                          isSelected
+                            ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary)/.08)] shadow-xs ring-2 ring-[hsl(var(--primary))]'
+                            : 'border-[hsl(var(--border))] bg-background hover:bg-[hsl(var(--muted)/.5)]'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="font-bold text-sm text-[hsl(var(--foreground))]">{acc.title || `Accommodation Level #${idx + 1}`}</p>
+                            <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold mt-0.5">Hotel room booking included</p>
+                          </div>
+                          <input
+                            type="radio"
+                            name="selectedAccRadio"
+                            checked={isSelected}
+                            onChange={() => setSelectedAccId(accId)}
+                            className="h-4.5 w-4.5 text-[hsl(var(--primary))] accent-[hsl(var(--primary))] cursor-pointer mt-0.5"
+                          />
+                        </div>
+                        <div className="mt-3 pt-2 border-t border-[hsl(var(--border))] flex items-center justify-between">
+                          <span className="text-xs font-bold text-[hsl(var(--foreground))]">Add-on Rate:</span>
+                          <span className="px-2 py-0.5 rounded-lg border text-xs font-black font-mono bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-slate-200 dark:border-slate-700">
+                            + {sym}{Number(price).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {error && (
               <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-600 font-semibold text-center">
                 {error}
@@ -1059,26 +1187,35 @@ export function RegisterPage({ event }: { event: EventData }) {
             )}
 
             {/* Bottom Actions Bar */}
-            <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl p-5 sm:p-6 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                  Selected Category:
-                </span>
-                <p className="text-base sm:text-lg font-bold text-[hsl(var(--foreground))]">
+            <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl p-5 sm:p-6 shadow-md flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="space-y-1.5 w-full sm:w-auto">
+                <div className="flex items-center gap-2 flex-wrap text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                  <span>Selected Package:</span>
+                </div>
+                <div className="text-sm sm:text-base font-bold text-[hsl(var(--foreground))]">
                   {selectedOption ? (
-                    <>
-                      <span>{selectedOption.categoryName}</span> · <span className="text-[hsl(var(--primary))]">{selectedOption.itemName}</span>{' '}
-                      <span className="text-xs text-[hsl(var(--muted-foreground))] font-normal">({selectedOption.tierTitle})</span>
-                    </>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-extrabold text-[hsl(var(--primary))]">{selectedOption.itemName}</span>
+                        <span className="text-xs text-[hsl(var(--muted-foreground))]">({selectedOption.categoryName} · {selectedOption.tierTitle})</span>
+                        <span className="font-mono text-xs bg-[hsl(var(--muted))] px-2 py-0.5 rounded font-bold">{sym}{Number(regPrice).toLocaleString()}</span>
+                      </div>
+                      {selectedAccommodation && accPrice > 0 && (
+                        <div className="flex items-center gap-2 flex-wrap text-xs text-amber-600 dark:text-amber-400 font-semibold">
+                          <span>🏨 Accommodation: {selectedAccommodation.title}</span>
+                          <span className="font-mono bg-amber-500/10 px-2 py-0.5 rounded font-bold">+{sym}{Number(accPrice).toLocaleString()}</span>
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <span className="text-[hsl(var(--muted-foreground))] font-normal text-sm sm:text-base">
-                      Please select a fee level above
+                      Please select a registration fee category above
                     </span>
                   )}
-                </p>
+                </div>
               </div>
 
-              <div className="flex items-center gap-4 w-full sm:w-auto">
+              <div className="flex items-center gap-4 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
                 <button
                   type="button"
                   onClick={() => { setStep(1); setError(''); }}
@@ -1089,14 +1226,14 @@ export function RegisterPage({ event }: { event: EventData }) {
                 <button
                   type="submit"
                   disabled={isSubmitting || paying || !selectedOption}
-                  className="btn-main btn-primary flex-1 sm:flex-none px-8 py-3.5 font-bold text-base shadow-xl cursor-pointer disabled:opacity-50"
+                  className="btn-main btn-primary px-8 py-3.5 font-bold text-base shadow-xl cursor-pointer disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
                       <Loader2 className="animate-spin" size={18} /> Creating Order...
                     </span>
                   ) : selectedOption ? (
-                    `Proceed to payment · ${sym}${Number(selectedOption.prices[currency] || 0).toLocaleString()}`
+                    `Proceed to payment · ${sym}${Number(totalPrice).toLocaleString()}`
                   ) : (
                     'Select Fee to Proceed'
                   )}

@@ -255,6 +255,73 @@ export function FeesPage({ event }: { event: EventData }) {
           </div>
         )}
 
+        {/* Accommodation Fee Section (Full Width Global Add-On) */}
+        {Array.isArray(event.accommodationFees) && event.accommodationFees.length > 0 && (
+          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-card dark:bg-[#0f172a] shadow-lg overflow-hidden mt-10">
+            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-lg">
+                    Global Add-On
+                  </span>
+                  <h3 className="text-lg sm:text-xl font-black tracking-tight text-white">
+                    Accommodation Packages & Fees
+                  </h3>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-300 mt-1.5 max-w-2xl">
+                  Accommodation options are available for all participants throughout the registration cycle until final registration close (the day before conference starts).
+                </p>
+              </div>
+              <div className="shrink-0 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-2 text-center">
+                <span className="text-[10px] uppercase font-bold text-slate-300 tracking-wider block">Deadline</span>
+                <span className="text-xs font-black text-amber-300">Final Registration Close</span>
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-6 bg-card">
+              <div className="overflow-x-auto border border-slate-200 dark:border-white/10 rounded-xl bg-background">
+                <table className="w-full text-left text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 dark:bg-white/[0.03] text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-white/10 text-xs">
+                      <th className="p-4 pl-5 uppercase tracking-wider">Accommodation Level / Type</th>
+                      <th className="p-4 text-center uppercase tracking-wider w-[25%]">Price ({selectedCurrency})</th>
+                      <th className="p-4 text-right uppercase tracking-wider w-[25%] pr-5">Availability</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                    {event.accommodationFees.map((acc, idx) => {
+                      const currKey = selectedCurrency.toLowerCase() as 'usd' | 'gbp' | 'eur';
+                      const price = acc[currKey] ?? (acc as any)[selectedCurrency] ?? 0;
+                      return (
+                        <tr key={acc.id || idx} className="hover:bg-slate-50/60 dark:hover:bg-white/[0.02] transition">
+                          <td className="p-4 pl-5">
+                            <div className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
+                              {acc.title || `Accommodation Level #${idx + 1}`}
+                            </div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                              Can be selected alongside your registration tier at checkout.
+                            </div>
+                          </td>
+                          <td className="p-4 text-center">
+                            <span className="inline-block px-3 py-1.5 rounded-lg border text-sm sm:text-base font-black font-mono shadow-2xs bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-slate-200 dark:border-slate-700">
+                              {currencySymbol} {Number(price).toLocaleString()}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right pr-5">
+                            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+                              Open for Registration
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Bottom CTA Button */}
         <div className="text-center pt-8">
           <Link
