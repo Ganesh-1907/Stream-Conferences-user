@@ -48,6 +48,24 @@ function getSavedVisitorDetails(): VisitorDetails | null {
   return null;
 }
 
+function lastReadKey(visitorId: string, conferenceId?: string | null): string {
+  return `stream-chat-lastread-${conferenceId || 'main'}-${visitorId}`;
+}
+
+function readLastRead(visitorId: string, conferenceId?: string | null): number {
+  try {
+    return Number(localStorage.getItem(lastReadKey(visitorId, conferenceId)) || 0) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function writeLastRead(visitorId: string, conferenceId?: string | null, at: number = Date.now()): void {
+  try {
+    localStorage.setItem(lastReadKey(visitorId, conferenceId), String(at));
+  } catch {}
+}
+
 interface LiveChatWidgetProps {
   event?: any;
 }
@@ -107,6 +125,12 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
           if (history.session) {
             setSessionId(history.session._id);
             setMessages(history.messages || []);
+            const msgs = history.messages || [];
+            const last = msgs[msgs.length - 1];
+            if (last && last.sender === 'admin') {
+              const t = last.createdAt ? Date.parse(last.createdAt) : 0;
+              if (t > readLastRead(currentVisitorId, conferenceId)) setHasUnread(true);
+            }
             return history.session;
           }
         }
@@ -171,7 +195,7 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
         }
         return [...prev, msg];
       });
-      if (!isOpen) setHasUnread(true);
+      if (msg.sender === 'admin' && !isOpen) setHasUnread(true);
     });
     socket.on('chat:typing', (payload: { typing: boolean }) => {
       setTyping(payload.typing);
@@ -218,9 +242,10 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
   useEffect(() => {
     if (isOpen && step === 'chat') {
       setHasUnread(false);
+      writeLastRead(visitorIdRef.current, conferenceId);
       scrollToBottom();
     }
-  }, [isOpen, messages, step]);
+  }, [isOpen, messages, step, conferenceId]);
 
   const handleFormSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -585,9 +610,9 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
         )}
 
         {!isOpen && hasUnread && (
-          <span className="absolute top-1 right-1 flex h-3.5 w-3.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(var(--accent))] opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[hsl(var(--accent))] border-2 border-[hsl(var(--card))]"></span>
+          <span className="absolute top-1 right-1 flex h-4 w-4">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-70"></span>
+            <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-[hsl(var(--card))]"></span>
           </span>
         )}
       </button>
