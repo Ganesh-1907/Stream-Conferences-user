@@ -610,10 +610,10 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
         )}
 
         {!isOpen && hasUnread && (
-          <span className="absolute -top-1 -right-1 flex h-6 w-6 drop-shadow-[0_0_6px_rgba(0,255,136,0.95)]">
+          <span className="absolute -top-1 -right-1 flex h-6 w-6 drop-shadow-[0_0_6px_hsl(var(--primary)/0.95)]">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90"></span>
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ff88] opacity-80 [animation-delay:150ms]"></span>
-            <span className="relative inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#00ff88] border-[3px] border-white shadow-[0_0_14px_3px_rgba(0,255,136,0.9)]">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(var(--primary))] opacity-80 [animation-delay:150ms]"></span>
+            <span className="relative inline-flex h-6 w-6 items-center justify-center rounded-full bg-[hsl(var(--primary))] border-[3px] border-white shadow-[0_0_14px_3px_hsl(var(--primary)/0.9)]">
               <span className="h-2 w-2 rounded-full bg-white shadow-[0_0_6px_2px_rgba(255,255,255,0.95)]"></span>
             </span>
           </span>
