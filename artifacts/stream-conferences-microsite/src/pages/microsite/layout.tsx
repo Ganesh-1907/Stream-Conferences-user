@@ -111,7 +111,12 @@ function formatDateRange(event: EventData): string {
 }
 
 function useTheme() {
-  const [dark, setDark] = useState(() => typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
+  const [dark, setDark] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const stored = window.localStorage.getItem('stream-theme');
+    if (stored) return stored === 'dark';
+    return document.documentElement.classList.contains('dark');
+  });
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
     try { localStorage.setItem('stream-theme', dark ? 'dark' : 'light'); } catch { /* ignore */ }

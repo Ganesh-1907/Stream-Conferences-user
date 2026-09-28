@@ -45,30 +45,30 @@
 }
 
 :root {
-  --background: 40 33% 98%;
+  --background: 0 0% 100%;
   --foreground: 222 47% 11%;
-  --border: 38 20% 89%;
-  --input: 38 20% 89%;
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
   --ring: 208 79% 34%;
-  --card: 40 33% 98%;
+  --card: 0 0% 100%;
   --card-foreground: 222 47% 11%;
-  --card-border: 38 20% 89%;
-  --primary: 187 85% 45%;
+  --card-border: 220 13% 91%;
+  --primary: 216 55% 23%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 172 75% 40%;
+  --secondary: 199 75% 40%;
   --secondary-foreground: 0 0% 100%;
-  --muted: 40 25% 94%;
-  --muted-foreground: 222 47% 11%;
-  --accent: 174 72% 48%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 201 80% 45%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --sidebar: 208 79% 34%;
+  --sidebar: 216 55% 23%;
   --sidebar-foreground: 0 0% 100%;
-  --sidebar-border: 208 60% 25%;
-  --sidebar-primary: 199 89% 48%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-primary: 199 75% 40%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 208 60% 25%;
+  --sidebar-accent: 210 40% 96.1%;
   --app-font-sans: 'Times New Roman', Times, serif;
   --app-font-mono: 'Times New Roman', Times, serif;
   --radius: 0.75rem;

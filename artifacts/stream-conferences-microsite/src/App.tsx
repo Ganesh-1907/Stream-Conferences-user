@@ -690,7 +690,12 @@ function SiteHeader() {
   const [location] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [dark, setDark] = useState(() => typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
+  const [dark, setDark] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const saved = window.localStorage.getItem('stream-theme');
+    if (saved) return saved === 'dark';
+    return document.documentElement.classList.contains('dark');
+  });
   const colorThemes = [
     { id: 'conference-blue', label: 'Conference Blue', swatch: '#2563a8', primary: '213 63% 40%', secondary: '199 89% 48%', accent: '201 96% 40%' },
     { id: 'royal-navy', label: 'Royal Navy', swatch: '#1b365d', primary: '216 55% 23%', secondary: '199 75% 40%', accent: '201 80% 45%' },
@@ -717,8 +722,8 @@ function SiteHeader() {
       ]
     },
     {
-      id: 'media',
-      label: 'Media',
+      id: 'explore',
+      label: 'Explore',
       items: [
         ['/blog', 'Blogs'],
         ['/sponsors', 'Sponsors'],
@@ -727,8 +732,8 @@ function SiteHeader() {
       ]
     },
     {
-      id: 'guidelines',
-      label: 'Guidelines',
+      id: 'support',
+      label: 'Support',
       items: [
         ['/abstract-submission-guidelines', 'Abstract Submission Guidelines'],
         ['/guidelines', 'Program Guidelines'],
@@ -1044,18 +1049,13 @@ function Footer() {
           </div>
         </div>
 
-        {/* Column 2: Explore & Media */}
+        {/* Column 2: Explore */}
         <div className="grid gap-6 content-start">
           <div>
             <p className="label text-white text-xs font-black uppercase tracking-wider">Explore</p>
             <div className="mt-3 grid gap-2.5 text-sm">
               <Link href="/" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-home">Home</Link>
               <Link href="/about" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-about">About</Link>
-            </div>
-          </div>
-          <div>
-            <p className="label text-white text-xs font-black uppercase tracking-wider">Media</p>
-            <div className="mt-3 grid gap-2.5 text-sm">
               <Link href="/blog" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-blog">Blogs</Link>
               <Link href="/sponsors" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-sponsors">Sponsors</Link>
               <Link href="/gallery" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-gallery">Gallery</Link>
@@ -1074,7 +1074,7 @@ function Footer() {
             </div>
           </div>
           <div>
-            <p className="label text-white text-xs font-black uppercase tracking-wider">Guidelines</p>
+            <p className="label text-white text-xs font-black uppercase tracking-wider">Support</p>
             <div className="mt-3 grid gap-2.5 text-sm">
               <Link href="/abstract-submission-guidelines" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-abstract-guidelines">Abstract Submission Guidelines</Link>
               <Link href="/guidelines" className="text-white/70 font-normal hover:text-white hover:font-bold transition-all inline-block hover:translate-x-1" data-testid="link-footer-guidelines">Program Guidelines</Link>
