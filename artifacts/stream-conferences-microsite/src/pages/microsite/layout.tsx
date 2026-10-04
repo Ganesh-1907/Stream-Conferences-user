@@ -60,6 +60,8 @@ export interface EventData {
   exhibitors?: { title: string; order?: number }[];
   guidelines?: string;
   scientificProgramUrl?: string;
+  organizingCommittee?: any[];
+  termsAndConditions?: string;
   venueDetails?: { name?: string; address?: string; city?: string; state?: string; country?: string; pincode?: string; description?: string; mainImage?: string; subImages?: string[]; cityHighlights?: (string | { name?: string; image?: string; link?: string })[]; cityAttractions?: { name?: string; image?: string; link?: string }[]; images?: string[]; mapUrl?: string; directions?: string; parking?: string; accommodation?: string; nearestAirport?: string };
   itinerary?: any[];
   about?: string;
@@ -139,7 +141,6 @@ export function buildNavItems(event: EventData): NavItem[] {
     { id: 'program', label: 'Program', path: '/program', icon: <Presentation size={16} />, show: Boolean(event.program?.length) },
     { id: 'speakers', label: 'Speakers', path: '/speakers', icon: <Users size={16} />, show: Boolean(event.speakers?.length) },
     { id: 'sponsors', label: 'Sponsors/Exhibitors', path: '/sponsors', icon: <Award size={16} />, show: true },
-    { id: 'fees', label: 'Fees', path: '/fees', icon: <FileText size={16} />, show: Boolean(event.fees?.length) },
     { id: 'tracks', label: 'Tracks', path: '/tracks', icon: <Layers size={16} />, show: Boolean(event.tracks?.length) },
     { id: 'media-partners', label: 'Media Partners', path: '/media-partners', icon: <Award size={16} />, show: Boolean(event.mediaPartners?.length) },
     { id: 'faq', label: 'FAQ', path: '/faq', icon: <HelpCircle size={16} />, show: Boolean(event.faqs?.length) },
@@ -383,10 +384,6 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
             <FileText size={16} />Register
           </Link>
 
-          <Link href="/fees" className={navLinkCls('/fees')}>
-            <FileText size={16} />Fees
-          </Link>
-
           {/* Info Dropdown */}
           {moreItems.length > 0 && (
             <div className="relative group">
@@ -550,10 +547,6 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
 
             <Link href="/register" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls('/register')}>
               <FileText size={16} /><span>Register</span>
-            </Link>
-
-            <Link href="/fees" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls('/fees')}>
-              <FileText size={16} /><span>Fees</span>
             </Link>
 
             {/* Info Accordion */}
@@ -820,7 +813,6 @@ function MicrositeFooter({ event, navItems }: { event: EventData; navItems: NavI
   const navigateLinks = [
     { id: 'home', label: 'Home', path: '/' },
     { id: 'about', label: 'About', path: '/about', show: Boolean(event.description) },
-    { id: 'fees', label: 'Fees', path: '/fees', show: Boolean(event.fees?.length) },
     { id: 'brochure', label: 'Brochure', path: '/brochure', show: Boolean(event.brochureUrl) },
     { id: 'submit-abstract', label: 'Submit Abstract', path: '/submit-abstract', show: true },
     { id: 'register', label: 'Register', path: '/register', show: true },

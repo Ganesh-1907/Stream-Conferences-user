@@ -48,7 +48,7 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
   );
 
   const keyMembers = members.filter(isKeyMember);
-  const otherMembers = members.filter((m) => !isKeyMember(m));
+  const otherMembers = members.filter((m: any) => !isKeyMember(m));
 
   const CommitteeCard = ({ member, isKey = false }: { member: any; isKey?: boolean }) => {
     const roleTag = member.role || member.specialization || (isKey ? 'Chair' : 'Committee Member');
@@ -129,7 +129,7 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
             </h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-4 sm:gap-x-5 gap-y-10 sm:gap-y-12">
-            {keyMembers.map((member, idx) => (
+            {keyMembers.map((member: any, idx: number) => (
               <CommitteeCard key={member.name || idx} member={member} isKey />
             ))}
           </div>
@@ -146,7 +146,7 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
             </div>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-4 sm:gap-x-5 gap-y-10 sm:gap-y-12">
-            {otherMembers.map((member, idx) => (
+            {otherMembers.map((member: any, idx: number) => (
               <CommitteeCard key={member.name || idx} member={member} />
             ))}
           </div>

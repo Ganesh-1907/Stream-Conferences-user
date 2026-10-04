@@ -52,7 +52,7 @@ export function VenuePage({ event }: { event: EventData }) {
     ? venue.cityAttractions
     : (venue.cityHighlights || []);
 
-  const cityAttractions: CityAttraction[] = rawAttractions
+  const cityAttractions: CityAttraction[] = (rawAttractions
     .map((item: any) => {
       if (typeof item === 'string' && item.trim()) {
         return {
@@ -70,7 +70,7 @@ export function VenuePage({ event }: { event: EventData }) {
       }
       return null;
     })
-    .filter((item): item is CityAttraction => Boolean(item && item.image));
+    .filter((item: any) => Boolean(item && item.image)) as CityAttraction[]);
 
   const hasLocationDetails = Boolean(venueName || venueAddress || cityStateCountry || embedMapUrl || mapUrl);
   const hasAboutVenue = Boolean(mainImage || venue.description || venue.directions || venue.parking || (venue as any).nearestAirport);

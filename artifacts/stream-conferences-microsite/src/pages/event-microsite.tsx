@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
+import { Route, Switch, Router as WouterRouter, useLocation, Redirect } from 'wouter';
 import { MicrositeLayout, buildNavItems, type EventData } from './microsite/layout';
 import { HomePage } from './microsite/home';
 import { AboutPage } from './microsite/about';
@@ -10,7 +10,6 @@ import { ItineraryPage } from './microsite/itinerary';
 import { PartnersPage } from './microsite/partners';
 import { SponsorsExhibitorsPage } from './microsite/sponsors';
 import { ResourcesPage } from './microsite/resources';
-import { FeesPage } from './microsite/fees';
 import { TracksPage } from './microsite/tracks';
 import { FAQPage } from './microsite/faq';
 import { GuidelinesPage } from './microsite/guidelines';
@@ -232,7 +231,7 @@ export function EventMicrosite({ subdomain, customBase }: { subdomain: string; c
           <Route path="/sponsors-exhibitors" component={() => <SponsorsPage event={displayEvent} />} />
           <Route path="/partners" component={() => <SponsorsPage event={displayEvent} />} />
           <Route path="/resources" component={() => <ResourcesPage event={displayEvent} />} />
-          <Route path="/fees" component={() => <FeesPage event={displayEvent} />} />
+          <Route path="/fees" component={() => <Redirect to="/register" replace />} />
           <Route path="/tracks" component={() => <TracksPage event={displayEvent} />} />
           <Route path="/faq" component={() => <FAQPage event={displayEvent} />} />
           <Route path="/guidelines" component={() => <GuidelinesPage event={displayEvent} />} />

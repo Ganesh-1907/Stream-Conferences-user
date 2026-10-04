@@ -399,14 +399,14 @@ export function HomePage({ event }: { event: EventData }) {
                 href={MAIN_WEBSITE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-60 md:h-60 lg:w-64 lg:h-64 rounded-full ring-4 sm:ring-6 ring-[hsl(var(--primary)/0.25)] bg-[#FAF8F5] shadow-2xl flex items-center justify-center p-6 overflow-hidden transition-all duration-300 transform hover:scale-105 group shrink-0 cursor-pointer"
+                className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-60 md:h-60 lg:w-64 lg:h-64 rounded-full ring-4 sm:ring-6 ring-[hsl(var(--primary)/0.25)] bg-transparent shadow-2xl flex items-center justify-center p-0 overflow-hidden transition-all duration-300 transform hover:scale-105 group shrink-0 cursor-pointer"
                 title="Visit Stream Conferences"
                 data-testid="link-hero-logo"
               >
                 <img
                   src={mediaUrl(event.logoUrl)}
                   alt={event.title}
-                  className="w-full h-full object-contain max-h-full max-w-full transition-transform duration-300 group-hover:scale-105"
+                  className="w-full h-full object-cover rounded-full transition-transform duration-300 group-hover:scale-105"
                 />
               </a>
             ) : (
