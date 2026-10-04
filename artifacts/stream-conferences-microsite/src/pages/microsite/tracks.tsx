@@ -35,7 +35,7 @@ export function TracksPage({ event }: { event: EventData }) {
   if (selectedIndex !== null && tracks[selectedIndex]) {
     const track = tracks[selectedIndex];
     return (
-      <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      <div className="w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
         {/* Top Hero Banner with Track Name as Headline */}
         <MicrositeHero
           badge={`TRACK 0${selectedIndex + 1}`}
@@ -43,29 +43,28 @@ export function TracksPage({ event }: { event: EventData }) {
           tagline={`Official scientific scope, research topics, and presentation guidelines for ${event.title || 'this conference'}.`}
         />
 
-        <div className="container-wide pt-4 sm:pt-6 pb-12 sm:pb-16 space-y-12 sm:space-y-16">
-          {/* Header Row: Back Button on Left & Centered Track Image starting on the same line */}
-          <div className="relative w-full flex flex-col md:flex-row items-start justify-center gap-6">
-            <div className="md:absolute md:left-0 md:top-0 z-10">
-              <button
-                type="button"
-                onClick={handleBackToList}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] font-semibold text-sm text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))] transition shadow-xs cursor-pointer"
-              >
-                <ArrowLeft size={16} /> Back to All Tracks
-              </button>
-            </div>
-
-            {track.image && (
-              <div className="w-full max-w-2xl sm:max-w-3xl rounded-2xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] p-4 shadow-md flex items-center justify-center">
-                <img
-                  src={mediaUrl(track.image)}
-                  alt={track.title}
-                  className="max-h-56 sm:max-h-64 md:max-h-72 w-auto max-w-full rounded-xl object-contain"
-                />
-              </div>
-            )}
+        <div className="container-wide pt-4 sm:pt-6 pb-12 sm:pb-16 space-y-8 sm:space-y-10">
+          {/* Header Row: Back Button */}
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={handleBackToList}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] font-semibold text-sm text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))] transition shadow-xs cursor-pointer"
+            >
+              <ArrowLeft size={16} /> Back to All Tracks
+            </button>
           </div>
+
+          {/* Track Banner Image (Fixed Uniform 3:1 Ratio & Size) */}
+          {track.image && (
+            <div className="w-full max-w-4xl mx-auto h-52 sm:h-64 md:h-72 rounded-2xl overflow-hidden border border-[hsl(var(--border))] shadow-md bg-muted/20 flex items-center justify-center">
+              <img
+                src={mediaUrl(track.image)}
+                alt={track.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
 
           {/* Down Content / Description */}
           <div className="card-lift rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 sm:p-12 shadow-sm space-y-6">
@@ -110,7 +109,7 @@ export function TracksPage({ event }: { event: EventData }) {
 
   // Main Tracks List Page View (Horizontal image left, content right layout as in screenshot 2)
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+    <div className="w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
       <MicrositeHero
         badge="SCIENTIFIC TRACKS"
         title="Conference Tracks"

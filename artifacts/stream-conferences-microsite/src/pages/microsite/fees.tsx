@@ -134,7 +134,7 @@ export function FeesPage({ event }: { event: EventData }) {
   const currencySymbol = CURRENCY_INFO[selectedCurrency].symbol;
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] pb-16">
+    <div className="w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))] pb-16">
       <MicrositeHero
         badge="REGISTRATION & FEES"
         title="Participation Fees"

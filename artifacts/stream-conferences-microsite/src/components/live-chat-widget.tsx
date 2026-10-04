@@ -90,6 +90,7 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
 
   const [input, setInput] = useState('');
   const [hasUnread, setHasUnread] = useState(false);
+  const [showCallout, setShowCallout] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [connected, setConnected] = useState(false);
@@ -97,6 +98,12 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const visitorIdRef = useRef(getVisitorId(conferenceId));
+
+  const unreadCount = messages.filter((m) => {
+    if (m.sender !== 'admin') return false;
+    const t = m.createdAt ? Date.parse(m.createdAt) : 0;
+    return t > readLastRead(visitorIdRef.current, conferenceId);
+  }).length;
 
   const quickPrompts = [
     'How do I submit an abstract?',
@@ -366,7 +373,7 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
   };
 
   return (
-    <div className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-50 flex flex-col items-end font-sans">
+    <div className="fixed bottom-4 right-5 sm:bottom-6 sm:right-7 z-50 flex flex-col items-end font-sans">
       {/* Floating Chat Box Window */}
       {isOpen && (
         <div className="mb-3 sm:mb-4 w-[340px] sm:w-[380px] max-w-[calc(100vw-1.5rem)] h-[520px] max-h-[calc(100vh-6rem)] bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
@@ -597,28 +604,74 @@ export function LiveChatWidget({ event }: LiveChatWidgetProps = {}) {
         </div>
       )}
 
-      {/* Floating Button Launcher Icon */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="relative w-14 h-14 rounded-full bg-gradient-to-tr from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center group"
-        aria-label="Open Live Chat"
-      >
-        {isOpen ? (
-          <X size={24} className="transition-transform duration-200 rotate-0 group-hover:rotate-90" />
-        ) : (
-          <MessageSquare size={24} className="transition-transform duration-200 group-hover:scale-110" />
+      {/* Floating Button Launcher Container */}
+      <div className="relative flex items-center justify-center">
+        {/* Curved 'We Are Here!' Text Starting From Left with Increased Gap from Icon & Badge */}
+        {!isOpen && (
+          <div className="absolute -inset-6 pointer-events-none select-none z-30">
+            <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+              <defs>
+                <path id="weAreHereArc" d="M 6 60 A 46 46 0 0 1 78 14" fill="transparent" />
+              </defs>
+              <text
+                className="text-[12px] font-black tracking-wider fill-[hsl(var(--secondary))] drop-shadow-sm"
+                style={{
+                  stroke: '#ffffff',
+                  strokeWidth: '3.5px',
+                  paintOrder: 'stroke fill',
+                  strokeLinejoin: 'round',
+                  fontFamily: '"Space Grotesk", system-ui, -apple-system, sans-serif',
+                }}
+              >
+                <textPath href="#weAreHereArc" startOffset="50%" textAnchor="middle">
+                  We Are Here!
+                </textPath>
+              </text>
+            </svg>
+          </div>
         )}
 
-        {!isOpen && hasUnread && (
-          <span className="absolute -top-1 -right-1 flex h-6 w-6 drop-shadow-[0_0_6px_hsl(var(--primary)/0.95)]">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90"></span>
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(var(--primary))] opacity-80 [animation-delay:150ms]"></span>
-            <span className="relative inline-flex h-6 w-6 items-center justify-center rounded-full bg-[hsl(var(--primary))] border-[3px] border-white shadow-[0_0_14px_3px_hsl(var(--primary)/0.9)]">
-              <span className="h-2 w-2 rounded-full bg-white shadow-[0_0_6px_2px_rgba(255,255,255,0.95)]"></span>
+        {/* Circular Floating Launcher Button */}
+        <button
+          onClick={() => {
+            const next = !isOpen;
+            setIsOpen(next);
+            if (next) setShowCallout(false);
+          }}
+          className="relative w-14 h-14 sm:w-15 sm:h-15 rounded-full bg-[hsl(var(--secondary))] text-white shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center group cursor-pointer border-2 border-white/20"
+          aria-label="Open Live Chat"
+        >
+          {isOpen ? (
+            <X size={24} className="transition-transform duration-200 rotate-0 group-hover:rotate-90 text-white" />
+          ) : (
+            <svg viewBox="0 0 40 40" className="w-8 h-8 transition-transform duration-200 group-hover:scale-110" fill="none">
+              {/* White chat bubble */}
+              <path
+                d="M20 7C12.82 7 7 12.37 7 19c0 3.24 1.38 6.18 3.65 8.35L9.5 33l5.8-1.55c1.45.62 3.03.95 4.7.95 7.18 0 13-5.37 13-12S27.18 7 20 7z"
+                fill="#ffffff"
+              />
+              {/* Smiling mouth curve cutout in secondary theme color */}
+              <path
+                d="M17.5 20.5c.6 1.8 2.2 2.7 4.2 2.7s3.6-.9 4.2-2.7"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                className="text-[hsl(var(--secondary))]"
+              />
+            </svg>
+          )}
+
+          {/* Red Notification Badge - only shown when there are unread messages */}
+          {!isOpen && unreadCount > 0 && (
+            <span
+              className="absolute -top-1 -right-1 min-w-[22px] h-[22px] px-1 rounded-full bg-[#DC2626] text-white text-xs font-bold flex items-center justify-center shadow-md border-2 border-white ring-1 ring-black/10 z-20 animate-in zoom-in duration-200"
+              style={{ backgroundColor: '#DC2626', color: '#ffffff' }}
+            >
+              {unreadCount}
             </span>
-          </span>
-        )}
-      </button>
+          )}
+        </button>
+      </div>
     </div>
   );
 }

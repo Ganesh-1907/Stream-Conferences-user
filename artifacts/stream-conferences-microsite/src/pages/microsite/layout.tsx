@@ -60,9 +60,7 @@ export interface EventData {
   exhibitors?: { title: string; order?: number }[];
   guidelines?: string;
   scientificProgramUrl?: string;
-  termsAndConditions?: string;
-  venueDetails?: { name?: string; address?: string; city?: string; state?: string; country?: string; pincode?: string; description?: string; mainImage?: string; subImages?: string[]; cityHighlights?: string[]; images?: string[]; mapUrl?: string; directions?: string; parking?: string; accommodation?: string; nearestAirport?: string };
-  organizingCommittee?: { name?: string; image?: string; degree?: string; specialization?: string; country?: string; biography?: string; researchArea?: string }[];
+  venueDetails?: { name?: string; address?: string; city?: string; state?: string; country?: string; pincode?: string; description?: string; mainImage?: string; subImages?: string[]; cityHighlights?: (string | { name?: string; image?: string; link?: string })[]; cityAttractions?: { name?: string; image?: string; link?: string }[]; images?: string[]; mapUrl?: string; directions?: string; parking?: string; accommodation?: string; nearestAirport?: string };
   itinerary?: any[];
   about?: string;
   terms?: string;

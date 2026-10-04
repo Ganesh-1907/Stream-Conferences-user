@@ -1,6 +1,13 @@
-import { Building2, MapPin, Map, Globe2, Compass, Car, Plane, ExternalLink, Navigation } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Building2, MapPin, Map, Globe2, Compass, Car, Plane, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { EventData } from './layout';
 import { MicrositeHero } from '@/components/microsite-hero';
+
+interface CityAttraction {
+  name: string;
+  image: string;
+  link?: string;
+}
 
 const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:7867';
 const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
@@ -41,16 +48,36 @@ export function VenuePage({ event }: { event: EventData }) {
     ? venue.subImages.filter(Boolean)
     : (venue.images && venue.images.length > 1 ? venue.images.slice(1).filter(Boolean) : []);
 
-  const cityHighlights = (venue.cityHighlights && venue.cityHighlights.length > 0)
-    ? venue.cityHighlights.filter(Boolean)
-    : [];
+  const rawAttractions = (venue.cityAttractions && venue.cityAttractions.length > 0)
+    ? venue.cityAttractions
+    : (venue.cityHighlights || []);
+
+  const cityAttractions: CityAttraction[] = rawAttractions
+    .map((item: any) => {
+      if (typeof item === 'string' && item.trim()) {
+        return {
+          name: '',
+          image: item.trim(),
+          link: '',
+        };
+      }
+      if (item && typeof item === 'object' && (item.image || item.url)) {
+        return {
+          name: item.name || '',
+          image: item.image || item.url || '',
+          link: item.link || '',
+        };
+      }
+      return null;
+    })
+    .filter((item): item is CityAttraction => Boolean(item && item.image));
 
   const hasLocationDetails = Boolean(venueName || venueAddress || cityStateCountry || embedMapUrl || mapUrl);
   const hasAboutVenue = Boolean(mainImage || venue.description || venue.directions || venue.parking || (venue as any).nearestAirport);
-  const hasContent = hasLocationDetails || hasAboutVenue || subImages.length > 0 || cityHighlights.length > 0;
+  const hasContent = hasLocationDetails || hasAboutVenue || subImages.length > 0 || cityAttractions.length > 0;
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+    <div className="w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
       <MicrositeHero
         badge="CONFERENCE LOCATION"
         title="Venue & Location"
@@ -70,25 +97,12 @@ export function VenuePage({ event }: { event: EventData }) {
             {/* 1. Highlighted Location Card: Details on Left, Embedded Map on Right */}
             {hasLocationDetails && (
               <section className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 sm:p-6 shadow-sm space-y-5">
-                {/* Header with pill and direct map link */}
+                {/* Header with pill */}
                 <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-[hsl(var(--border))]">
                   <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[hsl(var(--secondary)/.1)] border border-[hsl(var(--secondary)/.2)] text-[hsl(var(--secondary))] text-xs font-bold uppercase tracking-wider">
                     <Building2 size={14} />
                     <span>Venue Location & Details</span>
                   </div>
-
-                  {directMapLink && (
-                    <a
-                      href={directMapLink}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary)/.8)] transition-colors group"
-                    >
-                      <Navigation size={13} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                      <span>Open in Google Maps</span>
-                      <ExternalLink size={12} />
-                    </a>
-                  )}
                 </div>
 
                 {/* Left side details & Right side embedded map */}
@@ -298,32 +312,9 @@ export function VenuePage({ event }: { event: EventData }) {
               </section>
             )}
 
-            {/* 4. Three City Attractions Gallery */}
-            {cityHighlights.length > 0 && (
-              <section className="space-y-6">
-                <div>
-                  <h3 className="text-2xl font-bold text-[hsl(var(--foreground))] font-['Space_Grotesk']">
-                    City Attractions
-                  </h3>
-                </div>
-
-                <div className="grid gap-6 sm:grid-cols-3">
-                  {cityHighlights.map((imgUrl, idx) => (
-                    <div
-                      key={idx}
-                      className="card-lift group rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm p-4"
-                    >
-                      <div className="aspect-[4/3] h-56 sm:h-64 w-full overflow-hidden flex items-center justify-center bg-[hsl(var(--card))]">
-                        <img
-                          src={mediaUrl(imgUrl)}
-                          alt={`City Attraction ${idx + 1}`}
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 rounded-xl"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
+            {/* 4. City Attractions Marquee Carousel */}
+            {cityAttractions.length > 0 && (
+              <CityAttractionsMarquee attractions={cityAttractions} />
             )}
           </>
         )}
@@ -331,3 +322,147 @@ export function VenuePage({ event }: { event: EventData }) {
     </div>
   );
 }
+
+function AttractionCard({ item }: { item: CityAttraction }) {
+  const cardContent = (
+    <div className="group h-full flex flex-col rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm hover:shadow-md hover:border-[hsl(var(--secondary)/.4)] transition-all duration-300">
+      <div className="relative aspect-[4/3] h-52 sm:h-56 w-full overflow-hidden bg-[hsl(var(--muted)/.15)] flex items-center justify-center p-3">
+        <img
+          src={mediaUrl(item.image)}
+          alt={item.name || 'City Attraction'}
+          className="max-w-full max-h-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-500"
+          onError={(e) => {
+            (e.target as HTMLElement).style.display = 'none';
+          }}
+        />
+        {item.link && (
+          <div className="absolute top-3 right-3 p-2 rounded-xl bg-[hsl(var(--background)/.85)] backdrop-blur text-[hsl(var(--secondary))] border border-[hsl(var(--border))] opacity-0 group-hover:opacity-100 transition-opacity shadow-xs">
+            <ExternalLink size={14} />
+          </div>
+        )}
+      </div>
+      <div className="p-4 flex-1 flex flex-col justify-between gap-3 bg-[hsl(var(--card))]">
+        {item.name ? (
+          <h4 className="font-bold text-base sm:text-lg text-[hsl(var(--foreground))] font-['Space_Grotesk'] line-clamp-2 leading-snug group-hover:text-[hsl(var(--secondary))] transition-colors">
+            {item.name}
+          </h4>
+        ) : null}
+        {item.link ? (
+          <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[hsl(var(--secondary))] group-hover:underline mt-auto">
+            <span>Visit</span>
+            <ExternalLink size={12} />
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+
+  return item.link ? (
+    <a
+      href={item.link.startsWith('http') ? item.link : `https://${item.link}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block h-full cursor-pointer focus:outline-none"
+    >
+      {cardContent}
+    </a>
+  ) : (
+    <div className="h-full">{cardContent}</div>
+  );
+}
+
+function CityAttractionsMarquee({ attractions }: { attractions: CityAttraction[] }) {
+  const [isPaused, setIsPaused] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // If multiple items, duplicate list to allow infinite seamless marquee loop
+  const displayItems = attractions.length > 1
+    ? [...attractions, ...attractions]
+    : attractions;
+
+  useEffect(() => {
+    let animationFrameId: number;
+    const container = scrollContainerRef.current;
+    if (!container || attractions.length <= 1) return;
+
+    const step = () => {
+      if (!isPaused && container) {
+        if (container.scrollLeft >= container.scrollWidth / 2) {
+          container.scrollLeft -= container.scrollWidth / 2;
+        } else {
+          container.scrollLeft += 0.65;
+        }
+      }
+      animationFrameId = requestAnimationFrame(step);
+    };
+
+    animationFrameId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isPaused, attractions.length]);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (!scrollContainerRef.current) return;
+    const scrollAmount = scrollContainerRef.current.clientWidth * 0.75;
+    scrollContainerRef.current.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth',
+    });
+  };
+
+  return (
+    <section className="space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h3 className="text-2xl font-bold text-[hsl(var(--foreground))] font-['Space_Grotesk']">
+            City Attractions
+          </h3>
+          <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-1">
+            Discover popular landmarks and places to explore around the host city
+          </p>
+        </div>
+
+        {/* Navigation Buttons */}
+        {attractions.length > 1 && (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => scroll('left')}
+              className="p-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary-foreground))] transition-all shadow-xs active:scale-95 cursor-pointer"
+              aria-label="Previous attraction"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              type="button"
+              onClick={() => scroll('right')}
+              className="p-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary-foreground))] transition-all shadow-xs active:scale-95 cursor-pointer"
+              aria-label="Next attraction"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Marquee Container with 3 cards per row on desktop */}
+      <div
+        ref={scrollContainerRef}
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+        onTouchStart={() => setIsPaused(true)}
+        onTouchEnd={() => setIsPaused(false)}
+        className="flex gap-6 overflow-x-auto scroll-smooth py-2 px-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden cursor-grab active:cursor-grabbing"
+      >
+        {displayItems.map((item, idx) => (
+          <div
+            key={`${item.name}-${idx}`}
+            className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] min-w-[280px]"
+          >
+            <AttractionCard item={item} />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+

@@ -24,7 +24,7 @@ export function MediaPartnersPage({ event }: { event: EventData }) {
             </p>
           </div>
         ) : (
-          <div className="flex flex-wrap gap-6 sm:gap-8 items-start">
+          <div className="flex flex-wrap gap-6 sm:gap-8 items-start py-4">
             {mediaPartners.map((partner, idx) => (
               <div key={idx} className="w-56 sm:w-64 md:w-72 shrink-0">
                 <PartnerLogoCard item={partner} defaultType={`Media Partner ${idx + 1}`} />

@@ -106,7 +106,7 @@ export function AbstractPage({ event }: { event: EventData }) {
     if (event.fees?.length) {
       return event.fees.map((f) => [f.type, `$${f.usd}`, `$${Math.round(f.usd * 1.2)}`]);
     }
-    return [['Student', '₹20000', '₹26000'], ['Academic', '₹32000', '₹39000'], ['Industry Delegate', '₹42000', '₹52000'], ['Virtual Attendee', '₹12000', '₹15000']];
+    return [['Student', '₹20000', '₹26000'], ['Academic', '₹32000', '₹39000'], ['Industry Participant', '₹42000', '₹52000'], ['Virtual Attendee', '₹12000', '₹15000']];
   }, [event.fees]);
 
   const handleStep1 = (e: FormEvent) => {
@@ -161,7 +161,7 @@ export function AbstractPage({ event }: { event: EventData }) {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+    <div className="w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
       <MicrositeHero
         badge="ABSTRACT SUBMISSION"
         title="Submit an Abstract"

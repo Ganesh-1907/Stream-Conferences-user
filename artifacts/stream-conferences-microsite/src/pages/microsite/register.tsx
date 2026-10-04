@@ -570,7 +570,7 @@ export function RegisterPage({ event }: { event: EventData }) {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] pb-20">
+    <div className="w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))] pb-20">
       <MicrositeHero
         badge="EVENT REGISTRATION"
         title="Register For Conference"

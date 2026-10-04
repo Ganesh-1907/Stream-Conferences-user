@@ -26,7 +26,7 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
 
   if (members.length === 0) {
     return (
-      <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      <div className="w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
         <MicrositeHero
           badge="ORGANIZING COMMITTEE"
           title="Organizing Committee"
@@ -51,51 +51,56 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
   const otherMembers = members.filter((m) => !isKeyMember(m));
 
   const CommitteeCard = ({ member, isKey = false }: { member: any; isKey?: boolean }) => {
+    const roleTag = member.role || member.specialization || (isKey ? 'Chair' : 'Committee Member');
     return (
       <div
         onClick={() => setSelectedMember(member)}
-        className="card-lift group relative flex flex-col items-center text-center rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-5 shadow-sm cursor-pointer overflow-hidden"
+        className="card-lift group relative flex flex-col items-center justify-between text-center rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-4 sm:p-5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden min-h-[310px]"
       >
         {/* Lanyard Notch / ID Badge Slot */}
-        <div className="w-10 h-1.5 rounded-full bg-[hsl(var(--border))] mb-3 group-hover:bg-[hsl(var(--primary)/.4)] transition-colors shadow-inner shrink-0" />
-
-        {/* Top-Right Key/Chair Badge */}
-        {isKey && (
-          <div className="absolute top-3 right-3">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm">
-              <Award size={12} /> {member.role || 'Chair'}
-            </span>
-          </div>
-        )}
+        <div className="w-12 h-1.5 rounded-full bg-[hsl(var(--border))] mb-3.5 group-hover:bg-[hsl(var(--primary)/.4)] transition-colors shadow-inner shrink-0" />
 
         {/* Top Center Circular Image */}
-        <div className="relative mb-3 w-24 h-24 sm:w-28 sm:h-28 rounded-full ring-4 ring-[hsl(var(--border))] group-hover:ring-[hsl(var(--primary)/.5)] transition-all duration-300 overflow-hidden bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] shadow-md flex items-center justify-center shrink-0">
-          {member.image ? (
-            <img
-              src={mediaUrl(member.image)}
-              alt={member.name || 'Committee Member'}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-2xl font-['Space_Grotesk'] shadow-inner">
-              {getNameInitials(member.name, 'M')}
-            </div>
-          )}
+        <div className="relative mb-3.5 shrink-0">
+          <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full ring-4 ring-[hsl(var(--border))] group-hover:ring-[hsl(var(--primary)/.5)] transition-all duration-300 overflow-hidden bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] shadow-md flex items-center justify-center">
+            {member.image ? (
+              <img
+                src={mediaUrl(member.image)}
+                alt={member.name || 'Committee Member'}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-2xl font-['Space_Grotesk'] shadow-inner">
+                {getNameInitials(member.name, 'M')}
+              </div>
+            )}
+          </div>
           {isKey && (
-            <div className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md border-2 border-[hsl(var(--card))]">
-              <Award size={11} />
+            <div
+              title="Committee Chair / Key Leader"
+              className="absolute bottom-0 right-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-lg border-2 border-[hsl(var(--card))] z-10"
+            >
+              <Award size={14} className="stroke-[2.5]" />
             </div>
           )}
         </div>
 
         {/* Member Name */}
-        <h3 className="font-['Space_Grotesk'] font-bold text-base sm:text-lg text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 w-full px-1">
+        <h3 className="font-['Space_Grotesk'] font-bold text-sm sm:text-base text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors line-clamp-2 text-center w-full px-1 min-h-[2.5rem] flex items-center justify-center leading-snug">
           {member.name}
         </h3>
 
+        {/* Center Tag */}
+        <div className="mt-1.5 mb-2.5 flex items-center justify-center">
+          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider ${isKey ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30' : 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border border-blue-500/30'} shadow-2xs`}>
+            {isKey && <Award size={11} className="shrink-0" />}
+            {roleTag}
+          </span>
+        </div>
+
         {/* View Profile Button */}
-        <div className="mt-3 pt-3 w-full flex items-center justify-center border-t border-[hsl(var(--border)/.6)] text-xs">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))] font-semibold text-xs group-hover:bg-[hsl(var(--primary))] group-hover:text-white transition-all shadow-xs">
+        <div className="mt-auto pt-3 w-full flex items-center justify-center border-t border-[hsl(var(--border)/.6)] text-xs">
+          <span className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] font-semibold text-xs group-hover:bg-[hsl(var(--primary))] group-hover:text-white transition-all shadow-xs">
             View Profile <ExternalLink size={12} />
           </span>
         </div>
@@ -123,7 +128,7 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
               Committee Chairs & Key Leaders
             </h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-4 sm:gap-x-5 gap-y-10 sm:gap-y-12">
             {keyMembers.map((member, idx) => (
               <CommitteeCard key={member.name || idx} member={member} isKey />
             ))}
@@ -140,7 +145,7 @@ export function OrganizingCommitteePage({ event }: { event: EventData }) {
               </h3>
             </div>
           )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-4 sm:gap-x-5 gap-y-10 sm:gap-y-12">
             {otherMembers.map((member, idx) => (
               <CommitteeCard key={member.name || idx} member={member} />
             ))}

@@ -30,7 +30,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
     'Four complimentary registrations.',
     'Logo recognition on congress website front page with link, logo recognition on congress sponsorship page and logo recognition on corresponding Stream Journal home page.',
     'One A4 color advertisement in the congress program or book of abstracts (excluding cover pages).',
-    'Three Inserts provided by the sponsor in the congress delegate bags.',
+    'Three Inserts provided by the sponsor in the congress conference bags.',
     'One post congress e-mail message to consented congress registrants up to 60 days after the congress (content to be provided by the sponsor, approved and distributed by corresponding Journal).',
     'An exclusive online Promotion on all our Social Networking Sites.',
     '20% Waiver on Sponsorship for any of our next year conferences.',
@@ -43,7 +43,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
     'Three complimentary congress registrations.',
     'Logo recognition on congress website front page with link and logo recognition on congress sponsorship page.',
     'One A4 color advertisement in the congress program or book of abstracts (excluding cover pages).',
-    'Two Inserts provided by the sponsor in the congress delegate bags.',
+    'Two Inserts provided by the sponsor in the congress conference bags.',
     'An exclusive online Promotion on all our Social Networking Sites.',
     '15% Waiver on Sponsorship for any of our next year conferences.',
   ];
@@ -55,7 +55,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
     'One complimentary exhibit booth with priority to purchase exhibition space and choose booth location (Booth size-3X3 sqm).',
     'Logo recognition on congress website sponsorship page.',
     'One A4 color advertisement in the congress program or book of abstracts (excluding cover pages).',
-    'One insert provided by the sponsor in the congress delegate bags.',
+    'One insert provided by the sponsor in the congress conference bags.',
     'Priority to purchase additional sponsorship items.',
     'An exclusive online Promotion on all our Social Networking Sites.',
     '10% Waiver on Sponsorship for any of our next year conferences.',
@@ -67,7 +67,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
     'Set up of one tailor-made exhibit booth (Booth Size 3x3 sqm).',
     'Logo recognition on congress website sponsorship page.',
     'A4 Color Advertisement in Congress Program or Book of Abstract.',
-    'Inclusion of your company\'s leaflet/insert in the congress delegate bags.',
+    'Inclusion of your company\'s leaflet/insert in the congress conference bags.',
     'An exclusive online promotion on all our social Networking Sites.',
     '5% Waiver on Sponsorship for any of our next year conferences.',
     'Recognition to your products and services in the world market through our website.',
@@ -82,7 +82,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
   const additionalPackages = [
     'Lunch / Cocktail Sponsor',
     'Coffee Break Sponsor',
-    'Conference Delegate Bag Sponsor',
+    'Conference Bag Sponsor',
     'Bag Insert Sponsor',
     'Lanyard (also known as neck cords)',
   ];
@@ -97,7 +97,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
   const conferenceTitle = event.title || 'Conference';
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+    <div className="w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
       <MicrositeHero
         badge="SPONSORS & EXHIBITORS"
         title="Sponsor Guidelines & Opportunities"
@@ -322,7 +322,7 @@ export function SponsorsExhibitorsPage({ event }: { event: EventData }) {
                   <h3 className="text-2xl font-['Space_Grotesk'] font-bold text-[hsl(var(--foreground))]">
                     Exhibition
                   </h3>
-                  <p className="text-xs text-[hsl(var(--muted-foreground))]">Dedicated booth space & international delegate networking</p>
+                  <p className="text-xs text-[hsl(var(--muted-foreground))]">Dedicated booth space & international participant networking</p>
                 </div>
               </div>
 

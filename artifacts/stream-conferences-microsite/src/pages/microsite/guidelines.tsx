@@ -3,7 +3,7 @@ import { MicrositeHero } from '@/components/microsite-hero';
 
 export function GuidelinesPage({ event }: { event: EventData }) {
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+    <div className="w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
       <MicrositeHero
         badge="SUBMISSION & EVENT GUIDELINES"
         title="Author & Participant Guidelines"

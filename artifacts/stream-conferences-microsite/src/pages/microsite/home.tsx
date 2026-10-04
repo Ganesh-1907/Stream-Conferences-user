@@ -6,8 +6,8 @@ import {
   Calendar, Megaphone, FileEdit, ListOrdered, Sparkles, Layers,
   GraduationCap, Building2, Presentation, ExternalLink, Linkedin, Twitter, Globe, Check
 } from 'lucide-react';
+import { SPEAKER_CATEGORIES, getSpeakerCategoryKey, getSpeakerCategoryConfig } from './speakers';
 import type { EventData } from './layout';
-import { SPEAKER_CATEGORIES, getSpeakerCategoryKey } from './speakers';
 import { PartnerLogoCard } from '@/components/partner-logo-card';
 import {
   Dialog,
@@ -227,7 +227,7 @@ export function HomePage({ event }: { event: EventData }) {
       const idxB = SPEAKER_CATEGORIES.findIndex((c) => c.key === keyB);
       return (idxA !== -1 ? idxA : 99) - (idxB !== -1 ? idxB : 99);
     });
-    return list.slice(0, 4);
+    return list.slice(0, 5);
   }, [event.speakers]);
 
   const faqs = useMemo(() => {
@@ -520,66 +520,77 @@ export function HomePage({ event }: { event: EventData }) {
               <h2 className="mt-2.5 w-full text-left text-base sm:text-lg md:text-xl font-bold leading-snug text-[hsl(var(--foreground))]">
                 Featured Speakers
               </h2>
-              <p className="mt-3 w-full text-base sm:text-lg font-medium leading-relaxed text-[hsl(var(--muted-foreground))] max-w-xl">
+              <p className="mt-3 w-full text-base sm:text-lg font-medium leading-relaxed text-[hsl(var(--muted-foreground))] max-w-none">
                 Learn from world-renowned keynote experts and pioneering practitioners leading the sessions
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-4 sm:gap-x-5 gap-y-10 sm:gap-y-12">
             {featuredSpeakers.map((speaker, idx) => {
               const categoryKey = getSpeakerCategoryKey(speaker);
-              const categoryConfig = SPEAKER_CATEGORIES.find((c) => c.key === categoryKey) || SPEAKER_CATEGORIES[1];
+              const categoryConfig = getSpeakerCategoryConfig(speaker);
               const isKeynote = categoryKey === 'keynote';
 
               return (
                 <div
                   key={speaker.name || idx}
                   onClick={() => setSelectedSpeaker(speaker)}
-                  className="card-lift group relative flex flex-col items-center text-center rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-5 shadow-sm cursor-pointer overflow-hidden"
+                  className="card-lift group relative flex flex-col items-center justify-between text-center rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-4 sm:p-5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden min-h-[310px]"
                 >
-                  <div className="w-10 h-1.5 rounded-full bg-[hsl(var(--border))] mb-3 group-hover:bg-[hsl(var(--primary)/.4)] transition-colors shadow-inner shrink-0" />
+                  {/* Lanyard Notch / ID Badge Slot */}
+                  <div className="w-12 h-1.5 rounded-full bg-[hsl(var(--border))] mb-3.5 group-hover:bg-[hsl(var(--primary)/.4)] transition-colors shadow-inner shrink-0" />
 
-                  <div className="absolute top-3 right-3">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${categoryConfig.badgeClass} shadow-sm`}>
-                      {isKeynote && <Award size={12} />}
+                  {/* Top Center Circular Image */}
+                  <div className="relative mb-3.5 shrink-0">
+                    <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full ring-4 ring-[hsl(var(--border))] group-hover:ring-[hsl(var(--primary)/.5)] transition-all duration-300 overflow-hidden bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] shadow-md flex items-center justify-center">
+                      {speaker.avatar ? (
+                        <img
+                          src={mediaUrl(speaker.avatar)}
+                          alt={speaker.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-2xl font-['Space_Grotesk'] shadow-inner">
+                          {getNameInitials(speaker.name, 'S')}
+                        </div>
+                      )}
+                    </div>
+                    {isKeynote && (
+                      <div
+                        title="Keynote Speaker"
+                        className="absolute bottom-0 right-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-lg border-2 border-[hsl(var(--card))] z-10"
+                      >
+                        <Award size={14} className="stroke-[2.5]" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Speaker Name */}
+                  <h3 className="font-['Space_Grotesk'] font-bold text-sm sm:text-base text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors line-clamp-2 text-center w-full px-1 min-h-[2.5rem] flex items-center justify-center leading-snug">
+                    {speaker.name}
+                  </h3>
+
+                  {/* Category Tag */}
+                  <div className="mt-1.5 mb-2.5 flex items-center justify-center">
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider ${categoryConfig.badgeClass} shadow-2xs`}>
+                      {isKeynote && <Award size={11} className="shrink-0" />}
                       {categoryConfig.label}
                     </span>
                   </div>
 
-                  <div className="relative mb-3 w-24 h-24 sm:w-28 sm:h-28 rounded-full ring-4 ring-[hsl(var(--border))] group-hover:ring-[hsl(var(--primary)/.5)] transition-all duration-300 overflow-hidden bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] shadow-md flex items-center justify-center shrink-0">
-                    {speaker.avatar ? (
-                      <img
-                        src={mediaUrl(speaker.avatar)}
-                        alt={speaker.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-2xl font-['Space_Grotesk'] shadow-inner">
-                        {getNameInitials(speaker.name, 'S')}
-                      </div>
-                    )}
-                    {isKeynote && (
-                      <div className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md border-2 border-[hsl(var(--card))]">
-                        <Award size={11} />
-                      </div>
-                    )}
-                  </div>
-
-                  <h3 className="font-['Space_Grotesk'] font-bold text-base sm:text-lg text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 w-full px-1">
-                    {speaker.name}
-                  </h3>
-
-                  <div className="mt-3 pt-3 w-full flex items-center justify-center border-t border-[hsl(var(--border)/.6)] text-xs">
-                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))] font-semibold text-xs group-hover:bg-[hsl(var(--primary))] group-hover:text-white transition-all shadow-xs">
+                  {/* View Profile Button */}
+                  <div className="mt-auto pt-3 w-full flex items-center justify-center border-t border-[hsl(var(--border)/.6)] text-xs">
+                    <span className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] font-semibold text-xs group-hover:bg-[hsl(var(--primary))] group-hover:text-white transition-all shadow-xs">
                       View Profile <ExternalLink size={12} />
                     </span>
                   </div>
 
+                  {/* Decorative ID bottom stripe */}
                   <div className="w-full h-1 bg-gradient-to-r from-transparent via-[hsl(var(--primary)/.4)] to-transparent absolute bottom-0 left-0" />
                 </div>
-            );
-          })}
+              );
+            })}
           </div>
 
           <div className="mt-6 text-center">
@@ -929,7 +940,7 @@ function MediaPartnersMarquee({ partners }: { partners: any[] }) {
   };
 
   return (
-    <div className="relative group/marquee w-full overflow-hidden py-2">
+    <div className="relative group/marquee w-full overflow-hidden py-4 sm:py-6">
       {/* Subtle fade edges for clean transition */}
       <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-[hsl(var(--background))] to-transparent z-10" />
       <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-[hsl(var(--background))] to-transparent z-10" />
@@ -956,17 +967,17 @@ function MediaPartnersMarquee({ partners }: { partners: any[] }) {
       {/* Infinite Scrolling Track */}
       <div
         ref={scrollRef}
-        className="flex w-full overflow-x-auto scrollbar-none"
+        className="flex w-full overflow-x-auto scrollbar-none py-2"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        <div className="animate-marquee-infinite flex gap-6 sm:gap-8 items-center shrink-0 pr-6 sm:pr-8">
+        <div className="animate-marquee-infinite flex gap-6 sm:gap-8 items-center shrink-0 pr-6 sm:pr-8 py-2">
           {repeatedList.map((partner, idx) => (
             <div key={`m1-${idx}`} className="w-56 sm:w-64 md:w-72 shrink-0">
               <PartnerLogoCard item={partner} defaultType={`Media Partner ${idx + 1}`} />
             </div>
           ))}
         </div>
-        <div className="animate-marquee-infinite flex gap-6 sm:gap-8 items-center shrink-0 pr-6 sm:pr-8" aria-hidden="true">
+        <div className="animate-marquee-infinite flex gap-6 sm:gap-8 items-center shrink-0 pr-6 sm:pr-8 py-2" aria-hidden="true">
           {repeatedList.map((partner, idx) => (
             <div key={`m2-${idx}`} className="w-56 sm:w-64 md:w-72 shrink-0">
               <PartnerLogoCard item={partner} defaultType={`Media Partner ${idx + 1}`} />

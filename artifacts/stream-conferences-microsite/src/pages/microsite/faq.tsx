@@ -10,7 +10,7 @@ export function FAQPage({ event }: { event: EventData }) {
   const sortedFaqs = [...faqs].sort((a, b) => (a.order || 0) - (b.order || 0));
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+    <div className="w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
       <MicrositeHero
         badge="FREQUENTLY ASKED QUESTIONS"
         title="Frequently Asked Questions"

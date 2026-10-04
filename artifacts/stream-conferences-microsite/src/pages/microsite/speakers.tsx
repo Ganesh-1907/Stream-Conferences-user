@@ -23,20 +23,38 @@ const SERVER_ORIGIN = import.meta.env.VITE_SERVER_ORIGIN || 'http://localhost:78
 const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `${SERVER_ORIGIN}${u}`);
 
 export const SPEAKER_CATEGORIES = [
-  { key: 'keynote', label: 'Keynote Speaker', title: 'Keynote Speakers', icon: Award, badgeClass: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white' },
-  { key: 'speaker', label: 'Speaker', title: 'Speakers', icon: Presentation, badgeClass: 'bg-blue-50 text-blue-700 border border-blue-200/80' },
-  { key: 'poster', label: 'Poster Presentation', title: 'Poster Presentations', icon: Presentation, badgeClass: 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white' },
-  { key: 'yrf', label: 'YRF', title: 'YRF (Young Researchers Forum)', icon: Award, badgeClass: 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white' },
-  { key: 'student', label: 'Student', title: 'Student Speakers', icon: GraduationCap, badgeClass: 'bg-gradient-to-r from-sky-600 to-cyan-600 text-white' },
+  { key: 'keynote', label: 'Keynote Speaker', title: 'Keynote Speakers', icon: Award, badgeClass: 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30' },
+  { key: 'speaker', label: 'Speaker', title: 'Speakers', icon: Presentation, badgeClass: 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border border-blue-500/30' },
+  { key: 'delegate', label: 'Participant', title: 'Participants', icon: Presentation, badgeClass: 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30' },
+  { key: 'yrf', label: 'YRF', title: 'YRF (Young Researchers Forum)', icon: Award, badgeClass: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30' },
+  { key: 'poster', label: 'Poster Presentation', title: 'Poster Presentations', icon: Presentation, badgeClass: 'bg-purple-500/15 text-purple-700 dark:text-purple-400 border border-purple-500/30' },
+  { key: 'student', label: 'Student', title: 'Student Speakers', icon: GraduationCap, badgeClass: 'bg-sky-500/15 text-sky-700 dark:text-sky-400 border border-sky-500/30' },
 ] as const;
 
 export function getSpeakerCategoryKey(speaker: any): string {
   if (speaker?.category) {
     const c = String(speaker.category).toLowerCase().trim();
-    if (['keynote', 'speaker', 'poster', 'yrf', 'student'].includes(c)) return c;
+    if (c === 'ypr') return 'yrf';
+    if (['keynote', 'speaker', 'delegate', 'poster', 'yrf', 'student'].includes(c)) return c;
+    return c;
   }
   if (speaker?.isKeynote) return 'keynote';
   return 'speaker';
+}
+
+export function getSpeakerCategoryConfig(speaker: any) {
+  const categoryKey = getSpeakerCategoryKey(speaker);
+  const found = SPEAKER_CATEGORIES.find((c) => c.key === categoryKey);
+  if (found) return found;
+
+  const rawCat = speaker?.category ? String(speaker.category).trim() : 'Speaker';
+  return {
+    key: categoryKey || 'speaker',
+    label: rawCat.charAt(0).toUpperCase() + rawCat.slice(1),
+    title: rawCat.charAt(0).toUpperCase() + rawCat.slice(1),
+    icon: Presentation,
+    badgeClass: 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border border-blue-500/30',
+  };
 }
 
 export function SpeakersPage({ event }: { event: EventData }) {
@@ -45,9 +63,10 @@ export function SpeakersPage({ event }: { event: EventData }) {
 
   const OTHER_CATEGORY_RANK: Record<string, number> = {
     speaker: 1,
-    poster: 2,
-    yrf: 3,
-    student: 4,
+    delegate: 2,
+    poster: 3,
+    yrf: 4,
+    student: 5,
   };
 
   const keynoteSpeakers = speakers.filter((s) => getSpeakerCategoryKey(s) === 'keynote');
@@ -63,7 +82,7 @@ export function SpeakersPage({ event }: { event: EventData }) {
 
   if (speakers.length === 0) {
     return (
-      <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      <div className="w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
         <MicrositeHero
           badge="KEYNOTE & SPEAKERS"
           title="Speakers & Presenters"
@@ -88,53 +107,58 @@ export function SpeakersPage({ event }: { event: EventData }) {
 
   const SpeakerCard = ({ speaker }: { speaker: any }) => {
     const categoryKey = getSpeakerCategoryKey(speaker);
-    const categoryConfig = SPEAKER_CATEGORIES.find((c) => c.key === categoryKey) || SPEAKER_CATEGORIES[1];
+    const categoryConfig = getSpeakerCategoryConfig(speaker);
     const isKeynote = categoryKey === 'keynote';
 
     return (
       <div
         onClick={() => setSelectedSpeaker(speaker)}
-        className="card-lift group relative flex flex-col items-center text-center rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-5 shadow-sm cursor-pointer overflow-hidden"
+        className="card-lift group relative flex flex-col items-center justify-between text-center rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-b from-[hsl(var(--card))] via-[hsl(var(--card))] to-[hsl(var(--card))]/90 p-4 sm:p-5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden min-h-[310px]"
       >
         {/* Lanyard Notch / ID Badge Slot */}
-        <div className="w-10 h-1.5 rounded-full bg-[hsl(var(--border))] mb-3 group-hover:bg-[hsl(var(--primary)/.4)] transition-colors shadow-inner shrink-0" />
-
-        {/* Top-Right Category Badge */}
-        <div className="absolute top-3 right-3">
-          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${categoryConfig.badgeClass} shadow-sm`}>
-            {isKeynote && <Award size={12} />}
-            {categoryConfig.label}
-          </span>
-        </div>
+        <div className="w-12 h-1.5 rounded-full bg-[hsl(var(--border))] mb-3.5 group-hover:bg-[hsl(var(--primary)/.4)] transition-colors shadow-inner shrink-0" />
 
         {/* Top Center Circular Image */}
-        <div className="relative mb-3 w-24 h-24 sm:w-28 sm:h-28 rounded-full ring-4 ring-[hsl(var(--border))] group-hover:ring-[hsl(var(--primary)/.5)] transition-all duration-300 overflow-hidden bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] shadow-md flex items-center justify-center shrink-0">
-          {speaker.avatar ? (
-            <img
-              src={mediaUrl(speaker.avatar)}
-              alt={speaker.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-2xl font-['Space_Grotesk'] shadow-inner">
-              {getNameInitials(speaker.name, 'S')}
-            </div>
-          )}
+        <div className="relative mb-3.5 shrink-0">
+          <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full ring-4 ring-[hsl(var(--border))] group-hover:ring-[hsl(var(--primary)/.5)] transition-all duration-300 overflow-hidden bg-gradient-to-br from-[hsl(var(--primary)/.15)] to-[hsl(var(--secondary)/.15)] shadow-md flex items-center justify-center">
+            {speaker.avatar ? (
+              <img
+                src={mediaUrl(speaker.avatar)}
+                alt={speaker.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white font-bold text-2xl font-['Space_Grotesk'] shadow-inner">
+                {getNameInitials(speaker.name, 'S')}
+              </div>
+            )}
+          </div>
           {isKeynote && (
-            <div className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md border-2 border-[hsl(var(--card))]">
-              <Award size={11} />
+            <div
+              title="Keynote Speaker"
+              className="absolute bottom-0 right-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-lg border-2 border-[hsl(var(--card))] z-10"
+            >
+              <Award size={14} className="stroke-[2.5]" />
             </div>
           )}
         </div>
 
         {/* Speaker Name */}
-        <h3 className="font-['Space_Grotesk'] font-bold text-base sm:text-lg text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors line-clamp-1 w-full px-1">
+        <h3 className="font-['Space_Grotesk'] font-bold text-sm sm:text-base text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors line-clamp-2 text-center w-full px-1 min-h-[2.5rem] flex items-center justify-center leading-snug">
           {speaker.name}
         </h3>
 
+        {/* Category Tag */}
+        <div className="mt-1.5 mb-2.5 flex items-center justify-center">
+          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider ${categoryConfig.badgeClass} shadow-2xs`}>
+            {isKeynote && <Award size={11} className="shrink-0" />}
+            {categoryConfig.label}
+          </span>
+        </div>
+
         {/* View Profile Button */}
-        <div className="mt-3 pt-3 w-full flex items-center justify-center border-t border-[hsl(var(--border)/.6)] text-xs">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[hsl(var(--primary)/.1)] text-[hsl(var(--primary))] font-semibold text-xs group-hover:bg-[hsl(var(--primary))] group-hover:text-white transition-all shadow-xs">
+        <div className="mt-auto pt-3 w-full flex items-center justify-center border-t border-[hsl(var(--border)/.6)] text-xs">
+          <span className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))] font-semibold text-xs group-hover:bg-[hsl(var(--primary))] group-hover:text-white transition-all shadow-xs">
             View Profile <ExternalLink size={12} />
           </span>
         </div>
@@ -165,7 +189,7 @@ export function SpeakersPage({ event }: { event: EventData }) {
                 {keynoteSpeakers.length}
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-4 sm:gap-x-5 gap-y-10 sm:gap-y-12">
               {keynoteSpeakers.map((speaker, idx) => (
                 <SpeakerCard key={speaker.name || idx} speaker={speaker} />
               ))}
@@ -185,7 +209,7 @@ export function SpeakersPage({ event }: { event: EventData }) {
                 {otherSpeakers.length}
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-4 sm:gap-x-5 gap-y-10 sm:gap-y-12">
               {otherSpeakers.map((speaker, idx) => (
                 <SpeakerCard key={speaker.name || idx} speaker={speaker} />
               ))}

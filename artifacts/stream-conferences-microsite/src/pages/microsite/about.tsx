@@ -7,7 +7,7 @@ export function AboutPage({ event }: { event: EventData }) {
   const tracks = Array.isArray(event?.tracks) ? event.tracks : [];
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+    <div className="w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
       <MicrositeHero
         badge="About The Event"
         title="About the Event"

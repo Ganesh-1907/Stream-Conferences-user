@@ -9,7 +9,7 @@ export function ProgramPage({ event }: { event: EventData }) {
   const currentDay = program.find((d) => d.dayNumber === activeDay) || program[0];
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+    <div className="w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
       <MicrositeHero
         badge="Program Schedule"
         title="Conference Program"
