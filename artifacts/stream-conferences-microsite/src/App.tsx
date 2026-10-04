@@ -2263,7 +2263,7 @@ function WhyUsPage() {
         bgImage="/images/why-us/stream_s_science.jpeg"
         eyebrow="Why Choose Stream Conferences"
         title="Why Us"
-        body="Discover. Connect. Collaborate. Create Impact."
+        body="A dedicated platform built on scholarly depth, international networking, and enduring research impact across interdisciplinary domains."
       />
 
       <main className="pt-2 sm:pt-4 pb-16">
@@ -2276,9 +2276,6 @@ function WhyUsPage() {
             <h1 className="mt-3 text-2xl sm:text-4xl md:text-5xl font-black font-['Space_Grotesk'] text-[hsl(var(--foreground))] tracking-tight">
               Why Choose Stream Conferences?
             </h1>
-            <p className="mt-3 text-base sm:text-lg text-[hsl(var(--foreground))] font-medium leading-relaxed w-full max-w-none">
-              A dedicated platform built on scholarly depth, international networking, and enduring research impact across interdisciplinary domains.
-            </p>
           </div>
 
           {/* Main Side-by-Side Section: Content Cards on Left, Images on Right */}
