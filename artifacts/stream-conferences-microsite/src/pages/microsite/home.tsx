@@ -639,13 +639,15 @@ export function HomePage({ event }: { event: EventData }) {
               <div key={i} className="flex flex-col sm:flex-row items-start gap-6 sm:gap-8 pb-8 border-b border-[hsl(var(--border))] last:border-0 last:pb-0">
                 {/* Left Side: Track Image or Number Badge */}
                 {track.image ? (
-                  <img
-                    src={mediaUrl(track.image)}
-                    alt={track.title}
-                    className="w-full sm:w-56 md:w-64 h-44 sm:h-44 md:h-48 shrink-0 rounded-2xl object-cover border border-[hsl(var(--border))] shadow-md bg-[hsl(var(--card))]"
-                  />
+                  <div className="w-full sm:w-60 md:w-72 aspect-[3/2] shrink-0 rounded-2xl overflow-hidden border border-[hsl(var(--border))] shadow-md bg-[hsl(var(--card))]">
+                    <img
+                      src={mediaUrl(track.image)}
+                      alt={track.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 ) : (
-                  <div className="w-full sm:w-56 md:w-64 h-44 sm:h-44 md:h-48 shrink-0 rounded-2xl bg-[hsl(var(--primary)/.08)] border border-[hsl(var(--primary)/.18)] flex items-center justify-center text-4xl sm:text-5xl font-black text-[hsl(var(--primary))] font-['Space_Grotesk'] shadow-sm">
+                  <div className="w-full sm:w-60 md:w-72 aspect-[3/2] shrink-0 rounded-2xl bg-[hsl(var(--primary)/.08)] border border-[hsl(var(--primary)/.18)] flex items-center justify-center text-4xl sm:text-5xl font-black text-[hsl(var(--primary))] font-['Space_Grotesk'] shadow-sm">
                     {(i + 1).toString().padStart(2, '0')}
                   </div>
                 )}

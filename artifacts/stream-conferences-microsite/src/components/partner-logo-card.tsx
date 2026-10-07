@@ -25,16 +25,16 @@ export function PartnerLogoCard({
 
   const cardContent = (
     <div className="group flex flex-col items-center justify-center w-full cursor-pointer transition-all duration-300">
-      {/* Direct Logo Card Container */}
-      <div className="card-lift relative w-full h-36 sm:h-40 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm p-3 flex items-center justify-center overflow-hidden">
+      {/* Direct Logo Card Container (3:2 Ratio, edge-to-edge) */}
+      <div className="card-glow relative w-full aspect-[3/2] rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-center overflow-hidden">
         {logoUrl ? (
           <img
             src={logoUrl}
             alt={displayName}
-            className="w-full h-full object-contain filter drop-shadow-sm group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
-          <div className="w-full h-full bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--primary))] flex items-center justify-center font-bold text-base rounded-xl gap-2 p-2">
+          <div className="w-full h-full bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--primary))] flex items-center justify-center font-bold text-base gap-2 p-2">
             <Award size={24} />
             <span className="font-['Space_Grotesk'] line-clamp-1">{displayName}</span>
           </div>

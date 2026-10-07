@@ -451,7 +451,7 @@ function EventList({ initial: initialStatus = 'upcoming' }: { initial?: Status }
                   className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full group cursor-pointer" 
                   data-testid={`card-event-${index}`}
                 >
-                  <div className="relative aspect-[16/9] w-full bg-white dark:bg-slate-900/60 border-b border-[hsl(var(--border))] overflow-hidden flex items-center justify-center">
+                  <div className="relative aspect-[3/2] w-full bg-white dark:bg-slate-900/60 border-b border-[hsl(var(--border))] overflow-hidden flex items-center justify-center">
                     {e.subjectImageUrl ? (
                       <img 
                         src={mediaUrl(e.subjectImageUrl)} 
@@ -1719,7 +1719,7 @@ function Home() {
 
             {/* MOBILE ONLY: Standalone Image Carousel Box Card (Below Quick Stats) */}
             <div className="lg:hidden mt-6 sm:mt-7 w-full">
-              <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full rounded-2xl overflow-hidden shadow-2xl border border-white/25 bg-slate-900 group">
+              <div className="relative aspect-[3/2] w-full rounded-2xl overflow-hidden shadow-2xl border border-white/25 bg-slate-900 group">
                 {heroImages.map((srcUrl, i) => (
                   <div
                     key={srcUrl}
@@ -1811,7 +1811,7 @@ function Home() {
                   className="card-lift flex flex-col justify-between rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden h-full group cursor-pointer" 
                   data-testid={`card-home-conference-${index}`}
                 >
-                  <div className="relative aspect-[16/9] w-full bg-white dark:bg-slate-900/60 border-b border-[hsl(var(--border))] overflow-hidden flex items-center justify-center">
+                  <div className="relative aspect-[3/2] w-full bg-white dark:bg-slate-900/60 border-b border-[hsl(var(--border))] overflow-hidden flex items-center justify-center">
                     {item.subjectImageUrl ? (
                       <img 
                         src={mediaUrl(item.subjectImageUrl)} 
@@ -1891,7 +1891,7 @@ function Home() {
               {insightsList.slice(0, 3).map((insight, index) => (
                 <div key={insight.id || insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full shadow-sm">
                   <div className="p-6 flex-1">
-                    <div className="aspect-video w-full rounded-xl overflow-hidden mb-4 bg-[hsl(var(--muted)/.25)] flex items-center justify-center relative">
+                    <div className="aspect-[3/2] w-full rounded-xl overflow-hidden mb-4 bg-[hsl(var(--muted)/.25)] flex items-center justify-center relative">
                       {insight.bannerUrl ? (
                         <img src={mediaUrl(insight.bannerUrl)} alt={insight.title} className="h-full w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
                       ) : (
@@ -2048,7 +2048,7 @@ function AboutPage() {
           <div className="container-wide w-full">
             {/* Right Floated Playable YouTube Video Player */}
             <div className="w-full lg:w-[48%] xl:w-[46%] lg:float-right lg:ml-8 lg:mb-6 mb-8 relative z-10">
-              <div className="w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-[hsl(var(--border))] bg-black shadow-xl aspect-video">
+              <div className="w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-[hsl(var(--border))] bg-black shadow-xl aspect-[3/2]">
                 <iframe
                   className="w-full h-full"
                   src="https://www.youtube.com/embed/Hywy4D1h4BU?autoplay=1&mute=1&rel=0&loop=1&playlist=Hywy4D1h4BU&playsinline=1"
@@ -2765,11 +2765,11 @@ function SponsorsPage() {
                   const eventLabel = sponsor.shortTitle || sponsor.eventTitle || '';
                   return (
                     <div key={`${sponsor.sponsorId}-${idx}`} className="group flex flex-col items-center text-center">
-                      <div className="card-lift relative w-full h-36 sm:h-40 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm p-3 flex items-center justify-center overflow-hidden">
+                      <div className="card-glow relative w-full aspect-[3/2] rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-center overflow-hidden">
                         {logoUrl ? (
-                          <img src={logoUrl} alt={displayName} className="w-full h-full object-contain filter drop-shadow-sm group-hover:scale-105 transition-transform duration-300" />
+                          <img src={logoUrl} alt={displayName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         ) : (
-                          <div className="w-full h-full bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--primary))] flex items-center justify-center font-bold text-base rounded-xl gap-2 p-2">
+                          <div className="w-full h-full bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--primary))] flex items-center justify-center font-bold text-base gap-2 p-2">
                             <Award size={24} />
                             <span className="font-['Space_Grotesk'] line-clamp-1">{displayName}</span>
                           </div>
@@ -4478,7 +4478,7 @@ function BlogPage() {
             {insightsList.length > 0 ? insightsList.map((insight, index) => (
               <div key={insight.id || insight.title} className="card-lift rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col justify-between h-full shadow-sm">
                 <div className="p-6 flex-1">
-                  <div className="aspect-video w-full rounded-xl overflow-hidden mb-5 bg-[hsl(var(--muted)/.25)] flex items-center justify-center relative">
+                  <div className="aspect-[3/2] w-full rounded-xl overflow-hidden mb-5 bg-[hsl(var(--muted)/.25)] flex items-center justify-center relative">
                     {insight.bannerUrl ? (
                       <img 
                         src={mediaUrl(insight.bannerUrl)} 

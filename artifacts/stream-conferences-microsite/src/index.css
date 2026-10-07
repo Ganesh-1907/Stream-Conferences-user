@@ -130,7 +130,7 @@
     overflow-wrap: break-word;
     word-break: break-word;
   }
-  p, .prose p, .prose div, .prose li, .card p, .card-lift p, [class*="card"] p, section p, article p {
+  p, .prose p, .prose div, .prose li, .card p, .card-lift p, .card-glow p, [class*="card"] p, section p, article p {
     text-align: justify;
     overflow-wrap: break-word;
     word-break: break-word;
@@ -139,7 +139,7 @@
   .dark body,
   .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6,
   .dark p, .dark .prose p, .dark .prose div, .dark .prose li,
-  .dark .card p, .dark .card-lift p, .dark [class*="card"] p,
+  .dark .card p, .dark .card-lift p, .dark .card-glow p, .dark [class*="card"] p,
   .dark section p, .dark article p {
     color: hsl(var(--foreground));
   }
@@ -301,6 +301,22 @@
   box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.35), 0 3px 8px -2px rgba(0, 0, 0, 0.2);
 }
 .dark .card-lift:hover {
+  border-color: hsl(var(--secondary) / 0.8) !important;
+  box-shadow: 0 14px 28px -8px hsl(var(--secondary) / 0.2), 0 0 0 1.5px hsl(var(--secondary) / 0.4) !important;
+}
+
+.card-glow {
+  transition: border-color .35s ease, box-shadow .35s ease, background-color .35s ease;
+  box-shadow: 0 8px 24px -5px rgba(0, 0, 0, 0.08), 0 3px 8px -2px rgba(0, 0, 0, 0.04);
+}
+.card-glow:hover {
+  border-color: hsl(var(--secondary) / 0.8) !important;
+  box-shadow: 0 14px 28px -8px hsl(var(--secondary) / 0.28), 0 6px 14px -4px hsl(var(--primary) / 0.16), 0 0 0 1.5px hsl(var(--secondary) / 0.4) !important;
+}
+.dark .card-glow {
+  box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.35), 0 3px 8px -2px rgba(0, 0, 0, 0.2);
+}
+.dark .card-glow:hover {
   border-color: hsl(var(--secondary) / 0.8) !important;
   box-shadow: 0 14px 28px -8px hsl(var(--secondary) / 0.2), 0 0 0 1.5px hsl(var(--secondary) / 0.4) !important;
 }

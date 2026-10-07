@@ -78,10 +78,34 @@ export function normalizeFeesToDeadlineTiers(rawFees: any): DeadlineTier[] {
 }
 
 export function isFeeDateExpired(item: any): boolean {
+  if (!item) return false;
   const deadline = item.deadline || item.deadlineDate;
-  if (!deadline) return false;
-  const d = new Date(deadline);
-  return !isNaN(d.getTime()) && d < new Date();
+  if (deadline) {
+    const d = new Date(deadline);
+    if (!isNaN(d.getTime())) {
+      // If it's a date-only string like YYYY-MM-DD or doesn't have time specified,
+      // consider the deadline active until the end of that day (23:59:59.999 local time)
+      if (typeof deadline === 'string' && !deadline.includes('T') && !deadline.includes(':')) {
+        d.setHours(23, 59, 59, 999);
+      }
+      return d.getTime() < Date.now();
+    }
+  }
+
+  // If dateText has a date (e.g. "on/before 30 Sep 2026", "30 Sep 2026", "on/before 25 Dec")
+  if (item.dateText && typeof item.dateText === 'string') {
+    const cleanText = item.dateText.replace(/^(on\/before|on or before|before)\s+/i, '').trim();
+    if (cleanText && cleanText.toLowerCase() !== 'final') {
+      const parsed = Date.parse(cleanText);
+      if (!isNaN(parsed)) {
+        const d = new Date(parsed);
+        d.setHours(23, 59, 59, 999);
+        return d.getTime() < Date.now();
+      }
+    }
+  }
+
+  return false;
 }
 
 const CATEGORY_COLOR_MAP: Record<string, { header: string; tag: string }> = {

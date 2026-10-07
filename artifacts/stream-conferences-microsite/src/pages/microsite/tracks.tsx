@@ -8,26 +8,55 @@ const mediaUrl = (u: string): string => (!u ? '' : u.startsWith('http') ? u : `$
 
 export function TracksPage({ event }: { event: EventData }) {
   const tracks = Array.isArray(event.tracks) ? event.tracks : [];
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-
-  useEffect(() => {
+  
+  // Initialize state directly from URL query param if present
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(() => {
+    if (typeof window === 'undefined') return null;
     const params = new URLSearchParams(window.location.search);
     const trackParam = params.get('track');
     if (trackParam !== null) {
       const idx = parseInt(trackParam, 10);
       if (!isNaN(idx) && idx >= 0 && idx < tracks.length) {
-        setSelectedIndex(idx);
+        return idx;
       }
     }
+    return null;
+  });
+
+  // Keep state in sync with URL search params and browser back/forward buttons
+  useEffect(() => {
+    const updateFromUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      const trackParam = params.get('track');
+      if (trackParam !== null) {
+        const idx = parseInt(trackParam, 10);
+        if (!isNaN(idx) && idx >= 0 && idx < tracks.length) {
+          setSelectedIndex(idx);
+          return;
+        }
+      }
+      setSelectedIndex(null);
+    };
+
+    updateFromUrl();
+    window.addEventListener('popstate', updateFromUrl);
+    return () => window.removeEventListener('popstate', updateFromUrl);
   }, [tracks.length]);
 
   const handleSelectTrack = (index: number) => {
     setSelectedIndex(index);
+    const url = new URL(window.location.href);
+    url.searchParams.set('track', index.toString());
+    window.history.pushState({ track: index }, '', url.toString());
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBackToList = () => {
     setSelectedIndex(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete('track');
+    const newUrl = url.pathname + (url.search ? url.search : '') + url.hash;
+    window.history.pushState({}, '', newUrl);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -55,9 +84,9 @@ export function TracksPage({ event }: { event: EventData }) {
             </button>
           </div>
 
-          {/* Track Banner Image (Fixed Uniform 3:1 Ratio & Size) */}
+          {/* Track Banner Image (3:2 Ratio, compact responsive size) */}
           {track.image && (
-            <div className="w-full max-w-4xl mx-auto h-52 sm:h-64 md:h-72 rounded-2xl overflow-hidden border border-[hsl(var(--border))] shadow-md bg-muted/20 flex items-center justify-center">
+            <div className="card-glow w-full max-w-md mx-auto aspect-[3/2] rounded-2xl overflow-hidden border border-[hsl(var(--border))] shadow-md bg-muted/20 flex items-center justify-center">
               <img
                 src={mediaUrl(track.image)}
                 alt={track.title}
@@ -67,7 +96,7 @@ export function TracksPage({ event }: { event: EventData }) {
           )}
 
           {/* Down Content / Description */}
-          <div className="card-lift rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 sm:p-12 shadow-sm space-y-6">
+          <div className="card-glow rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 sm:p-12 shadow-sm space-y-6">
             <h3 className="display text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase text-[hsl(var(--secondary))] border-b border-[hsl(var(--border))] pb-4">
               Track Overview & Research Topics
             </h3>
@@ -83,7 +112,7 @@ export function TracksPage({ event }: { event: EventData }) {
 
           {/* Last Links / Reference Links */}
           {Array.isArray(track.referenceLinks) && track.referenceLinks.length > 0 && (
-            <div className="card-lift rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-4">
+            <div className="card-glow rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-sm space-y-4">
               <h4 className="text-base font-bold uppercase tracking-wider text-[hsl(var(--primary))]">
                 Track Resources & Reference Links
               </h4>
@@ -127,13 +156,15 @@ export function TracksPage({ event }: { event: EventData }) {
               <div key={i} className="card-lift flex flex-col sm:flex-row items-start gap-6 sm:gap-8 p-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xs">
                 {/* Left Side: Track Image or Number Badge */}
                 {track.image ? (
-                  <img
-                    src={mediaUrl(track.image)}
-                    alt={track.title}
-                    className="w-full sm:w-56 md:w-64 h-44 sm:h-44 md:h-48 shrink-0 rounded-2xl object-cover border border-[hsl(var(--border))] shadow-md bg-[hsl(var(--card))]"
-                  />
+                  <div className="w-full sm:w-60 md:w-72 aspect-[3/2] shrink-0 rounded-2xl overflow-hidden border border-[hsl(var(--border))] shadow-md bg-[hsl(var(--card))]">
+                    <img
+                      src={mediaUrl(track.image)}
+                      alt={track.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 ) : (
-                  <div className="w-full sm:w-56 md:w-64 h-44 sm:h-44 md:h-48 shrink-0 rounded-2xl bg-[hsl(var(--primary)/.08)] border border-[hsl(var(--primary)/.18)] flex items-center justify-center text-4xl sm:text-5xl font-black text-[hsl(var(--primary))] font-['Space_Grotesk'] shadow-sm">
+                  <div className="w-full sm:w-60 md:w-72 aspect-[3/2] shrink-0 rounded-2xl bg-[hsl(var(--primary)/.08)] border border-[hsl(var(--primary)/.18)] flex items-center justify-center text-4xl sm:text-5xl font-black text-[hsl(var(--primary))] font-['Space_Grotesk'] shadow-sm">
                     {(i + 1).toString().padStart(2, '0')}
                   </div>
                 )}

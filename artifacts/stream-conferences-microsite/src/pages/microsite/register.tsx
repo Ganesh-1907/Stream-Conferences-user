@@ -140,12 +140,24 @@ export function RegisterPage({ event }: { event: EventData }) {
     return normalizeFeesToDeadlineTiers(event.fees);
   }, [event.fees]);
 
-  // Flatten options for lookup
+  // Find the index of the currently active deadline tier (first non-expired tier).
+  // Earlier tiers are closed/expired, and later tiers are future/upcoming.
+  const activeTierIndex = useMemo(() => {
+    if (!deadlineTiers || deadlineTiers.length === 0) return -1;
+    const idx = deadlineTiers.findIndex((tier) => !isFeeDateExpired(tier));
+    return idx === -1 ? deadlineTiers.length - 1 : idx;
+  }, [deadlineTiers]);
+
+  // Flatten options for lookup - only the currently active deadline tier is selectable
   const allFeeOptions = useMemo<SelectableFeeOption[]>(() => {
     const list: SelectableFeeOption[] = [];
     deadlineTiers.forEach((tier, tIdx) => {
       const tierTitle = tier.title || `Deadline Tier #${tIdx + 1}`;
-      const expired = isFeeDateExpired(tier);
+      const isPast = isFeeDateExpired(tier) || (activeTierIndex !== -1 && tIdx < activeTierIndex);
+      const isFuture = activeTierIndex !== -1 && tIdx > activeTierIndex;
+      const isActive = tIdx === activeTierIndex && !isFeeDateExpired(tier);
+      const isSelectable = isActive;
+
       tier.categories.forEach((cat) => {
         cat.items.forEach((item) => {
           list.push({
@@ -161,13 +173,13 @@ export function RegisterPage({ event }: { event: EventData }) {
               GBP: Number(item.prices?.GBP) || 0,
               EUR: Number(item.prices?.EUR) || 0,
             },
-            expired,
+            expired: !isSelectable,
           });
         });
       });
     });
     return list;
-  }, [deadlineTiers]);
+  }, [deadlineTiers, activeTierIndex]);
 
   // Only select when user explicitly chooses one
   const selectedOption = useMemo(() => {
@@ -987,16 +999,47 @@ export function RegisterPage({ event }: { event: EventData }) {
                   : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
               }`}>
                 {deadlineTiers.map((tier, tIdx) => {
-                  const isExpired = isFeeDateExpired(tier);
+                  const isPast = isFeeDateExpired(tier) || (activeTierIndex !== -1 && tIdx < activeTierIndex);
+                  const isFuture = activeTierIndex !== -1 && tIdx > activeTierIndex;
+                  const isActive = tIdx === activeTierIndex;
+                  const isSelectable = isActive && !isFeeDateExpired(tier);
+
                   return (
                     <div
                       key={tier.id || tIdx}
                       className={`rounded-2xl border bg-white dark:bg-[#0f172a] shadow-lg overflow-hidden flex flex-col transition-all ${
-                        isExpired ? 'opacity-60 border-slate-300 dark:border-slate-800' : 'border-slate-200 dark:border-white/10 hover:shadow-xl'
+                        isSelectable
+                          ? 'border-2 border-[hsl(var(--primary))] ring-4 ring-[hsl(var(--primary)/.15)] shadow-xl relative'
+                          : isPast
+                          ? 'opacity-60 border-slate-300 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40'
+                          : 'opacity-60 border-slate-300 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40'
                       }`}
                     >
                       {/* Tier Header Banner */}
-                      <div className="bg-gradient-to-br from-[#d98b76] via-[#cb7386] to-[#a85a85] dark:from-[#9c513e] dark:to-[#743557] text-white p-5 text-center flex flex-col items-center justify-center min-h-[125px] shadow-inner">
+                      <div className={`p-5 text-center flex flex-col items-center justify-center min-h-[125px] shadow-inner text-white ${
+                        isSelectable
+                          ? 'bg-gradient-to-br from-[#d98b76] via-[#cb7386] to-[#a85a85] dark:from-[#9c513e] dark:to-[#743557]'
+                          : 'bg-gradient-to-br from-slate-500 via-slate-600 to-slate-700 dark:from-slate-700 dark:to-slate-800'
+                      }`}>
+                        {/* Status Tag */}
+                        <div className="mb-1.5">
+                          {isPast && (
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-black/30 text-white/90 border border-white/20">
+                              Closed
+                            </span>
+                          )}
+                          {isSelectable && (
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/25 text-white border border-white/40 shadow-xs">
+                              Active / Open Now
+                            </span>
+                          )}
+                          {isFuture && (
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-black/20 text-white/80 border border-white/15">
+                              Upcoming
+                            </span>
+                          )}
+                        </div>
+
                         {(tier.dateText || tier.deadlineDate) && (
                           <span className="text-xs font-semibold text-white/85 tracking-wide uppercase">
                             (On or Before)
@@ -1017,7 +1060,11 @@ export function RegisterPage({ event }: { event: EventData }) {
                           return (
                             <div
                               key={cat.id || cIdx}
-                              className="rounded-xl border border-slate-200/80 dark:border-white/10 bg-slate-50/40 dark:bg-white/[0.02] overflow-hidden shadow-2xs"
+                              className={`rounded-xl border overflow-hidden shadow-2xs ${
+                                isSelectable
+                                  ? 'border-slate-200/80 dark:border-white/10 bg-slate-50/40 dark:bg-white/[0.02]'
+                                  : 'border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-white/[0.01]'
+                              }`}
                             >
                               {/* Category Header */}
                               <div className={`py-2 px-4 text-center font-bold text-sm tracking-wide ${style.header}`}>
@@ -1035,10 +1082,10 @@ export function RegisterPage({ event }: { event: EventData }) {
                                     <div
                                       key={item.id || iIdx}
                                       onClick={() => {
-                                        if (!isExpired) setSelectedOptionId(optId);
+                                        if (isSelectable) setSelectedOptionId(optId);
                                       }}
                                       className={`flex items-center justify-between gap-3 px-4 py-3.5 transition-colors ${
-                                        isExpired
+                                        !isSelectable
                                           ? 'opacity-60 cursor-not-allowed bg-slate-50/50 dark:bg-white/[0.01]'
                                           : isSelected
                                           ? 'bg-[hsl(var(--primary)/.1)] dark:bg-[hsl(var(--primary)/.2)] cursor-pointer'
@@ -1049,26 +1096,26 @@ export function RegisterPage({ event }: { event: EventData }) {
                                       <span className={`text-xs sm:text-sm font-semibold leading-snug ${
                                         isSelected
                                           ? 'text-[hsl(var(--primary))] font-bold'
-                                          : isExpired
+                                          : !isSelectable
                                           ? 'text-slate-500 dark:text-slate-400'
                                           : 'text-slate-700 dark:text-slate-200'
                                       }`}>
                                         {item.name || 'Registration Item'}
                                       </span>
 
-                                      {/* Price Badge + Radio Toggle (Only if not expired) */}
+                                      {/* Price Badge + Radio Toggle (Only if active/selectable) */}
                                       <div className="flex items-center gap-3 shrink-0">
                                         <span className={`px-2.5 py-1 rounded-lg border text-xs font-black font-mono shadow-2xs ${
                                           isSelected
                                             ? 'bg-[hsl(var(--primary))] text-white border-[hsl(var(--primary))]'
-                                            : isExpired
+                                            : !isSelectable
                                             ? 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800'
                                             : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-slate-200 dark:border-slate-700'
                                         }`}>
                                           {sym} {Number(price).toLocaleString()}
                                         </span>
 
-                                        {!isExpired && (
+                                        {isSelectable && (
                                           <input
                                             type="radio"
                                             name="selectedFeeOptionRadio"

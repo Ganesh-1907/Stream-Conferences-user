@@ -218,14 +218,14 @@ export function VenuePage({ event }: { event: EventData }) {
                 <div className="w-full">
                   {/* Left Column: Featured Main Image if present */}
                   {mainImage && (
-                    <div className="w-full lg:w-[45%] xl:w-[42%] lg:max-w-[500px] lg:float-left lg:mr-8 lg:mb-6 mb-8">
-                      <div className="relative overflow-hidden group rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 shadow-sm">
+                    <div className="w-full lg:w-[48%] xl:w-[45%] lg:max-w-[540px] lg:float-left lg:mr-8 lg:mb-6 mb-8">
+                      <div className="card-glow relative overflow-hidden group rounded-2xl border border-[hsl(var(--border))] shadow-sm aspect-[3/2] w-full bg-[hsl(var(--muted)/.2)]">
                         <img
                           src={mediaUrl(mainImage)}
                           alt={venueName || 'Venue'}
-                          className="w-full h-72 sm:h-80 md:h-[360px] object-contain group-hover:scale-105 transition-transform duration-500 rounded-xl"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
-                        <div className="absolute top-4 left-4 bg-[hsl(var(--background)/.9)] backdrop-blur px-3 py-1 rounded-lg text-xs font-bold text-[hsl(var(--foreground))] border border-[hsl(var(--border))] shadow-sm">
+                        <div className="absolute top-3 left-3 bg-[hsl(var(--background)/.9)] backdrop-blur px-3 py-1 rounded-lg text-xs font-bold text-[hsl(var(--foreground))] border border-[hsl(var(--border))] shadow-sm">
                           Main Venue Showcase
                         </div>
                       </div>
@@ -284,7 +284,7 @@ export function VenuePage({ event }: { event: EventData }) {
               </section>
             )}
 
-            {/* 3. Three Sub Images Gallery */}
+            {/* 3. Sub Images Gallery (4 Images per row) */}
             {subImages.length > 0 && (
               <section className="space-y-6">
                 <div>
@@ -293,19 +293,17 @@ export function VenuePage({ event }: { event: EventData }) {
                   </h3>
                 </div>
 
-                <div className="grid gap-6 sm:grid-cols-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
                   {subImages.map((imgUrl, idx) => (
                     <div
                       key={idx}
-                      className="card-lift group rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm p-4"
+                      className="card-glow group rounded-2xl border border-[hsl(var(--border))] overflow-hidden shadow-sm aspect-[3/2] w-full bg-[hsl(var(--muted)/.2)] flex items-center justify-center"
                     >
-                      <div className="aspect-[4/3] h-56 sm:h-64 w-full overflow-hidden flex items-center justify-center bg-[hsl(var(--card))]">
-                        <img
-                          src={mediaUrl(imgUrl)}
-                          alt={`Venue Photo ${idx + 1}`}
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
+                      <img
+                        src={mediaUrl(imgUrl)}
+                        alt={`Venue Photo ${idx + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
                     </div>
                   ))}
                 </div>
@@ -325,12 +323,12 @@ export function VenuePage({ event }: { event: EventData }) {
 
 function AttractionCard({ item }: { item: CityAttraction }) {
   const cardContent = (
-    <div className="group h-full flex flex-col rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm hover:shadow-md hover:border-[hsl(var(--secondary)/.4)] transition-all duration-300">
-      <div className="relative aspect-[4/3] h-52 sm:h-56 w-full overflow-hidden bg-[hsl(var(--muted)/.15)] flex items-center justify-center p-3">
+    <div className="card-glow group h-full flex flex-col rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+      <div className="relative aspect-[3/2] w-full overflow-hidden bg-[hsl(var(--muted)/.15)] flex items-center justify-center">
         <img
           src={mediaUrl(item.image)}
           alt={item.name || 'City Attraction'}
-          className="max-w-full max-h-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           onError={(e) => {
             (e.target as HTMLElement).style.display = 'none';
           }}
@@ -341,9 +339,9 @@ function AttractionCard({ item }: { item: CityAttraction }) {
           </div>
         )}
       </div>
-      <div className="p-4 flex-1 flex flex-col justify-between gap-3 bg-[hsl(var(--card))]">
+      <div className="p-3.5 flex-1 flex flex-col justify-between gap-2 bg-[hsl(var(--card))]">
         {item.name ? (
-          <h4 className="font-bold text-base sm:text-lg text-[hsl(var(--foreground))] font-['Space_Grotesk'] line-clamp-2 leading-snug group-hover:text-[hsl(var(--secondary))] transition-colors">
+          <h4 className="font-bold text-sm sm:text-base text-[hsl(var(--foreground))] font-['Space_Grotesk'] line-clamp-2 leading-snug group-hover:text-[hsl(var(--secondary))] transition-colors">
             {item.name}
           </h4>
         ) : null}
@@ -444,19 +442,19 @@ function CityAttractionsMarquee({ attractions }: { attractions: CityAttraction[]
         )}
       </div>
 
-      {/* Marquee Container with 3 cards per row on desktop */}
+      {/* Marquee Container with compact cards */}
       <div
         ref={scrollContainerRef}
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={() => setIsPaused(true)}
         onTouchEnd={() => setIsPaused(false)}
-        className="flex gap-6 overflow-x-auto scroll-smooth py-2 px-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden cursor-grab active:cursor-grabbing"
+        className="flex gap-4 sm:gap-5 overflow-x-auto scroll-smooth py-2 px-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden cursor-grab active:cursor-grabbing"
       >
         {displayItems.map((item, idx) => (
           <div
             key={`${item.name}-${idx}`}
-            className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] min-w-[280px]"
+            className="flex-shrink-0 w-full sm:w-[calc(50%-10px)] lg:w-[calc(25%-15px)] min-w-[220px]"
           >
             <AttractionCard item={item} />
           </div>
