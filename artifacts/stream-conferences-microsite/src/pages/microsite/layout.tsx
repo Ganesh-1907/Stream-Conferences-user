@@ -188,10 +188,103 @@ function MicrositeHeader({ event, navItems }: { event: EventData; navItems: NavI
       iconLink.href = '/logo-icon.png';
     }
 
-    if (event?.title) {
-      document.title = `${event.title} · Stream Conferences`;
+    // 1. Browser Tab Title: Prioritize metaTitle if entered, otherwise fallback to conference title
+    const resolvedTitle = event?.metaTitle?.trim() || (event?.title ? `${event.title} · Stream Conferences` : 'Stream Conferences');
+    document.title = resolvedTitle;
+
+    // 2. Meta Description
+    const metaDescContent = event?.metaDescription?.trim() || event?.description?.trim() || '';
+    if (metaDescContent) {
+      let metaDesc = document.querySelector<HTMLMetaElement>("meta[name='description']");
+      if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.name = 'description';
+        document.head.appendChild(metaDesc);
+      }
+      metaDesc.content = metaDescContent;
     }
-  }, [event?.logoUrl, event?.title]);
+
+    // 3. OpenGraph and Twitter Meta Tags
+    let ogTitle = document.querySelector<HTMLMetaElement>("meta[property='og:title']");
+    if (!ogTitle) {
+      ogTitle = document.createElement('meta');
+      ogTitle.setAttribute('property', 'og:title');
+      document.head.appendChild(ogTitle);
+    }
+    ogTitle.content = resolvedTitle;
+
+    let twitterTitle = document.querySelector<HTMLMetaElement>("meta[name='twitter:title']");
+    if (!twitterTitle) {
+      twitterTitle = document.createElement('meta');
+      twitterTitle.name = 'twitter:title';
+      document.head.appendChild(twitterTitle);
+    }
+    twitterTitle.content = resolvedTitle;
+
+    if (metaDescContent) {
+      let ogDesc = document.querySelector<HTMLMetaElement>("meta[property='og:description']");
+      if (!ogDesc) {
+        ogDesc = document.createElement('meta');
+        ogDesc.setAttribute('property', 'og:description');
+        document.head.appendChild(ogDesc);
+      }
+      ogDesc.content = metaDescContent;
+
+      let twitterDesc = document.querySelector<HTMLMetaElement>("meta[name='twitter:description']");
+      if (!twitterDesc) {
+        twitterDesc = document.createElement('meta');
+        twitterDesc.name = 'twitter:description';
+        document.head.appendChild(twitterDesc);
+      }
+      twitterDesc.content = metaDescContent;
+    }
+
+    if (event?.logoUrl || event?.bannerUrl) {
+      const imgUrl = mediaUrl(event.logoUrl || event.bannerUrl || '');
+      let ogImg = document.querySelector<HTMLMetaElement>("meta[property='og:image']");
+      if (!ogImg) {
+        ogImg = document.createElement('meta');
+        ogImg.setAttribute('property', 'og:image');
+        document.head.appendChild(ogImg);
+      }
+      ogImg.content = imgUrl;
+    }
+
+    // 4. Inject Google Tag Manager (GTM)
+    if (event?.gtmCode?.trim()) {
+      const gtmId = event.gtmCode.trim();
+      if (!document.getElementById('stream-gtm-script')) {
+        const script = document.createElement('script');
+        script.id = 'stream-gtm-script';
+        script.innerHTML = `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'dataLayer','${gtmId}');`;
+        document.head.appendChild(script);
+      }
+    }
+
+    // 5. Inject Google Analytics (GA)
+    if (event?.gaCode?.trim()) {
+      const gaId = event.gaCode.trim();
+      if (!document.getElementById('stream-ga-script')) {
+        const scriptTag = document.createElement('script');
+        scriptTag.id = 'stream-ga-script-src';
+        scriptTag.async = true;
+        scriptTag.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+        document.head.appendChild(scriptTag);
+
+        const initScript = document.createElement('script');
+        initScript.id = 'stream-ga-script';
+        initScript.innerHTML = `window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '${gaId}');`;
+        document.head.appendChild(initScript);
+      }
+    }
+  }, [event?.logoUrl, event?.bannerUrl, event?.title, event?.metaTitle, event?.metaDescription, event?.description, event?.gtmCode, event?.gaCode]);
 
   const isActive = (path: string) => location === path;
 
