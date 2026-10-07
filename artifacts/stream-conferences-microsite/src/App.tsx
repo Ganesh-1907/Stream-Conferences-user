@@ -1116,9 +1116,8 @@ function Footer() {
         </div>
       </div>
 
-      <div className="container-wide flex flex-col justify-between gap-3 border-t border-white/20 py-5 text-xs font-medium text-white/80 sm:flex-row">
+      <div className="container-wide flex flex-col justify-center items-center text-center gap-3 border-t border-white/20 py-5 text-xs font-medium text-white/80 sm:flex-row sm:justify-between">
         <span>© 2027 Stream Conferences. All rights reserved.</span>
-        <span>Developed by BYV</span>
       </div>
     </footer>
   );

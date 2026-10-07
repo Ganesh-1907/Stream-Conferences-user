@@ -979,14 +979,14 @@ function MicrositeFooter({ event, navItems }: { event: EventData; navItems: NavI
             </div>
           </div>
         </div>
-        <div className="mt-10 pt-6 border-t border-white/15 text-center text-xs text-white/75">
-          <p>
+        <div className="mt-10 pt-6 border-t border-white/20 text-center text-xs !text-white">
+          <p className="!text-white font-medium">
             Powered by{' '}
             <a
               href={MAIN_WEBSITE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-white underline underline-offset-2 transition-colors font-medium"
+              className="!text-white hover:text-white/80 underline underline-offset-2 transition-colors font-bold"
             >
               Stream Conferences
             </a>
