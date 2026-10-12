@@ -283,7 +283,7 @@ export function HomePage({ event }: { event: EventData }) {
                 </Link>
                 <Link
                   href="/submit-abstract"
-                  className="inline-flex items-center gap-2 px-6 sm:px-7 py-2.5 sm:py-3 rounded-full bg-white/20 hover:bg-white/30 text-white font-bold text-xs sm:text-sm uppercase tracking-wider backdrop-blur-md border border-white/40 transition-all cursor-pointer shadow-md hover:scale-105"
+                  className="inline-flex items-center gap-2 px-6 sm:px-7 py-2.5 sm:py-3 rounded-full bg-white/10 hover:bg-white hover:text-[hsl(var(--primary))] text-white font-bold text-xs sm:text-sm uppercase tracking-wider border-2 border-white/80 transition-all cursor-pointer shadow-md hover:scale-105"
                 >
                   <span>SUBMIT ABSTRACT</span>
                   <ArrowUpRight size={15} />
