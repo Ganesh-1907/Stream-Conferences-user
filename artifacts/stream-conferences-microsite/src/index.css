@@ -1,11 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Caveat:wght@400;700&family=Cinzel:wght@400;700&family=Dancing+Script:wght@400;700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
 
 /* Use one typography family consistently across the main site and microsites. */
-*, *::before, *::after {
-  font-family: 'Times New Roman', Times, serif !important;
+body, button, input, select, textarea {
+  font-family: 'Times New Roman', Times, serif;
+}
+
+/* Ensure bold text inside prose/rich-text inherits custom colors (e.g. red/blue highlights) */
+.prose strong,
+.prose b,
+.prose :where(strong) {
+  color: inherit !important;
 }
 
 @custom-variant dark (&:is(.dark *));
