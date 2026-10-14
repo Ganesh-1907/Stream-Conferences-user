@@ -190,22 +190,68 @@ export function RegisterPage({ event }: { event: EventData }) {
     return null;
   }, [allFeeOptions, selectedOptionId]);
 
-  // Accommodation selection state
-  const [selectedAccId, setSelectedAccId] = useState<string>('none');
-  const accommodationOptions = useMemo(() => {
-    return Array.isArray(event.accommodationFees) ? event.accommodationFees : [];
-  }, [event.accommodationFees]);
+  // Global Add-Ons state (any number of addon groups)
+  const addonGroups = useMemo(() => {
+    if (Array.isArray(event.globalAddons) && event.globalAddons.length > 0) {
+      return event.globalAddons.filter(g => Array.isArray(g.levels) && g.levels.length > 0);
+    }
+    if (Array.isArray(event.accommodationFees) && event.accommodationFees.length > 0) {
+      return [
+        {
+          id: 'addon_legacy_acc',
+          title: event.globalAddonTitle || 'Accommodation Package',
+          levels: event.accommodationFees
+        }
+      ];
+    }
+    return [];
+  }, [event.globalAddons, event.accommodationFees, event.globalAddonTitle]);
 
-  const selectedAccommodation = useMemo(() => {
-    if (!selectedAccId || selectedAccId === 'none') return null;
-    return accommodationOptions.find((a, idx) => (a.id || String(idx)) === selectedAccId) || null;
-  }, [accommodationOptions, selectedAccId]);
+  // Selected level per addon group: { [addonGroupId]: levelId } (default 'none')
+  const [selectedAddons, setSelectedAddons] = useState<Record<string, string>>({});
 
-  const accPrice = useMemo(() => {
-    if (!selectedAccommodation) return 0;
+  const handleSelectAddonLevel = (groupId: string, levelId: string) => {
+    setSelectedAddons(prev => ({
+      ...prev,
+      [groupId]: levelId
+    }));
+  };
+
+  const selectedAddonsList = useMemo(() => {
+    const list: Array<{
+      groupId: string;
+      groupTitle: string;
+      levelId: string;
+      levelTitle: string;
+      price: number;
+    }> = [];
+
     const currKey = currency.toLowerCase() as 'usd' | 'gbp' | 'eur';
-    return Number(selectedAccommodation[currKey] ?? (selectedAccommodation as any)[currency] ?? 0);
-  }, [selectedAccommodation, currency]);
+
+    addonGroups.forEach(grp => {
+      const gId = grp.id || grp.title;
+      const selectedLvlId = selectedAddons[gId];
+      if (selectedLvlId && selectedLvlId !== 'none') {
+        const found = grp.levels.find((lvl, idx) => (lvl.id || String(idx)) === selectedLvlId);
+        if (found) {
+          const price = Number(found[currKey] ?? (found as any)[currency] ?? 0);
+          list.push({
+            groupId: gId,
+            groupTitle: grp.title || 'Add-On',
+            levelId: found.id || selectedLvlId,
+            levelTitle: found.title,
+            price
+          });
+        }
+      }
+    });
+
+    return list;
+  }, [addonGroups, selectedAddons, currency]);
+
+  const totalAddonPrice = useMemo(() => {
+    return selectedAddonsList.reduce((sum, item) => sum + item.price, 0);
+  }, [selectedAddonsList]);
 
   const regPrice = useMemo(() => {
     if (!selectedOption) return 0;
@@ -213,8 +259,8 @@ export function RegisterPage({ event }: { event: EventData }) {
   }, [selectedOption, currency]);
 
   const totalPrice = useMemo(() => {
-    return regPrice + accPrice;
-  }, [regPrice, accPrice]);
+    return regPrice + totalAddonPrice;
+  }, [regPrice, totalAddonPrice]);
 
   const phone = phoneNum.trim();
   const name = title ? `${title} ${fullName}`.trim() : fullName.trim();
@@ -527,7 +573,14 @@ export function RegisterPage({ event }: { event: EventData }) {
     setIsSubmitting(true);
     try {
       const categoryLabel = `${selectedOption.categoryName} - ${selectedOption.itemName} (${selectedOption.tierTitle})`;
-      const accommodationTitle = selectedAccommodation ? selectedAccommodation.title : '';
+      const formattedAddons = selectedAddonsList.map(a => ({
+        addonId: a.groupId,
+        title: a.groupTitle,
+        levelId: a.levelId,
+        levelTitle: a.levelTitle,
+        fee: a.price
+      }));
+      const accommodationTitle = selectedAddonsList.map(a => `${a.groupTitle}: ${a.levelTitle}`).join(', ');
 
       const billingPayload = {
         title: sameAsPersonal ? title : billingTitle,
@@ -546,7 +599,8 @@ export function RegisterPage({ event }: { event: EventData }) {
           title, fullName, name, email, phone, institution, address, country: countryName(country),
           category: categoryLabel,
           accommodation: accommodationTitle,
-          accommodationFee: accPrice,
+          accommodationFee: totalAddonPrice,
+          addons: formattedAddons,
           registrationFee: regPrice,
           totalAmount: totalPrice,
           currency,
@@ -563,7 +617,8 @@ export function RegisterPage({ event }: { event: EventData }) {
         title, fullName, name, email, phone,
         category: categoryLabel,
         accommodation: accommodationTitle,
-        accommodationFee: accPrice,
+        accommodationFee: totalAddonPrice,
+        addons: formattedAddons,
         registrationFee: regPrice,
         address, country: sameAsPersonal ? country : billingCountry,
         amount: totalPrice,
@@ -1139,91 +1194,110 @@ export function RegisterPage({ event }: { event: EventData }) {
               </div>
             )}
 
-            {/* Accommodation Package (Optional Add-On) */}
-            {accommodationOptions.length > 0 && (
-              <div className="bg-card border border-[hsl(var(--border))] rounded-2xl shadow-sm overflow-hidden mt-6">
-                <div className="bg-slate-900 text-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-lg">
-                        Optional Add-On
-                      </span>
-                      <h4 className="text-base font-bold text-white tracking-tight">Accommodation Package</h4>
-                    </div>
-                    <p className="text-xs text-slate-300 mt-1">
-                      Select your preferred accommodation package to be billed alongside your conference registration.
-                    </p>
-                  </div>
-                </div>
+            {/* Global Add-Ons (Optional) */}
+            {addonGroups.length > 0 && (
+              <div className="space-y-6 mt-6">
+                {addonGroups.map((addonGroup, gIdx) => {
+                  const gId = addonGroup.id || addonGroup.title || String(gIdx);
+                  const selectedLvlId = selectedAddons[gId] || 'none';
 
-                <div className="p-4 sm:p-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {/* Option 1: No Accommodation */}
-                  <div
-                    onClick={() => setSelectedAccId('none')}
-                    className={`rounded-xl border p-4 transition-all cursor-pointer flex flex-col justify-between ${
-                      selectedAccId === 'none'
-                        ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary)/.08)] shadow-xs ring-2 ring-[hsl(var(--primary))]'
-                        : 'border-[hsl(var(--border))] bg-background hover:bg-[hsl(var(--muted)/.5)]'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="font-bold text-sm text-[hsl(var(--foreground))]">No Accommodation</p>
-                        <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">Registration only (Self-arranged stay)</p>
-                      </div>
-                      <input
-                        type="radio"
-                        name="selectedAccRadio"
-                        checked={selectedAccId === 'none'}
-                        onChange={() => setSelectedAccId('none')}
-                        className="h-4.5 w-4.5 text-[hsl(var(--primary))] accent-[hsl(var(--primary))] cursor-pointer mt-0.5"
-                      />
-                    </div>
-                    <div className="mt-3 pt-2 border-t border-[hsl(var(--border))] text-xs font-semibold text-[hsl(var(--muted-foreground))]">
-                      + {sym}0
-                    </div>
-                  </div>
-
-                  {/* Accommodation Levels */}
-                  {accommodationOptions.map((acc, idx) => {
-                    const accId = acc.id || String(idx);
-                    const isSelected = selectedAccId === accId;
-                    const currKey = currency.toLowerCase() as 'usd' | 'gbp' | 'eur';
-                    const price = acc[currKey] ?? (acc as any)[currency] ?? 0;
-
-                    return (
-                      <div
-                        key={accId}
-                        onClick={() => setSelectedAccId(accId)}
-                        className={`rounded-xl border p-4 transition-all cursor-pointer flex flex-col justify-between ${
-                          isSelected
-                            ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary)/.08)] shadow-xs ring-2 ring-[hsl(var(--primary))]'
-                            : 'border-[hsl(var(--border))] bg-background hover:bg-[hsl(var(--muted)/.5)]'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <p className="font-bold text-sm text-[hsl(var(--foreground))]">{acc.title || `Accommodation Level #${idx + 1}`}</p>
-                            <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold mt-0.5">Hotel room booking included</p>
+                  return (
+                    <div key={gId} className="bg-card border border-[hsl(var(--border))] rounded-2xl shadow-sm overflow-hidden">
+                      <div className="bg-slate-900 text-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-lg">
+                              Optional Add-On #{gIdx + 1}
+                            </span>
+                            <h4 className="text-base font-bold text-white tracking-tight">
+                              {addonGroup.title || `Add-On Group #${gIdx + 1}`}
+                            </h4>
                           </div>
-                          <input
-                            type="radio"
-                            name="selectedAccRadio"
-                            checked={isSelected}
-                            onChange={() => setSelectedAccId(accId)}
-                            className="h-4.5 w-4.5 text-[hsl(var(--primary))] accent-[hsl(var(--primary))] cursor-pointer mt-0.5"
-                          />
-                        </div>
-                        <div className="mt-3 pt-2 border-t border-[hsl(var(--border))] flex items-center justify-between">
-                          <span className="text-xs font-bold text-[hsl(var(--foreground))]">Add-on Rate:</span>
-                          <span className="px-2 py-0.5 rounded-lg border text-xs font-black font-mono bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-slate-200 dark:border-slate-700">
-                            + {sym}{Number(price).toLocaleString()}
-                          </span>
+                          <p className="text-xs text-slate-300 mt-1">
+                            {addonGroup.title
+                              ? `Select your preferred ${addonGroup.title.toLowerCase()} option to be billed alongside your conference registration (optional).`
+                              : 'Select your preferred add-on option to be billed alongside your conference registration (optional).'}
+                          </p>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
+
+                      <div className="p-4 sm:p-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {/* Option 1: None */}
+                        <div
+                          onClick={() => handleSelectAddonLevel(gId, 'none')}
+                          className={`rounded-xl border p-4 transition-all cursor-pointer flex flex-col justify-between ${
+                            selectedLvlId === 'none'
+                              ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary)/.08)] shadow-xs ring-2 ring-[hsl(var(--primary))]'
+                              : 'border-[hsl(var(--border))] bg-background hover:bg-[hsl(var(--muted)/.5)]'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <p className="font-bold text-sm text-[hsl(var(--foreground))]">
+                                {addonGroup.title ? `No ${addonGroup.title}` : 'No Add-On'}
+                              </p>
+                              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">Registration only</p>
+                            </div>
+                            <input
+                              type="radio"
+                              name={`addonRadio_${gId}`}
+                              checked={selectedLvlId === 'none'}
+                              onChange={() => handleSelectAddonLevel(gId, 'none')}
+                              className="h-4.5 w-4.5 text-[hsl(var(--primary))] accent-[hsl(var(--primary))] cursor-pointer mt-0.5"
+                            />
+                          </div>
+                          <div className="mt-3 pt-2 border-t border-[hsl(var(--border))] text-xs font-semibold text-[hsl(var(--muted-foreground))]">
+                            + {sym}0
+                          </div>
+                        </div>
+
+                        {/* Add-on Levels */}
+                        {addonGroup.levels.map((acc, idx) => {
+                          const lvlId = acc.id || String(idx);
+                          const isSelected = selectedLvlId === lvlId;
+                          const currKey = currency.toLowerCase() as 'usd' | 'gbp' | 'eur';
+                          const price = acc[currKey] ?? (acc as any)[currency] ?? 0;
+
+                          return (
+                            <div
+                              key={lvlId}
+                              onClick={() => handleSelectAddonLevel(gId, lvlId)}
+                              className={`rounded-xl border p-4 transition-all cursor-pointer flex flex-col justify-between ${
+                                isSelected
+                                  ? 'border-amber-500 bg-amber-500/10 shadow-xs ring-2 ring-amber-500/50'
+                                  : 'border-[hsl(var(--border))] bg-background hover:bg-[hsl(var(--muted)/.5)]'
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <p className="font-bold text-sm text-[hsl(var(--foreground))]">
+                                    {acc.title || `${addonGroup.title || 'Option'} #${idx + 1}`}
+                                  </p>
+                                  <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold mt-0.5">
+                                    {addonGroup.title ? `${addonGroup.title} option` : 'Optional add-on'}
+                                  </p>
+                                </div>
+                                <input
+                                  type="radio"
+                                  name={`addonRadio_${gId}`}
+                                  checked={isSelected}
+                                  onChange={() => handleSelectAddonLevel(gId, lvlId)}
+                                  className="h-4.5 w-4.5 text-amber-500 focus:ring-amber-500 cursor-pointer mt-0.5"
+                                />
+                              </div>
+                              <div className="mt-3 pt-2 border-t border-[hsl(var(--border))] flex items-center justify-between">
+                                <span className="text-xs font-bold text-[hsl(var(--foreground))]">Add-on Rate:</span>
+                                <span className="px-2 py-0.5 rounded-lg border text-xs font-black font-mono bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-slate-200 dark:border-slate-700">
+                                  + {sym}{Number(price).toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -1247,12 +1321,12 @@ export function RegisterPage({ event }: { event: EventData }) {
                         <span className="text-xs text-[hsl(var(--muted-foreground))]">({selectedOption.categoryName} · {selectedOption.tierTitle})</span>
                         <span className="font-mono text-xs bg-[hsl(var(--muted))] px-2 py-0.5 rounded font-bold">{sym}{Number(regPrice).toLocaleString()}</span>
                       </div>
-                      {selectedAccommodation && accPrice > 0 && (
-                        <div className="flex items-center gap-2 flex-wrap text-xs text-amber-600 dark:text-amber-400 font-semibold">
-                          <span>🏨 Accommodation: {selectedAccommodation.title}</span>
-                          <span className="font-mono bg-amber-500/10 px-2 py-0.5 rounded font-bold">+{sym}{Number(accPrice).toLocaleString()}</span>
+                      {selectedAddonsList.map((addonItem, aIdx) => (
+                        <div key={addonItem.levelId || aIdx} className="flex items-center gap-2 flex-wrap text-xs text-amber-600 dark:text-amber-400 font-semibold">
+                          <span>✨ {addonItem.groupTitle}: {addonItem.levelTitle}</span>
+                          <span className="font-mono bg-amber-500/10 px-2 py-0.5 rounded font-bold">+{sym}{Number(addonItem.price).toLocaleString()}</span>
                         </div>
-                      )}
+                      ))}
                     </div>
                   ) : (
                     <span className="text-[hsl(var(--muted-foreground))] font-normal text-sm sm:text-base">

@@ -53,16 +53,23 @@ function CohortNotFound({ subdomain }: { subdomain: string }) {
   );
 }
 
-function parseCohortPath(pathname: string): { year: string; batch: string | null; base: string } | null {
-  // /2026        -> year=2026, batch=null (current cohort for that year)
-  // /2026/2      -> year=2026, batch=2
-  // /2026/b2     -> year=2026, batch=2 (legacy)
-  let m = pathname.match(/^\/(\d{4})\/b(\d+)/);
+function parseCohortPath(pathname: string): { year: string | null; batch: string | null; base: string } | null {
+  // Support /b1, /b2, /b3 (batch-based path directly under subdomain, e.g. /b1)
+  let m = pathname.match(/^\/b(\d+)/i);
+  if (m) return { year: null, batch: m[1], base: `/b${m[1]}` };
+
+  // Support /2026/b1 or /2026/b2
+  m = pathname.match(/^\/(\d{4})\/b(\d+)/i);
   if (m) return { year: m[1], batch: m[2], base: `/${m[1]}/b${m[2]}` };
+
+  // Support /2026/1 or /2026/2
   m = pathname.match(/^\/(\d{4})\/(\d+)/);
   if (m) return { year: m[1], batch: m[2], base: `/${m[1]}/${m[2]}` };
+
+  // Support /2026 (current cohort for that year)
   m = pathname.match(/^\/(\d{4})/);
   if (m) return { year: m[1], batch: null, base: `/${m[1]}` };
+
   return null;
 }
 
@@ -140,9 +147,15 @@ export function EventMicrosite({ subdomain, customBase }: { subdomain: string; c
   const currentCohort = event.currentCohort || cohorts.find((c) => c.isCurrent) || null;
   const activeCohort = cohortPath
     ? (cohorts.find((c) => {
-        if (String(c.year) !== cohortPath.year) return false;
-        if (cohortPath.batch === null) return c.isCurrent || c.batchNo === 1;
-        return String(c.batchNo) === cohortPath.batch;
+        if (cohortPath.year && String(c.year) !== cohortPath.year) return false;
+        if (cohortPath.batch !== null) {
+          return (
+            String(c.batchNo) === cohortPath.batch ||
+            c.cohortId?.toLowerCase().endsWith(`-b${cohortPath.batch}`) ||
+            c.cohortId?.toLowerCase().endsWith(`-${cohortPath.batch}`)
+          );
+        }
+        return c.isCurrent || c.batchNo === 1;
       }) || null)
     : currentCohort;
 
@@ -158,55 +171,58 @@ export function EventMicrosite({ subdomain, customBase }: { subdomain: string; c
         activeCohort,
         title: activeCohort.title || event.title,
         subdomain: activeCohort.subdomain || event.subdomain,
-        startDate: activeCohort.startDate || event.startDate || '',
-        endDate: activeCohort.endDate || event.endDate || '',
-        eventDate: activeCohort.startDate || event.eventDate || '',
-        description: activeCohort.content?.description || event.description || '',
-        theme: activeCohort.content?.theme || event.theme || '',
-        themeColor: activeCohort.content?.themeColor || event.themeColor || '',
-        heroThemeColor: activeCohort.content?.heroThemeColor || event.heroThemeColor || '',
-        primaryColor: activeCohort.content?.primaryColor || event.primaryColor || '',
-        colorTheme: activeCohort.content?.colorTheme || event.colorTheme || '',
-        day: activeCohort.content?.day || event.day || '',
-        month: activeCohort.content?.month || event.month || '',
-        location: activeCohort.content?.location || event.location || '',
-        venue: activeCohort.content?.venue || event.venue || '',
-        venueAddress: activeCohort.content?.venueAddress || event.venueAddress || '',
-        venueMapUrl: activeCohort.content?.venueMapUrl || event.venueMapUrl || '',
-        startTime: activeCohort.content?.startTime || event.startTime || '',
-        endTime: activeCohort.content?.endTime || event.endTime || '',
-        speaker: activeCohort.content?.speaker || event.speaker || '',
-        speakers: Array.isArray(activeCohort.content?.speakers) ? activeCohort.content.speakers : (event.speakers || []),
-        tracks: Array.isArray(activeCohort.content?.tracks) ? activeCohort.content.tracks : (event.tracks || []),
-        faqs: Array.isArray(activeCohort.content?.faqs) ? activeCohort.content.faqs : (event.faqs || []),
-        fees: Array.isArray(activeCohort.content?.fees) ? activeCohort.content.fees : (event.fees || []),
-        sponsors: Array.isArray(activeCohort.content?.sponsors) ? activeCohort.content.sponsors : (event.sponsors || []),
-        partners: Array.isArray(activeCohort.content?.partners) ? activeCohort.content.partners : (event.partners || []),
-        mediaPartners: Array.isArray(activeCohort.content?.mediaPartners) ? activeCohort.content.mediaPartners : (event.mediaPartners || []),
-        exhibitors: Array.isArray(activeCohort.content?.exhibitors) ? activeCohort.content.exhibitors : (event.exhibitors || []),
-        guidelines: activeCohort.content?.guidelines !== undefined ? activeCohort.content.guidelines : (event.guidelines || ''),
-        organizingCommittee: Array.isArray(activeCohort.content?.organizingCommittee) ? activeCohort.content.organizingCommittee : (event.organizingCommittee || []),
-        venueDetails: activeCohort.content?.venueDetails !== undefined ? activeCohort.content.venueDetails : (event.venueDetails || null),
-        program: Array.isArray(activeCohort.content?.program) ? activeCohort.content.program : (event.program || []),
-        headerBanners: Array.isArray(activeCohort.content?.headerBanners) ? activeCohort.content.headerBanners : (event.headerBanners || []),
-        welcomeBannerTitle: activeCohort.content?.welcomeBannerTitle !== undefined ? activeCohort.content.welcomeBannerTitle : (event.welcomeBannerTitle || ''),
-        welcomeBannerDescription: activeCohort.content?.welcomeBannerDescription !== undefined ? activeCohort.content.welcomeBannerDescription : (event.welcomeBannerDescription || ''),
-        brochureUrl: activeCohort.content?.brochureUrl !== undefined ? activeCohort.content.brochureUrl : (event.brochureUrl || ''),
-        bannerUrl: activeCohort.content?.bannerUrl !== undefined ? activeCohort.content.bannerUrl : (event.bannerUrl || ''),
-        logoUrl: activeCohort.content?.logoUrl !== undefined ? activeCohort.content.logoUrl : (event.logoUrl || ''),
-        scientificProgramUrl: activeCohort.content?.scientificProgramUrl !== undefined ? activeCohort.content.scientificProgramUrl : (event.scientificProgramUrl || ''),
-        termsAndConditions: activeCohort.content?.termsAndConditions !== undefined ? activeCohort.content.termsAndConditions : (event.termsAndConditions || ''),
-        about: activeCohort.content?.about !== undefined ? activeCohort.content.about : (event.about || ''),
-        terms: activeCohort.content?.terms !== undefined ? activeCohort.content.terms : (event.terms || ''),
-        privacy: activeCohort.content?.privacy !== undefined ? activeCohort.content.privacy : (event.privacy || ''),
-        registerSteps: Array.isArray(activeCohort.content?.registerSteps) ? activeCohort.content.registerSteps : (event.registerSteps || []),
-        brochure: activeCohort.content?.brochure !== undefined ? activeCohort.content.brochure : (event.brochure || null),
-        feeLevels: Array.isArray(activeCohort.content?.feeLevels) ? activeCohort.content.feeLevels : (event.feeLevels || []),
-        gtmCode: activeCohort.content?.gtmCode || event.gtmCode || '',
-        gaCode: activeCohort.content?.gaCode || event.gaCode || '',
-        mcCode: activeCohort.content?.mcCode || event.mcCode || '',
-        metaTitle: activeCohort.content?.metaTitle || event.metaTitle || '',
-        metaDescription: activeCohort.content?.metaDescription || event.metaDescription || '',
+        startDate: activeCohort.startDate || '',
+        endDate: activeCohort.endDate || '',
+        eventDate: activeCohort.startDate || '',
+        description: activeCohort.content?.description || '',
+        theme: activeCohort.content?.theme || '',
+        themeColor: activeCohort.content?.themeColor || '',
+        heroThemeColor: activeCohort.content?.heroThemeColor || '',
+        primaryColor: activeCohort.content?.primaryColor || '',
+        colorTheme: activeCohort.content?.colorTheme || '',
+        day: activeCohort.content?.day || '',
+        month: activeCohort.content?.month || '',
+        location: activeCohort.content?.location || '',
+        venue: activeCohort.content?.venue || '',
+        venueAddress: activeCohort.content?.venueAddress || '',
+        venueMapUrl: activeCohort.content?.venueMapUrl || '',
+        startTime: activeCohort.content?.startTime || '',
+        endTime: activeCohort.content?.endTime || '',
+        speaker: activeCohort.content?.speaker || '',
+        speakers: Array.isArray(activeCohort.content?.speakers) ? activeCohort.content.speakers : [],
+        tracks: Array.isArray(activeCohort.content?.tracks) ? activeCohort.content.tracks : [],
+        faqs: Array.isArray(activeCohort.content?.faqs) ? activeCohort.content.faqs : [],
+        fees: Array.isArray(activeCohort.content?.fees) ? activeCohort.content.fees : [],
+        sponsors: Array.isArray(activeCohort.content?.sponsors) ? activeCohort.content.sponsors : [],
+        partners: Array.isArray(activeCohort.content?.partners) ? activeCohort.content.partners : [],
+        mediaPartners: Array.isArray(activeCohort.content?.mediaPartners) ? activeCohort.content.mediaPartners : [],
+        exhibitors: Array.isArray(activeCohort.content?.exhibitors) ? activeCohort.content.exhibitors : [],
+        guidelines: activeCohort.content?.guidelines || '',
+        organizingCommittee: Array.isArray(activeCohort.content?.organizingCommittee) ? activeCohort.content.organizingCommittee : [],
+        venueDetails: activeCohort.content?.venueDetails || null,
+        program: Array.isArray(activeCohort.content?.program) ? activeCohort.content.program : [],
+        headerBanners: Array.isArray(activeCohort.content?.headerBanners) ? activeCohort.content.headerBanners : [],
+        welcomeBannerTitle: activeCohort.content?.welcomeBannerTitle || '',
+        welcomeBannerDescription: activeCohort.content?.welcomeBannerDescription || '',
+        brochureUrl: activeCohort.content?.brochureUrl || '',
+        bannerUrl: activeCohort.content?.bannerUrl || '',
+        logoUrl: activeCohort.content?.logoUrl || '',
+        scientificProgramUrl: activeCohort.content?.scientificProgramUrl || '',
+        termsAndConditions: activeCohort.content?.termsAndConditions || '',
+        about: activeCohort.content?.about || '',
+        terms: activeCohort.content?.terms || '',
+        privacy: activeCohort.content?.privacy || '',
+        registerSteps: Array.isArray(activeCohort.content?.registerSteps) ? activeCohort.content.registerSteps : [],
+        brochure: activeCohort.content?.brochure || null,
+        feeLevels: Array.isArray(activeCohort.content?.feeLevels) ? activeCohort.content.feeLevels : [],
+        gtmCode: activeCohort.content?.gtmCode || '',
+        gaCode: activeCohort.content?.gaCode || '',
+        mcCode: activeCohort.content?.mcCode || '',
+        metaTitle: activeCohort.content?.metaTitle || '',
+        metaDescription: activeCohort.content?.metaDescription || '',
+        globalAddons: Array.isArray(activeCohort.content?.globalAddons) ? activeCohort.content.globalAddons : [],
+        globalAddonTitle: activeCohort.content?.globalAddonTitle || '',
+        accommodationFees: Array.isArray(activeCohort.content?.accommodationFees) ? activeCohort.content.accommodationFees : [],
       }
     : {
         ...event,
