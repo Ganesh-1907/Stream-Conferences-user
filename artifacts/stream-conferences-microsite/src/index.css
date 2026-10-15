@@ -194,6 +194,72 @@ body, button, input, select, textarea {
   text-align: justify;
 }
 
+/* Match TipTap Editor line spacing & paragraph margins across all microsite rich text */
+.prose p,
+.prose div,
+.prose :where(p) {
+  margin-top: 0.4em !important;
+  margin-bottom: 0.4em !important;
+  line-height: 1.6 !important;
+}
+
+.prose h1, .prose :where(h1) {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-top: 0.6em !important;
+  margin-bottom: 0.3em !important;
+  line-height: 1.3 !important;
+}
+
+.prose h2, .prose :where(h2) {
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin-top: 0.6em !important;
+  margin-bottom: 0.3em !important;
+  line-height: 1.35 !important;
+}
+
+.prose h3, .prose :where(h3) {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-top: 0.5em !important;
+  margin-bottom: 0.25em !important;
+  line-height: 1.4 !important;
+}
+
+.prose ul, .prose ol,
+.prose :where(ul, ol) {
+  padding-left: 1.6em;
+  margin-top: 0.5em !important;
+  margin-bottom: 0.5em !important;
+}
+
+.prose li, .prose :where(li) {
+  margin-top: 0.25em !important;
+  margin-bottom: 0.25em !important;
+  line-height: 1.5 !important;
+}
+
+.prose li p, .prose :where(li p) {
+  margin: 0 !important;
+}
+
+.prose blockquote, .prose :where(blockquote) {
+  border-left: 3px solid hsl(var(--secondary, var(--primary)));
+  padding-left: 0.8em;
+  margin: 0.5em 0 !important;
+  font-style: italic;
+  opacity: 0.85;
+}
+
+/* Prevent empty paragraphs (e.g. accidental enters) from creating huge blank spaces */
+.prose p:empty,
+.prose p:has(> br:only-child) {
+  margin-top: 0.15em !important;
+  margin-bottom: 0.15em !important;
+  height: 0.75em;
+}
+
 .prose a {
   color: hsl(var(--accent));
   text-decoration: underline;
