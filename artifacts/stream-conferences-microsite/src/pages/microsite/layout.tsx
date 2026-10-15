@@ -18,6 +18,7 @@ export interface EventData {
   eventId?: string;
   eventType: 'conference' | 'webinar';
   title: string;
+  shortTitle?: string;
   slug?: string;
   subdomain?: string;
   description?: string;
