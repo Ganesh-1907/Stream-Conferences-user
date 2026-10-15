@@ -888,7 +888,7 @@ function PreviousCohortsStrip({ event }: { event: EventData }) {
                       <span>Batch {c.batchNo}</span>
                       {c.isCurrent && (
                         <span className="rounded-full bg-[hsl(var(--primary))] px-1.5 py-0.2 text-[9px] font-black uppercase tracking-wider text-white">
-                          Current
+                          Primary
                         </span>
                       )}
                     </a>

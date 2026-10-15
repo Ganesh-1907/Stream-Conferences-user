@@ -165,7 +165,8 @@ export function EventMicrosite({ subdomain, customBase }: { subdomain: string; c
 
   // Cohorts are fully independent: when a cohort is active, only its own content
   // is used. No fallback to the parent event (which would mix years / batches).
-  // The backend snapshots parent content into each cohort at creation time.
+  // When no cohort is active (root of the subdomain with no primary cohort),
+  // displayEvent falls through to the parent event below.
   const cc = (activeCohort?.content || {}) as Record<string, any>;
   const scalar = <T,>(v: T | undefined | null, fallback: T): T =>
     v !== undefined && v !== null && v !== '' ? v : fallback;
